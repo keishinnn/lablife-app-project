@@ -88,7 +88,7 @@
 .btn-signin {
     display: inline-flex;
     align-items: center;
-    padding: 0.7rem 1rem;
+    padding: 0.5rem 1rem;
     background: linear-gradient(to right, #ec4899, #ef4444);
     color: white;
     font-size: 0.875rem;

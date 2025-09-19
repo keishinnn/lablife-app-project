@@ -55,5 +55,3 @@ $unreadMessages = 3;
             </div>
         </nav>
     </header>
-
-    <main class="hero">
