@@ -1,0 +1,131 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist+Sans&family=Geist+Mono&display=swap");
+
+/* Root variables for light/dark */
+:root {
+    --background: #ffffff;
+    --foreground: #171717;
+    --font-sans: Arial, Helvetica, sans-serif;
+    --font-mono: monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
+}
+
+body {
+    margin: 0;
+    font-family: "Geist Sans", Arial, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.card-swipe {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+    .card-swipe {
+        background-color: #1f2937;
+    }
+}
+
+.match-button {
+    background: linear-gradient(to right, #ec4899, #ef4444);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.match-button:hover {
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+.chat-container {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+    .chat-container {
+        background-color: #111827;
+        border: 1px solid #374151;
+    }
+}
+
+.chat-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+    .chat-scrollbar {
+        scrollbar-color: #4b5563 transparent;
+    }
+
+    .chat-scrollbar::-webkit-scrollbar-thumb {
+        background: #4b5563;
+    }
+
+    .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+    }
+}
+
+.bg-culur-gradient {
+    background: linear-gradient(to bottom right, #fff, #fdf2f8);
+}
+
+@media (prefers-color-scheme: dark) {
+    .bg-culur-gradient {
+        background: linear-gradient(to bottom right, #020617, #111827);
+    }
+}
+
+.bg-secondary-color {
+    background-color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+    .bg-secondary-color {
+        background-color: #111827;
+    }
+}

@@ -1,0 +1,132 @@
+.navbar {
+    position: relative;
+    z-index: 50;
+    background: linear-gradient(to right, white, #f9f9f9);
+    border-bottom: 1px solid rgba(143, 143, 143, 0.1);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: #111827;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: #444;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+    color: #e91e63;
+}
+
+.nav-link:nth-child(2):hover {
+    color: #2196f3;
+}
+
+.nav-link:nth-child(3):hover {
+    color: #4caf50;
+}
+
+.nav-link:nth-child(4):hover {
+    color: #9c27b0;
+}
+
+.badge {
+    margin-left: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #e91e63;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-signin {
+    background: linear-gradient(to right, #ec4899, #ef4444);
+    color: white;
+}
+
+.btn-signin:hover {
+    background: linear-gradient(to right, #db2777, #dc2626);
+}
+
+.btn-signout {
+    background: linear-gradient(to right, #f43f5e, #e11d48);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-signout:hover {
+    background: linear-gradient(to right, #dc2626, #b91c1c);
+}
+
+.icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.3rem;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    .navbar {
+        background: linear-gradient(to right, #020617, #0f172a);
+    }
+
+    .logo-text {
+
+        background: linear-gradient(to bottom, #ffffff, #e5e7eb);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .nav-link {
+        color: #d1d5db;
+    }
+}
