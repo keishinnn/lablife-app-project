@@ -2,15 +2,24 @@
 
 define('ROOT', __DIR__);
 
+// load composer + .env
+require ROOT . '/config/bootstrap.php';
+
+function normalizeUri(string $uri, string $base): string
+{
+    if (strpos($uri, $base) === 0) {
+        $uri = substr($uri, strlen($base));
+    }
+
+    $uri = rtrim($uri, '/');
+
+    return $uri === '' ? '/' : $uri;
+}
+
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $base = '/lablife-app-project';
 
-if (strpos($uri, $base) === 0) {
-    $uri = substr($uri, strlen($base));
-}
-
-$uri = rtrim($uri, '/');
-if ($uri === '') $uri = '/';
+$uri = normalizeUri($uri, $base);
 
 $routes = [
     '/' => 'controllers/index.php',
