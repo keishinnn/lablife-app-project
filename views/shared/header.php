@@ -1,7 +1,10 @@
 <?php
 $user = false;
 $unreadMessages = 3;
+$error = "";
+$loading = false;
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,9 +12,10 @@ $unreadMessages = 3;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="assets/css/header.css">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="/lablife-app-project/assets/css/header.css">
+    <link rel="stylesheet" href="/lablife-app-project/assets/global.css">
+    <link rel="stylesheet" href="/lablife-app-project/assets/css/auth-page.css">
+    <link rel="stylesheet" href="/lablife-app-project/assets/css/index-page.css">
 </head>
 
 <body>
@@ -19,11 +23,13 @@ $unreadMessages = 3;
         <nav class="navbar">
             <div class="container">
                 <div class="navbar-inner">
-                    <a href="index.php" class="logo">
-                        <img src="public/logo.png" alt="LabLife Logo" class="logo-img">
+                    <!-- Logo and LabLife text-->
+                    <a href="/lablife-app-project/" class="logo">
+                        <img src="/lablife-app-project/public/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
 
+                    <!-- Show the a tags if a user is authenticated -->
                     <?php if ($user): ?>
                         <div class="nav-links">
                             <a href="/matches" class="nav-link">Discover</a>
@@ -38,6 +44,7 @@ $unreadMessages = 3;
                         </div>
                     <?php endif; ?>
 
+                    <!-- Show the Sign Out button if a user is authenticated, otherwise show Sign In button -->
                     <?php if ($user): ?>
                         <button class="btn btn-signout">
                             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +56,7 @@ $unreadMessages = 3;
                             Sign Out
                         </button>
                     <?php else: ?>
-                        <a href="views/auth/login.php" class="btn btn-signin">Sign In</a>
+                        <a href="/lablife-app-project/login" class="btn btn-signin">Sign In</a>
                     <?php endif; ?>
                 </div>
             </div>
