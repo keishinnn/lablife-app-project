@@ -1,12 +1,13 @@
 <?php
-include(ROOT . "/views/shared/header.php")
+include(base_path("views/shared/header.php"));
 ?>
 
 <div class="login-page">
     <div class="login-page-container">
         <div class="login-page-text">
-            <h1>Create Your Account</h1>
+            <h1>Sign in to your account</h1>
         </div>
+
 
         <form action="" method="post">
             <div class="login-email-field">
@@ -38,15 +39,16 @@ include(ROOT . "/views/shared/header.php")
                 </button>
             <?php else: ?>
                 <button>
-                    Sign Up
+                    Sign In
                 </button>
             <?php endif; ?>
 
             <div class="login-page-redirect">
-                <a href="/lablife-app-project/login">Already have an account? Sign in</a>
+                <a href="/register">Don't have an account? Sign Up</a>
             </div>
         </form>
     </div>
+
 </div>
 
-<?php include(ROOT . "/views/shared/footer.php") ?>
+<?php include(base_path("views/shared/footer.php")) ?>

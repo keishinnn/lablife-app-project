@@ -1,6 +1,19 @@
 <?php
 
-require ROOT . '/vendor/autoload.php';
+use Core\App;
+use Core\Container;
+use Core\Database;
 
-$dotenv = Dotenv\Dotenv::createImmutable(ROOT);
+require base_path('vendor/autoload.php');
+
+$dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
 $dotenv->load();
+
+$container = new Container();
+
+$container->bind('Core\Database', function () {
+    $config = require base_path('config/config.php');
+    return new Database($config['database']);
+});
+
+App::setContainer($container);

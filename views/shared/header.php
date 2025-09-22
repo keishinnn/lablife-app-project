@@ -12,10 +12,10 @@ $loading = false;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/lablife-app-project/assets/css/header.css">
-    <link rel="stylesheet" href="/lablife-app-project/assets/global.css">
-    <link rel="stylesheet" href="/lablife-app-project/assets/css/auth-page.css">
-    <link rel="stylesheet" href="/lablife-app-project/assets/css/index-page.css">
+    <link rel="stylesheet" href="/assets/css/header.css">
+    <link rel="stylesheet" href="/assets/global.css">
+    <link rel="stylesheet" href="/assets/css/auth-page.css">
+    <link rel="stylesheet" href="/assets/css/index-page.css">
 </head>
 
 <body>
@@ -24,8 +24,8 @@ $loading = false;
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
-                    <a href="/lablife-app-project/" class="logo">
-                        <img src="/lablife-app-project/public/logo.png" alt="LabLife Logo" class="logo-img">
+                    <a href="/" class="logo">
+                        <img src="/src/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
 
@@ -56,7 +56,7 @@ $loading = false;
                             Sign Out
                         </button>
                     <?php else: ?>
-                        <a href="/lablife-app-project/login" class="btn btn-signin">Sign In</a>
+                        <a href="/login" class="btn btn-signin">Sign In</a>
                     <?php endif; ?>
                 </div>
             </div>

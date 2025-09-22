@@ -1,10 +1,6 @@
 <?php
 
-if (!defined('ROOT')) {
-    die('Direct access not allowed.');
-}
-
-include(ROOT . "/views/shared/header.php");
+include(base_path("views/shared/header.php"));
 $is_loggedIn = false;
 ?>
 
@@ -16,4 +12,4 @@ $is_loggedIn = false;
     </section>
 </main>
 
-<?php include(ROOT . "/views/shared/footer.php"); ?>
+<?php include(base_path("views/shared/footer.php")); ?>
