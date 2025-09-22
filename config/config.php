@@ -1,5 +1,7 @@
 <?php
 
+// file path = root/config/config.php
+
 $dbUrl = $_ENV['DB_URI'] ?? null;
 
 if (!$dbUrl) {

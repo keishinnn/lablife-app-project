@@ -1,5 +1,7 @@
 <?php
 
+// file path = root/Core/Router.php
+
 namespace Core;
 
 class Router
@@ -44,7 +46,21 @@ class Router
     {
         foreach ($this->routes as $route) {
             if ($route['uri'] == $uri && $route['method'] == strtoupper($method)) {
-                return require base_path($route['controller']);
+
+                $controller = $route['controller'];
+
+                if (strpos($controller, '@') !== false) {
+                    [$class, $method] = explode('@', $controller);
+
+                    $class = "Controllers\\" . $class;
+                    if (class_exists($class)) {
+                        $instance = new $class();
+                        return call_user_func([$instance, $method]);
+                    }
+
+                    throw new \Exception("Controller class $class not found.");
+                }
+                return require base_path($controller);
             }
         }
 

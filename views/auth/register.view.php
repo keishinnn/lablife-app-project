@@ -1,4 +1,8 @@
 <?php
+
+$error = $error ?? '';
+$loading = $loading ?? false;
+
 include(base_path("views/shared/header.php"));
 ?>
 

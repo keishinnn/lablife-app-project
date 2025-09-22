@@ -1,8 +1,12 @@
 <?php
-$user = false;
-$unreadMessages = 3;
-$error = "";
-$loading = false;
+
+// /views/.shared/header.php
+
+if (!isset($user)) {
+    $user = current_user();
+}
+$unreadMessages = $unreadMessages ?? 0;
+
 ?>
 
 <!DOCTYPE html>
@@ -16,6 +20,7 @@ $loading = false;
     <link rel="stylesheet" href="/assets/global.css">
     <link rel="stylesheet" href="/assets/css/auth-page.css">
     <link rel="stylesheet" href="/assets/css/index-page.css">
+    <script src="/assets/js/form-loading.js" defer></script>
 </head>
 
 <body>
@@ -25,7 +30,7 @@ $loading = false;
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
                     <a href="/" class="logo">
-                        <img src="/src/logo.png" alt="LabLife Logo" class="logo-img">
+                        <img src="assets/images/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
 
@@ -46,15 +51,17 @@ $loading = false;
 
                     <!-- Show the Sign Out button if a user is authenticated, otherwise show Sign In button -->
                     <?php if ($user): ?>
-                        <button class="btn btn-signout">
-                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 
-                                 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 
-                                 3 0 013 3v1" />
-                            </svg>
-                            Sign Out
-                        </button>
+                        <form action="/logout" method="post">
+                            <button class="btn btn-signout" type="submit">
+                                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 
+                     0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 
+                     0 013 3v1" />
+                                </svg>
+                                Sign Out
+                            </button>
+                        </form>
                     <?php else: ?>
                         <a href="/login" class="btn btn-signin">Sign In</a>
                     <?php endif; ?>

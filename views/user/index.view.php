@@ -1,13 +1,13 @@
 <?php
 
-require ROOT . "/middleware/auth.php";
-
-if (!defined('ROOT')) {
-    die('Direct access not allowed.');
+if (!\Core\Auth::check()) {
+    header("Location: /login");
+    exit;
 }
 
-include(ROOT . "/views/shared/header.php");
-$is_loggedIn = false;
+$user = \Core\Auth::user();
+
+require base_path('views/shared/header.php');
 ?>
 
 <main class="hero">
@@ -19,12 +19,14 @@ $is_loggedIn = false;
         <p>Connect with introverts like you with matching interests.</p>
 
         <div class="btn-group">
-                <a href="/lablife-app-project/register" class="btn btn-primary">
-                    Get Started →
-                </a>
-                <a href="/lablife-app-project/login" class="btn btn-outline">
-                    Explore
-                </a>
+            <a href="/register" class="btn btn-primary">
+                Start Discovering →
+            </a>
+            <a href="/login" class="btn btn-outline">
+                View Profile
+            </a>
         </div>
     </section>
 </main>
+
+<?php require base_path('views/shared/footer.php') ?>

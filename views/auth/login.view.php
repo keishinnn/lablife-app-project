@@ -1,5 +1,7 @@
 <?php
+
 include(base_path("views/shared/header.php"));
+// /views/auth/login.view.php
 ?>
 
 <div class="login-page">
@@ -8,15 +10,15 @@ include(base_path("views/shared/header.php"));
             <h1>Sign in to your account</h1>
         </div>
 
-
-        <form action="" method="post">
+        <form action="/login" method="POST">
             <div class="login-email-field">
                 <label for="email">Email</label>
                 <input
                     type="email"
                     name="email"
                     required
-                    placeholder="Enter your email">
+                    placeholder="Enter your email"
+                    value="<?= htmlspecialchars($email ?? '') ?>">
             </div>
 
             <div class="login-password-field">
@@ -27,21 +29,14 @@ include(base_path("views/shared/header.php"));
                     placeholder="Enter your password">
             </div>
 
-            <?php if ($error): ?>
-                <div class="login-error">
-                    <?php echo $error ?>
+            <?php if (!empty($error)): ?>
+                <div class=" login-error"><?= htmlspecialchars($error) ?>
                 </div>
             <?php endif; ?>
 
-            <?php if ($loading): ?>
-                <button disabled>
-                    Loading...
-                </button>
-            <?php else: ?>
-                <button>
-                    Sign In
-                </button>
-            <?php endif; ?>
+            <button type="submit">
+                Sign In
+            </button>
 
             <div class="login-page-redirect">
                 <a href="/register">Don't have an account? Sign Up</a>
