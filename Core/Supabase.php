@@ -1,5 +1,7 @@
 <?php
 
+// file path - root/Core/Supabase.php
+
 namespace Core;
 
 class Supabase
@@ -34,10 +36,12 @@ class Supabase
 
     public function signUp($email, $password)
     {
-        return $this->request("signup", "POST", [
+        $body = [
             "email" => $email,
-            "password" => $password
-        ]);
+            "password" => $password,
+        ];
+
+        return $this->request("signup", "POST", $body);
     }
 
     public function signIn($email, $password)

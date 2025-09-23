@@ -10,7 +10,7 @@ include(base_path("views/shared/header.php"));
             <h1>Sign in to your account</h1>
         </div>
 
-        <form action="/login" method="POST">
+        <form action="/login" method="POST" id="login-form">
             <div class="login-email-field">
                 <label for="email">Email</label>
                 <input
@@ -18,7 +18,9 @@ include(base_path("views/shared/header.php"));
                     name="email"
                     required
                     placeholder="Enter your email"
-                    value="<?= htmlspecialchars($email ?? '') ?>">
+                    minlength="8"
+                    value="<?= htmlspecialchars($email ?? '') ?>"
+                    <?= !empty($isLocked) ? 'disabled' : '' ?>>
             </div>
 
             <div class="login-password-field">
@@ -26,16 +28,16 @@ include(base_path("views/shared/header.php"));
                 <input
                     type="password" name="password" id="password"
                     required
-                    placeholder="Enter your password">
+                    placeholder="Enter your password"
+                    <?= !empty($isLocked) ? 'disabled' : '' ?>>
             </div>
 
-            <?php if (!empty($error)): ?>
-                <div class=" login-error"><?= htmlspecialchars($error) ?>
-                </div>
-            <?php endif; ?>
+            <div class="login-error" id="form-error" style="<?= !empty($error) ? '' : 'display:none;' ?>">
+                <?= htmlspecialchars($error ?? '') ?>
+            </div>
 
-            <button type="submit">
-                Sign In
+            <button type="submit" <?= !empty($isLocked) ? 'disabled' : '' ?>>
+                <?= !empty($isLocked) ? 'Locked' : 'Sign In' ?>
             </button>
 
             <div class="login-page-redirect">

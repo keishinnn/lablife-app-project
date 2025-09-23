@@ -1,7 +1,6 @@
 <?php
 
-$error = $error ?? '';
-$loading = $loading ?? false;
+// file path - root/views/auth/register.view.php
 
 include(base_path("views/shared/header.php"));
 ?>
@@ -12,14 +11,16 @@ include(base_path("views/shared/header.php"));
             <h1>Create Your Account</h1>
         </div>
 
-        <form action="" method="post">
+        <form action="/register" method="POST" id="register-form">
             <div class="login-email-field">
                 <label for="email">Email</label>
                 <input
                     type="email"
                     name="email"
+                    id="email"
                     required
-                    placeholder="Enter your email">
+                    placeholder="Enter your email"
+                    value="<?= htmlspecialchars($email ?? '') ?>">
             </div>
 
             <div class="login-password-field">
@@ -30,26 +31,30 @@ include(base_path("views/shared/header.php"));
                     placeholder="Enter your password">
             </div>
 
-            <?php if ($error): ?>
-                <div class="login-error">
-                    <?php echo $error ?>
+            <!-- Cloudflare Turnstile -->
+            <div class="cf-turnstile" data-sitekey="<?= htmlspecialchars($siteKey) ?>"></div>
+
+            <?php if (!empty($message)): ?>
+                <div class="login-error" id="form-error">
+                    <?= htmlspecialchars($message) ?>
                 </div>
             <?php endif; ?>
 
-            <?php if ($loading): ?>
-                <button disabled>
-                    Loading...
-                </button>
-            <?php else: ?>
-                <button>
-                    Sign Up
-                </button>
-            <?php endif; ?>
+            <div class="login-error" id="form-error" style="<?= !empty($error) ? '' : 'display:none;' ?>">
+                <?= htmlspecialchars($error ?? '') ?>
+            </div>
+
+            <button type="submit" id="sign-up-btn">
+                Sign Up
+            </button>
 
             <div class="login-page-redirect">
                 <a href="/login">Already have an account? Sign in</a>
             </div>
         </form>
+
+        <!-- Cloudflare Turnstile JS -->
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     </div>
 </div>
 

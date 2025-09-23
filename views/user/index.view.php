@@ -19,10 +19,10 @@ require base_path('views/shared/header.php');
         <p>Connect with introverts like you with matching interests.</p>
 
         <div class="btn-group">
-            <a href="/register" class="btn btn-primary">
+            <a href="#" class="btn btn-primary">
                 Start Discovering →
             </a>
-            <a href="/login" class="btn btn-outline">
+            <a href="#" class="btn btn-outline">
                 View Profile
             </a>
         </div>

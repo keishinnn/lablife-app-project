@@ -29,7 +29,7 @@ class LogoutController
         session_destroy();
 
         // Redirect back to home (or login)
-        header("Location: /login");
+        header("Location: /");
         exit;
     }
 }

@@ -1,11 +1,13 @@
 <?php
 
-// /views/.shared/header.php
+// root/views/.shared/header.php
 
 if (!isset($user)) {
     $user = current_user();
 }
 $unreadMessages = $unreadMessages ?? 0;
+
+
 
 ?>
 
@@ -20,7 +22,8 @@ $unreadMessages = $unreadMessages ?? 0;
     <link rel="stylesheet" href="/assets/global.css">
     <link rel="stylesheet" href="/assets/css/auth-page.css">
     <link rel="stylesheet" href="/assets/css/index-page.css">
-    <script src="/assets/js/form-loading.js" defer></script>
+
+    <script src="/assets/js/register-validation.js" type="module"></script>
 </head>
 
 <body>
@@ -29,7 +32,7 @@ $unreadMessages = $unreadMessages ?? 0;
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
-                    <a href="/" class="logo">
+                    <a href="<?php echo $user ? '/u' : '/'; ?>" class="logo">
                         <img src="assets/images/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
@@ -37,15 +40,15 @@ $unreadMessages = $unreadMessages ?? 0;
                     <!-- Show the a tags if a user is authenticated -->
                     <?php if ($user): ?>
                         <div class="nav-links">
-                            <a href="/matches" class="nav-link">Discover</a>
-                            <a href="/matches/list" class="nav-link">Matches</a>
-                            <a href="/chat" class="nav-link">
+                            <a href="#" class="nav-link">Discover</a>
+                            <a href="#" class="nav-link">Matches</a>
+                            <a href="#" class="nav-link">
                                 Messages
                                 <?php if ($unreadMessages > 0): ?>
                                     <span class="badge">(<?= $unreadMessages ?>)</span>
                                 <?php endif; ?>
                             </a>
-                            <a href="/profile" class="nav-link">Profile</a>
+                            <a href="#" class="nav-link">Profile</a>
                         </div>
                     <?php endif; ?>
 

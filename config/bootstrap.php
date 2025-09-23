@@ -5,6 +5,7 @@
 use Core\App;
 use Core\Container;
 use Core\Database;
+use Predis\Client as RedisClient;
 
 require base_path('vendor/autoload.php');
 
@@ -23,6 +24,14 @@ $container->bind('Core\Supabase', function () {
     return new \Core\Supabase($config);
 });
 
+$container->bind('Core\Turnstile', function () {
+    $config = require base_path('config/turnstile.php');
+    return new \Core\Turnstile($config['secret_key']);
+});
 
+$container->bind('redis', function () {
+    $config = require base_path('config/redis.php');
+    return new RedisClient($config);
+});
 
 App::setContainer($container);
