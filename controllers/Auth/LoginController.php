@@ -5,14 +5,16 @@
 namespace Controllers\Auth;
 
 use Core\App;
+use PDO;
 
 class LoginController
 {
     public function View()
     {
+        \Core\Middleware::redirectAuthUser();
+
         $error = '';
         $email = $_POST['email'] ?? '';
-        $isLocked = false;
         $isLoading = false;
 
         if (!empty($email)) {
@@ -21,11 +23,10 @@ class LoginController
 
             if ($redis->exists($lockKey)) {
                 $error = "Too many attempts. Please try again later.";
-                $isLocked = true;
             }
         }
 
-        view('auth/login.view.php', compact('error', 'email', 'isLocked', 'isLoading'));
+        view('auth/login.view.php', compact('error', 'email', 'isLoading'));
     }
 
     public function handleLogin()
@@ -33,15 +34,15 @@ class LoginController
         $email = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        $isLocked = false;
+        $isLoading = true;
 
-        $supabase = App::resolve(\Core\Supabase::class);
+        $supabase = App::resolve(\Services\SupabaseService::class);
         $redis = App::resolve('redis');
 
         // --- Brute force configs ---
         $maxAttempts   = 5;
-        $windowSeconds = 900;  
-        $lockSeconds   = 300; 
+        $windowSeconds = 900;
+        $lockSeconds   = 300;
 
         $emailKey = "login:fail:email:" . $email;
         $lockKey  = "login:lock:email:" . $email;
@@ -50,9 +51,9 @@ class LoginController
         if ($redis->exists($lockKey)) {
             $ttlLock = $redis->ttl($lockKey);
             error_log("[LOCK] Email '$email' is currently locked. TTL: $ttlLock seconds.");
-            $error = "Too many attempts. Please try again later.";
-            $isLocked = true;
-            view('auth/login.view.php', compact('error', 'email', 'isLocked'));
+            $error = "Too many attempts. Please try again in 5 minutes.";
+            $isLoading = false;
+            view('auth/login.view.php', compact('error', 'email',  'isLoading'));
             return;
         }
 
@@ -72,10 +73,9 @@ class LoginController
                 }
 
                 $error = $response['msg'] ?? "Invalid email or password.";
-                $isLocked = $attempts >= $maxAttempts;
 
-                error_log("[FAILED LOGIN] $email - attempt $attempts. Lock: $isLocked");
-                view('auth/login.view.php', compact('error', 'email', 'isLocked'));
+                $isLoading = false;
+                view('auth/login.view.php', compact('error', 'email', 'isLoading'));
                 return;
             }
 
@@ -86,23 +86,39 @@ class LoginController
             if ($user) {
                 if (empty($user['confirmed_at'])) {
                     $error = "Please confirm your email before logging in.";
-                    view('auth/login.view.php', compact('error', 'email', 'isLocked'));
+                    $isLoading = false;
+                    view('auth/login.view.php', compact('error', 'email', 'isLoading'));
                     return;
                 }
 
+                // IF NEW USER, REDIRECT TO CREATING DETAILS OF THE ACCOUNT
+                $db = App::resolve('Core\Database');
+                $stmt = $db->query("SELECT * FROM users WHERE id = :id LIMIT 1", ['id' => $user['id']]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!isset($user['avatar_url'])) {
+                    $_SESSION['access_token'] = $response['access_token'] ?? null;
+                    $_SESSION['user'] = $user;
+                    header("Location: /u/setup-profile");
+                    exit;
+                }
+
+                // OTHERWISE REDIRECT TO HOME VIEW
                 $_SESSION['access_token'] = $response['access_token'] ?? null;
                 $_SESSION['user'] = $user;
-
+                $isLoading = false;
                 header("Location: /u");
                 exit;
             }
 
             $error = "Invalid email or password.";
-            view('auth/login.view.php', compact('error', 'email', 'isLocked'));
+            $isLoading = false;
+            view('auth/login.view.php', compact('error', 'email',));
         } catch (\Exception $e) {
             $error = $e->getMessage();
             error_log("[ERROR] Exception during login: " . $error);
-            view('auth/login.view.php', compact('error', 'email', 'isLocked'));
+            $isLoading = false;
+            view('auth/login.view.php', compact('error', 'email',  'isLoading'));
         }
     }
 }

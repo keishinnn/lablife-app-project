@@ -1,6 +1,9 @@
 <?php
-include(base_path("views/shared/header.php"));
-$is_loggedIn = false;
+
+require (base_path("views/shared/header.php"));
+
+use Core\Auth;
+
 ?>
 
 <main class="hero">
@@ -13,11 +16,11 @@ $is_loggedIn = false;
 
         <div class="btn-group">
             <!-- if user was not authenticated -->
-            <?php if ($is_loggedIn): ?>
-                <a href="/register" class="btn btn-primary">
+            <?php if (Auth::check()): ?>
+                <a href="#" class="btn btn-primary">
                     Start Discovering →
                 </a>
-                <a href="/login" class="btn btn-outline">
+                <a href="#" class="btn btn-outline">
                     View Profile
                 </a>
             <?php else: ?>
@@ -32,4 +35,4 @@ $is_loggedIn = false;
     </section>
 </main>
 
-<?php include(base_path("views/shared/footer.php")); ?>
+<?php require (base_path("views/shared/footer.php")) ?>

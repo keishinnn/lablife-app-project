@@ -1,12 +1,5 @@
 <?php
 
-if (!\Core\Auth::check()) {
-    header("Location: /login");
-    exit;
-}
-
-$user = \Core\Auth::user();
-
 require base_path('views/shared/header.php');
 ?>
 

@@ -1,4 +1,4 @@
-// file path = public/assets/js/form-loading.js
+// file path = public/assets/js/register-valdidation.js
 import { setLoadingState } from "./utils.js";
 
 document.addEventListener("DOMContentLoaded", function () {

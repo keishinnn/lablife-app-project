@@ -1,6 +1,6 @@
 <?php
 
-include(base_path("views/shared/header.php"));
+require(base_path("views/shared/header.php"));
 // /views/auth/login.view.php
 ?>
 
@@ -19,8 +19,7 @@ include(base_path("views/shared/header.php"));
                     required
                     placeholder="Enter your email"
                     minlength="8"
-                    value="<?= htmlspecialchars($email ?? '') ?>"
-                    <?= !empty($isLocked) ? 'disabled' : '' ?>>
+                    value="<?= htmlspecialchars($email ?? '') ?>">
             </div>
 
             <div class="login-password-field">
@@ -28,17 +27,17 @@ include(base_path("views/shared/header.php"));
                 <input
                     type="password" name="password" id="password"
                     required
-                    placeholder="Enter your password"
-                    <?= !empty($isLocked) ? 'disabled' : '' ?>>
+                    placeholder="Enter your password">
             </div>
 
             <div class="login-error" id="form-error" style="<?= !empty($error) ? '' : 'display:none;' ?>">
                 <?= htmlspecialchars($error ?? '') ?>
             </div>
 
-            <button type="submit" <?= !empty($isLocked) ? 'disabled' : '' ?>>
-                <?= !empty($isLocked) ? 'Locked' : 'Sign In' ?>
+            <button id="login-btn" type="submit" <?= $isLoading ? 'disabled' : '' ?>>
+                <?= $isLoading ? 'Loading...' : 'Sign In' ?>
             </button>
+
 
             <div class="login-page-redirect">
                 <a href="/register">Don't have an account? Sign Up</a>
@@ -48,4 +47,4 @@ include(base_path("views/shared/header.php"));
 
 </div>
 
-<?php include(base_path("views/shared/footer.php")) ?>
+<?php require(base_path("views/shared/footer.php")) ?>

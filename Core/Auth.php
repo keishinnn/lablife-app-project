@@ -4,15 +4,15 @@ namespace Core;
 
 class Auth
 {
+    // Check if user is logged in
     public static function check()
     {
-        return isset($_SESSION['access_token']);
+        return isset($_SESSION['user']);
     }
 
+    // Get the current logged-in user
     public static function user()
     {
-        if (!self::check()) return null;
-        $supabase = App::resolve(Supabase::class);
-        return $supabase->getUser($_SESSION['access_token']);
+        return $_SESSION['user'] ?? null;
     }
 }

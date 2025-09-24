@@ -2,7 +2,7 @@
 
 // file path - root/views/auth/register.view.php
 
-include(base_path("views/shared/header.php"));
+require (base_path("views/shared/header.php"));
 ?>
 
 <div class="login-page">
@@ -34,12 +34,6 @@ include(base_path("views/shared/header.php"));
             <!-- Cloudflare Turnstile -->
             <div class="cf-turnstile" data-sitekey="<?= htmlspecialchars($siteKey) ?>"></div>
 
-            <?php if (!empty($message)): ?>
-                <div class="login-error" id="form-error">
-                    <?= htmlspecialchars($message) ?>
-                </div>
-            <?php endif; ?>
-
             <div class="login-error" id="form-error" style="<?= !empty($error) ? '' : 'display:none;' ?>">
                 <?= htmlspecialchars($error ?? '') ?>
             </div>
@@ -52,10 +46,7 @@ include(base_path("views/shared/header.php"));
                 <a href="/login">Already have an account? Sign in</a>
             </div>
         </form>
-
-        <!-- Cloudflare Turnstile JS -->
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     </div>
 </div>
 
-<?php include(base_path("views/shared/footer.php")) ?>
+<?php require (base_path("views/shared/footer.php")) ?>

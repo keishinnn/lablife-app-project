@@ -10,16 +10,17 @@ class RegisterController
 {
     public function View()
     {
+        \Core\Middleware::redirectAuthUser();
+
         $turnstileConfig = require base_path('config/turnstile.php');
         $siteKey = $turnstileConfig['site_key'];
 
         $error = $_SESSION['error'] ?? '';
-        $message = $_SESSION['message'] ?? '';
         $email = $_SESSION['email'] ?? '';
 
-        unset($_SESSION['error'], $_SESSION['message'], $_SESSION['email']);
+        unset($_SESSION['error'], $_SESSION['email']);
 
-        view("auth/register.view.php", compact('error', 'message', 'email', 'siteKey'));
+        view("auth/register.view.php", compact('error', 'email', 'siteKey'));
     }
 
     public function handleRegister()
@@ -30,27 +31,33 @@ class RegisterController
         $turnstileConfig = require base_path('config/turnstile.php');
         $siteKey = $turnstileConfig['site_key'];
 
-        $supabase = App::resolve(\Core\Supabase::class);
-        $turnstile = App::resolve(\Core\Turnstile::class);
+        $supabase = App::resolve(\Services\SupabaseService::class);
+        $turnstile = App::resolve(\Services\TurnstileService::class);
 
         try {
+
+            if ($supabase->userExists($email)) {
+                $error = "Email already exists. Please login instead.";
+                view("auth/register.view.php", compact('error', 'email', 'siteKey'));
+                return;
+            }
 
             $response = $supabase->signUp($email, $password);
 
             // DEBUG: log full response
             error_log("Supabase signUp response: " . print_r($response, true));
 
-            // Check for error from Supabase
-            if (isset($response['msg']) || isset($response['error'])) {
-                $error = $response['msg'] ?? "Something went wrong.";
+            if (isset($response['error'])) {
+                // Existing user or other error
+                $error = $response['error']['message'] ?? "Something went wrong.";
                 view("auth/register.view.php", compact('error', 'email', 'siteKey'));
                 return;
             }
 
             // Successful signup (email confirmation required)
-            if (isset($response['user'])) {
-                $message = "Account created! Please check your email to confirm your account.";
-                view("auth/register.view.php", compact('error', 'message', 'email', 'siteKey'));
+            if (isset($response)) {
+                $error = "Account created! Please check your email to confirm your account.";
+                view("auth/register.view.php", compact('error', 'email', 'siteKey'));
                 return;
             }
 

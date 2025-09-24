@@ -1,8 +1,8 @@
 <?php
 
-namespace Core;
+namespace Services;
 
-class Turnstile
+class TurnstileService
 {
     protected string $secretKey;
 

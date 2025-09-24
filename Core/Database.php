@@ -28,4 +28,9 @@ class Database
         $statement->execute($params);
         return $statement;
     }
+
+    public function prepare($sql)
+    {
+        return $this->connection->prepare($sql);
+    }
 }
