@@ -68,12 +68,9 @@ class Router
     }
 
 
-    function abort($code = 404)
+    function abort()
     {
-        http_response_code($code);
-
-        require base_path('views/404.php');
-
-        die();
+        header("Location: /");
+        exit;
     }
 }

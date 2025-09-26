@@ -5,29 +5,46 @@
 namespace Controllers\User;
 
 use Core\App;
+use Models\User;
 
 class ProfileController
 {
 
     public function View()
     {
-
         \Core\Middleware::auth();
+        \Core\Middleware::checkNotSetProfile();
+
+        $error = '';
         $user = \Core\Auth::user();
 
-        view('index.view.php', compact('user'));
+        view('index.view.php', compact('user', 'error'));
     }
 
     public function ProfileView()
     {
         \Core\Middleware::auth();
-        $user = \Core\Auth::user();
+        \Core\Middleware::checkNotSetProfile();
+        $userId = \Core\Auth::user();
+        $isLoading = true;
+        $error = '';
+
+        $user = User::getCurrentUserProfile($userId);
+        $_SESSION['user_id'] = $user->id;
+
+        if (!$user) {
+            $error = "Profile not found";
+            $isLoading = false;
+            view('user/profile.view.php', compact('user', 'error', 'isLoading'));
+            return;
+        }
+
         $isLoading = false;
 
-        view('user/profile.view.php', compact('user', 'isLoading'));
+        view('user/profile.view.php', compact('user', 'isLoading', 'error'));
     }
 
-    public function SetUpProfileView()
+    public function SetupProfileView()
     {
 
         \Core\Middleware::auth();
@@ -43,6 +60,12 @@ class ProfileController
         $isLoading = false;
 
         view('user/setup.view.php', compact('user', 'error', 'isLoading', 'fullName', 'gender', 'birthdate', 'avatarUrl', 'bio'));
+    }
+
+    public function SetupProfilePreferencesView()
+    {
+
+        view('user/setup.pref.view.php');
     }
 
     public function handleSetupProfile()

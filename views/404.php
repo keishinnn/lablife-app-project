@@ -1,7 +1,5 @@
 <?php
-
-require (base_path("views/shared/header.php"));
-$is_loggedIn = false;
+require(base_path("views/shared/header.php"));
 ?>
 
 <main class="hero">
@@ -12,4 +10,4 @@ $is_loggedIn = false;
     </section>
 </main>
 
-<?php require (base_path("views/shared/footer.php")); ?>
+<?php require(base_path("views/shared/footer.php")); ?>
