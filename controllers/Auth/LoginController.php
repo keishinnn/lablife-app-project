@@ -104,6 +104,7 @@ class LoginController
                 }
 
                 // OTHERWISE REDIRECT TO HOME VIEW
+                User::updateIsOnline($userFetch['id']);
                 $_SESSION['access_token'] = $response['access_token'] ?? null;
                 $_SESSION['user_id'] = $user->id;
                 $isLoading = false;

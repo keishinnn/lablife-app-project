@@ -75,7 +75,19 @@ class User
         return $row ? new User($row) : null;
     }
 
-    public function updateIsOnline() {}
+    public static function updateIsOnline(string $id): void
+    {
+        $db = App::resolve('Core\Database');
+        $db->query("UPDATE users SET is_online = TRUE WHERE id = :id", [
+            'id' => $id
+        ]);
+    }
 
-    public function updateIsOffline() {}
+    public static function updateIsOffline(string $id): void
+    {
+        $db = App::resolve('Core\Database');
+        $db->query("UPDATE users SET is_online = FALSE WHERE id = :id", [
+            'id' => $id
+        ]);
+    }
 }

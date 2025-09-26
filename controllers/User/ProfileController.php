@@ -4,7 +4,6 @@
 
 namespace Controllers\User;
 
-use Core\App;
 use Models\User;
 
 class ProfileController
@@ -13,7 +12,6 @@ class ProfileController
     public function View()
     {
         \Core\Middleware::auth();
-        \Core\Middleware::checkNotSetProfile();
 
         $error = '';
         $user = \Core\Auth::user();
@@ -24,7 +22,6 @@ class ProfileController
     public function ProfileView()
     {
         \Core\Middleware::auth();
-        \Core\Middleware::checkNotSetProfile();
         $userId = \Core\Auth::user();
         $isLoading = true;
         $error = '';
@@ -35,13 +32,22 @@ class ProfileController
         if (!$user) {
             $error = "Profile not found";
             $isLoading = false;
-            view('user/profile.view.php', compact('user', 'error', 'isLoading'));
-            return;
+            $this->ProfileNotFoundView();
         }
 
         $isLoading = false;
 
         view('user/profile.view.php', compact('user', 'isLoading', 'error'));
+    }
+
+    public function ProfileNotFoundView()
+    {
+        view('user/profile.view.php', compact('user', 'error', 'isLoading'));
+    }
+
+    public function ProfileLoadingView()
+    {
+        view('user/profile.loading.view.php', compact('user', 'error', 'isLoading'));
     }
 
     public function SetupProfileView()
@@ -68,7 +74,17 @@ class ProfileController
         view('user/setup.pref.view.php');
     }
 
-    public function handleSetupProfile()
+    public function handleStepOneSetupProfile()
+    {
+
+        $_SESSION['full-name']  = $_POST['full-name'] ?? '';
+        $_SESSION['gender']     = $_POST['gender'] ?? '';
+        $_SESSION['birthdate']  = $_POST['birthdate'] ?? '';
+        $_SESSION['bio']        = $_POST['bio'] ?? '';
+        $_SESSION['avatar_input'] = $_FILES['avatar_input'] ?? null;
+    }
+
+    /*     public function handleSetupProfile()
     {
         \Core\Middleware::auth();
         $user = \Core\Auth::user();
@@ -99,13 +115,13 @@ class ProfileController
                 $allowed = ['image/jpeg', 'image/png', 'image/webp'];
                 if (!in_array($file['type'], $allowed)) {
                     $error = "Invalid file type. Only JPG, PNG, WEBP allowed.";
-                    error_log("[UPLOAD] Invalid file type: {$file['type']} for user {$user['id']}");
+                    error_log("[UPLOAD] Invalid file type: {$file['type']} for user {$user}");
                     $isLoading = false;
                     view('user/setup.view.php', compact('user', 'error', 'isLoading', 'fullName', 'gender', 'birthdate', 'avatarUrl', 'bio'));
                     return;
                 }
 
-                $userId   = $user['id'] ?? uniqid("guest_");
+                $userId   = $user ?? uniqid("guest_");
                 $ext      = pathinfo($file['name'], PATHINFO_EXTENSION);
                 $filePath = "{$userId}_" . time() . ".{$ext}";
 
@@ -136,7 +152,7 @@ class ProfileController
             // save to db
             $db = App::resolve('Core\Database');
 
-            error_log("[DB] Updating profile for user {$user['id']}");
+            error_log("[DB] Updating profile for user {$user}");
 
             $db->query(
                 "UPDATE users 
@@ -148,7 +164,7 @@ class ProfileController
                     "birthdate" => $birthdate,
                     "bio" => $bio,
                     "avatar" => $avatarUrl,
-                    "id" => $user['id']
+                    "id" => $userId
                 ]
             );
 
@@ -161,5 +177,5 @@ class ProfileController
             $isLoading = false;
             view('user/setup.view.php', compact('user', 'error', 'isLoading', 'fullName', 'gender', 'birthdate', 'avatarUrl', 'bio'));
         }
-    }
+    } */
 }

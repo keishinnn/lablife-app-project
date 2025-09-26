@@ -1,8 +1,5 @@
 <?php
-
 // root/views/.shared/header.php
-use Core\Auth;
-
 ?>
 
 <!DOCTYPE html>

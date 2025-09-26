@@ -1,6 +1,6 @@
 <?php
 
-require (base_path("views/shared/header.php"));
+require(base_path("views/shared/header.php"));
 
 use Core\Auth;
 
@@ -20,7 +20,7 @@ use Core\Auth;
                 <a href="#" class="btn btn-primary">
                     Start Discovering →
                 </a>
-                <a href="#" class="btn btn-outline">
+                <a href="u/profile" class="btn btn-outline">
                     View Profile
                 </a>
             <?php else: ?>
@@ -35,4 +35,4 @@ use Core\Auth;
     </section>
 </main>
 
-<?php require (base_path("views/shared/footer.php")) ?>
+<?php require(base_path("views/shared/footer.php")) ?>

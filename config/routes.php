@@ -19,7 +19,11 @@ $router->get('/u', 'User\\ProfileController@View');
 
 
 $router->get('/u/setup-profile', 'User\\ProfileController@SetupProfileView');
+
 $router->get('/u/setup-profile-preferences', 'User\\ProfileController@SetupProfilePreferencesView');
+
 $router->post('/u/submit-setup', 'User\\ProfileController@handleSetupProfile');
 
 $router->get('/u/profile', 'User\\ProfileController@ProfileView');
+$router->get('/u/profile-not-found', 'User\\ProfileController@ProfileNotFoundView');
+$router->get('/u/profile-loading', 'User\\ProfileController@ProfileLoadingView');

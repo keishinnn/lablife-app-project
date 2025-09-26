@@ -5,6 +5,8 @@
 namespace Core;
 
 use Core\Auth;
+use Models\User;
+
 
 class Middleware
 {
@@ -14,6 +16,7 @@ class Middleware
             header("Location: /login");
             exit;
         }
+        return;
     }
 
     public static function redirectAuthUser()
@@ -22,13 +25,17 @@ class Middleware
             header("Location: /u");
             exit;
         }
+        return;
     }
 
     public static function checkNotSetProfile()
     {
-        if (!isset($user->avatar_url)) {
-            header('Location: u/setup-profile');
-            exit;
+        if (Auth::check()) {
+            if (!isset($user->avatarUrl)) {
+                header('Location: /u/setup-profile');
+                exit;
+            }
         }
+        return;
     }
 }

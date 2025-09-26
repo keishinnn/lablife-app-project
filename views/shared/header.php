@@ -1,7 +1,7 @@
 <?php
 
 // root/views/.shared/header.php
-use Core\Middleware;
+use Core\Auth;
 
 ?>
 
@@ -29,13 +29,13 @@ use Core\Middleware;
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
-                    <a href="<?php echo !Middleware::auth() ? '/' : '/u'; ?>" class="logo">
+                    <a href="<?php echo !Auth::check() ? '/' : '/u'; ?>" class="logo">
                         <img src="assets/images/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
 
                     <!-- Show the a tags if a user is authenticated -->
-                    <?php if (Middleware::auth() || Middleware::checkNotSetProfile()) : ?>
+                    <?php if (Auth::check()) : ?>
                         <div class="nav-links">
                             <a href="#" class="nav-link">Discover</a>
                             <a href="#" class="nav-link">Matches</a>
@@ -48,7 +48,7 @@ use Core\Middleware;
                     <?php endif; ?>
 
                     <!-- Show the Sign Out button if a user is authenticated, otherwise show Sign In button -->
-                    <?php if (Middleware::auth() || Middleware::checkNotSetProfile()): ?>
+                    <?php if (Auth::check()): ?>
                         <form action="/logout" method="post">
                             <button class="btn btn-signout" type="submit">
                                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">

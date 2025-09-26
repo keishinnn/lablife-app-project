@@ -2,6 +2,9 @@
 
 namespace Controllers\Auth;
 
+use Models\User;
+use Core\Auth;
+
 class LogoutController
 {
     public function logout()
@@ -10,6 +13,8 @@ class LogoutController
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
+        User::updateIsOffline(Auth::user());
 
         // Clear session data
         $_SESSION = [];
@@ -28,7 +33,7 @@ class LogoutController
 
         session_destroy();
 
-        // Redirect back to home (or login)
+        // Redirect back to home
         header("Location: /");
         exit;
     }
