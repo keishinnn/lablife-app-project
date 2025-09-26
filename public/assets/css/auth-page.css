@@ -1,0 +1,152 @@
+/* file path = root/public/assets/css/auth-page.css */
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-page-container {
+    max-width: 28rem;
+    width: 100%;
+    padding: 2rem;
+}
+
+.login-page-container>*+* {
+    margin-top: 2rem;
+}
+
+.login-page-text {
+    text-align: center;
+}
+
+.login-page-text h1 {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+form>*+* {
+    margin-top: 1.5rem;
+}
+
+.login-email-field label,
+.login-password-field label {
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.login-email-field input,
+.login-password-field input {
+    margin-top: 0.25rem;
+    display: block;
+    width: 100%;
+    padding: 0.80rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    color: #111827;
+    background-color: #ffffff;
+}
+
+.login-email-field input::placeholder,
+.login-password-field input::placeholder {
+    color: #9ca3af;
+    font-size: 1rem;
+}
+
+.login-email-field input:focus,
+.login-password-field input:focus {
+    outline: none;
+    border-color: #ec4899;
+    box-shadow: 0 0 0 1px #ec4899;
+}
+
+.login-error {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #dc2626;
+}
+
+.login-page-container button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: #ffffff;
+    background: linear-gradient(to right, #ec4899, #ef4444);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.login-page-container button:hover {
+    background: linear-gradient(to right, #db2777, #dc2626);
+}
+
+.login-page-container button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #ec4899, 0 0 0 4px #ffffff;
+}
+
+.login-page-container button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.login-page-redirect {
+    text-align: center;
+
+}
+
+.login-page-redirect a {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #db2777;
+    text-decoration: none;
+}
+
+.login-page-redirect a:hover {
+    color: #ec4899;
+}
+
+@media (prefers-color-scheme: dark) {
+    .login-page-text h1 {
+        color: #ffffff;
+    }
+
+    .login-email-field label,
+    .login-password-field label {
+        color: #d1d5db;
+    }
+
+    .login-email-field input,
+    .login-password-field input {
+        border-color: #4b5563;
+        background-color: #1f2937;
+        color: #ffffff;
+    }
+
+    .login-error {
+        color: #f87171;
+    }
+
+    .login-page-redirect a {
+        color: #f472b6;
+    }
+
+    .login-page-redirect a:hover {
+        color: #f9a8d4;
+    }
+}

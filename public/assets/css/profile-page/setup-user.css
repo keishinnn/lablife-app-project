@@ -1,0 +1,205 @@
+/* Page Layout */
+.setup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+}
+
+.setup-container {
+  max-width: 36rem;
+  width: 100%;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.setup-container>*+* {
+  margin-top: 2rem;
+}
+
+/* Header */
+.setup-text {
+  text-align: center;
+}
+
+.setup-text h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+/* Form Layout */
+.setup-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.setup-field {
+  flex: 1;
+  min-width: 12rem;
+}
+
+/* Labels */
+.setup-field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+/* Inputs, Select, Textarea, File */
+.setup-field input,
+.setup-field select,
+.setup-field textarea,
+.setup-upload {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+  color: #374151;
+  background-color: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+/* Placeholder */
+.setup-field input::placeholder,
+.setup-field textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* File Upload (specific styling) */
+.setup-upload {
+  cursor: pointer;
+  background-color: #f9fafb;
+  color: #374151;
+}
+
+.setup-upload {
+  display: block;
+  width: 100%;
+  font-size: 0.875rem;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background-color: #f9fafb;
+  padding: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.setup-upload:focus {
+  outline: none;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.3);
+}
+
+/* Focus */
+.setup-field input:focus,
+.setup-field select:focus,
+.setup-field textarea:focus {
+  outline: none;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px #ec4899;
+}
+
+/* Textarea specific */
+.setup-field textarea {
+  resize: vertical;
+  min-height: 4rem;
+  max-height: 10rem;
+}
+
+/* Upload help */
+.setup-help {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Error */
+.setup-error {
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+/* Button */
+.setup-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(to right, #ec4899, #ef4444);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-top: 2rem;
+}
+
+.setup-btn:hover {
+  background: linear-gradient(to right, #db2777, #dc2626);
+  transform: translateY(-2px);
+}
+
+.setup-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .setup-page {
+    background: var(--background);
+  }
+
+  .setup-container {
+    background-color: transparent;
+  }
+
+  .setup-text h1 {
+    color: #ffffff;
+  }
+
+  .setup-field label {
+    color: #d1d5db;
+  }
+
+  .setup-field input,
+  .setup-field select,
+  .setup-field textarea {
+    border-color: #4b5563;
+    background-color: #111827;
+    color: #d1d5db;
+  }
+
+  .setup-help {
+    color: #9ca3af;
+  }
+
+  .setup-error {
+    color: #f87171;
+  }
+
+  .setup-upload {
+    color: #9ca3af;
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .setup-upload::placeholder {
+    color: #9ca3af;
+    /* placeholder-gray-400 */
+  }
+}

@@ -1,0 +1,355 @@
+.profile-container {
+    min-height: 100vh;
+    background: var(--background);
+}
+
+.profile-section {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.profile-header h1 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.profile-header p {
+    color: #4b5563;
+}
+
+.profile-section-one {
+    max-width: 56rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-section-two {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;
+}
+
+.profile-section-three {
+    grid-column: span 1 / span 1;
+}
+
+.profile-section-four {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+}
+
+.profile-section-five {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+}
+
+.profile-section-six {
+    position: relative;
+}
+
+.profile-section-seven {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.profile-section-seven img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-inner-one {
+    flex: 1 1 0%;
+}
+
+.profile-inner-one h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.profile-inner-one-text-one {
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+}
+
+.profile-inner-one-text-two {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.profile-inner-two>*+* {
+    margin-top: 1.5rem;
+}
+
+.profile-inner-two h3 {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.75rem;
+}
+
+.profile-inner-two p {
+    color: #4b5563;
+    line-height: 1.625;
+}
+
+.profile-fk-namings h3 {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.75rem;
+}
+
+.profile-fk-namings-one {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.profile-fk-namings-gender {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.profile-fk-namings-gender-text {
+    color: #111827;
+    text-transform: capitalize;
+}
+
+.profile-birthday-text {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.profile-birthday-text-p {
+    color: #111827;
+}
+
+.profile-dating-preferences-text {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.75rem;
+}
+
+.profile-dating-preferences-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.profile-dating-age-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.profile-dating-distance-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.profile-section-eight>*+* {
+    margin-top: 1.5rem;
+}
+
+.profile-section-nine {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.profile-quick-action-text {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+}
+
+.profile-section-ten>*+* {
+    margin-top: 0.75rem;
+}
+
+.profile-section-ten a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    text-decoration: none;
+}
+
+.profile-section-ten a:hover {
+    background-color: #f9fafb;
+}
+
+.profile-section-eleven {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.profile-section-twelve {
+    width: 2rem;
+    height: 2rem;
+    background-color: #3b82f6;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-section-twelve svg {
+    width: 1rem;
+    height: 1rem;
+    color: #ffffff;
+}
+
+.profile-edit-profile-text,
+.profile-dating-age-text,
+.profile-dating-distance-text,
+.profile-username-label {
+    color: #111827;
+}
+
+.profile-arrow-symbol {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #9ca3af;
+}
+
+.profile-section-thirteen {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.profile-section-thirteen h3 {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+}
+
+.profile-section-fourteen>*+* {
+    margin-top: 0.75rem;
+}
+
+.profile-section-fifteen {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+}
+
+.profile-username-text {
+    color: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+
+    .profile-header h1,
+    .profile-username-label,
+    .profile-section-thirteen h3,
+    .profile-edit-profile-text,
+    .profile-quick-action-text,
+    .profile-dating-distance-text,
+    .profile-dating-age-text,
+    .profile-dating-preferences-text,
+    .profile-inner-one h2,
+    .profile-fk-namings h3,
+    .profile-fk-namings-gender-text,
+    .profile-birthday-text-p,
+    .profile-inner-two h3 {
+        color: #ffffff;
+    }
+
+    .profile-username-text,
+    .profile-header p,
+    .profile-inner-one-text-one,
+    .profile-inner-two p {
+        color: #9ca3af;
+    }
+
+    .profile-section-fifteen {
+        background-color: #374151;
+    }
+
+    .profile-section-thirteen,
+    .profile-section-nine {
+        background-color: #0f172a;
+    }
+
+    .profile-section-ten a:hover {
+        background-color: #374151;
+    }
+
+    .profile-dating-age-label,
+    .profile-dating-distance-label,
+    .profile-fk-namings-gender,
+    .profile-birthday-text {
+        color: #d1d5db;
+    }
+
+    .profile-section-four {
+        background-color: #0f172a;
+    }
+
+    .profile-inner-one-text-two {
+        color: #6b7280;
+    }
+}
+
+@media (min-width: 1024px) {
+    .profile-section-two {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .profile-section-three {
+        grid-column: span 2 / span 2;
+    }
+
+}

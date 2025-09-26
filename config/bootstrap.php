@@ -1,0 +1,38 @@
+<?php
+
+// file path = root/config/bootstrap.php
+
+use Core\App;
+use Core\Container;
+use Core\Database;
+
+use Predis\Client as RedisClient;
+
+require base_path('vendor/autoload.php');
+
+$dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
+$dotenv->load();
+
+$container = new Container();
+
+$container->bind('Core\Database', function () {
+    $config = require base_path('config/config.php');
+    return new Database($config['database']);
+});
+
+$container->bind('Services\SupabaseService', function () {
+    $config = require base_path('config/supabase.php');
+    return new \Services\SupabaseService($config);
+});
+
+$container->bind('Services\TurnstileService', function () {
+    $config = require base_path('config/turnstile.php');
+    return new \Services\TurnstileService($config['secret_key']);
+});
+
+$container->bind('redis', function () {
+    $config = require base_path('config/redis.php');
+    return new RedisClient($config);
+});
+
+App::setContainer($container);

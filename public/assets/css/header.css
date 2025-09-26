@@ -86,12 +86,24 @@
 }
 
 .btn-signin {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.7rem 1rem;
     background: linear-gradient(to right, #ec4899, #ef4444);
     color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    text-decoration: none;
 }
 
 .btn-signin:hover {
     background: linear-gradient(to right, #db2777, #dc2626);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-signout {
