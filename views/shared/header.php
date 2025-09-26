@@ -1,7 +1,7 @@
 <?php
 
 // root/views/.shared/header.php
-use Core\Auth;
+use Core\Middleware;
 
 ?>
 
@@ -23,18 +23,19 @@ use Core\Auth;
 </head>
 
 <body>
+
     <header>
         <nav class="navbar">
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
-                    <a href="<?php echo !Auth::check() ? '/' : '/u'; ?>" class="logo">
+                    <a href="<?php echo !Middleware::auth() ? '/' : '/u'; ?>" class="logo">
                         <img src="assets/images/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
 
                     <!-- Show the a tags if a user is authenticated -->
-                    <?php if (Auth::check()): ?>
+                    <?php if (Middleware::auth() || Middleware::checkNotSetProfile()) : ?>
                         <div class="nav-links">
                             <a href="#" class="nav-link">Discover</a>
                             <a href="#" class="nav-link">Matches</a>
@@ -47,14 +48,14 @@ use Core\Auth;
                     <?php endif; ?>
 
                     <!-- Show the Sign Out button if a user is authenticated, otherwise show Sign In button -->
-                    <?php if (Auth::check()): ?>
+                    <?php if (Middleware::auth() || Middleware::checkNotSetProfile()): ?>
                         <form action="/logout" method="post">
                             <button class="btn btn-signout" type="submit">
                                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 
-                        0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 
-                        0 013 3v1" />
+                            0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 
+                            0 013 3v1" />
                                 </svg>
                                 Sign Out
                             </button>

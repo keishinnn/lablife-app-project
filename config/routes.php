@@ -18,7 +18,8 @@ $router->post('/logout', 'Auth\\LogoutController@logout');
 $router->get('/u', 'User\\ProfileController@View');
 
 
-$router->get('/u/setup-profile', 'User\\ProfileController@SetUpProfileView');
+$router->get('/u/setup-profile', 'User\\ProfileController@SetupProfileView');
+$router->get('/u/setup-profile-preferences', 'User\\ProfileController@SetupProfilePreferencesView');
 $router->post('/u/submit-setup', 'User\\ProfileController@handleSetupProfile');
 
 $router->get('/u/profile', 'User\\ProfileController@ProfileView');

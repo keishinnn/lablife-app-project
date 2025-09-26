@@ -23,4 +23,12 @@ class Middleware
             exit;
         }
     }
+
+    public static function checkNotSetProfile()
+    {
+        if (!isset($user->avatar_url)) {
+            header('Location: u/setup-profile');
+            exit;
+        }
+    }
 }

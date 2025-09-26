@@ -5,7 +5,7 @@
 namespace Controllers\Auth;
 
 use Core\App;
-use PDO;
+use Models\User;
 
 class LoginController
 {
@@ -82,30 +82,30 @@ class LoginController
             // If Success -> clear counters ---
             $redis->del([$emailKey, $lockKey]);
 
-            $user = $response['user'] ?? null;
-            if ($user) {
-                if (empty($user['confirmed_at'])) {
+            $userFetch = $response['user'] ?? null;
+
+            if ($userFetch) {
+                if (empty($userFetch['confirmed_at'])) {
                     $error = "Please confirm your email before logging in.";
                     $isLoading = false;
                     view('auth/login.view.php', compact('error', 'email', 'isLoading'));
                     return;
                 }
 
-                // IF NEW USER, REDIRECT TO CREATING DETAILS OF THE ACCOUNT
-                $db = App::resolve('Core\Database');
-                $stmt = $db->query("SELECT * FROM users WHERE id = :id LIMIT 1", ['id' => $user['id']]);
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                $user = User::getCurrentUserProfile($userFetch['id']);
 
-                if (!isset($user['avatar_url'])) {
+                // IF NEW USER, REDIRECT TO CREATING DETAILS OF THE ACCOUNT
+                if (!isset($user->avatarUrl)) {
                     $_SESSION['access_token'] = $response['access_token'] ?? null;
-                    $_SESSION['user'] = $user;
+                    $_SESSION['user_id'] = $user->id;
+                    $isLoading = false;
                     header("Location: /u/setup-profile");
                     exit;
                 }
 
                 // OTHERWISE REDIRECT TO HOME VIEW
                 $_SESSION['access_token'] = $response['access_token'] ?? null;
-                $_SESSION['user'] = $user;
+                $_SESSION['user_id'] = $user->id;
                 $isLoading = false;
                 header("Location: /u");
                 exit;

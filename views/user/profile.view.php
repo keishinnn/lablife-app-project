@@ -36,21 +36,21 @@ require(base_path("views/shared/header.php"));
                             <div class="profile-section-five">
                                 <div class="profile-section-six">
                                     <div class="profile-section-seven">
-                                        <img src="<?php echo $user['avatar_url'] ?>" alt="<?php echo $user['full_name'] ?>">
+                                        <img src="<?php echo $user->avatarUrl ?>" alt="<?php echo $user->fullName ?>">
                                     </div>
                                 </div>
 
                                 <div class="profile-inner-one">
-                                    <h2><?php echo $user['full_name'] /* and age */ ?></h2>
-                                    <p class="profile-inner-one-text-one">@<?php echo $user['username'] ?></p>
-                                    <p class="profile-inner-one-text-two">Member since <?php echo $user['created_at'] ?></p>
+                                    <h2><?php echo $user->fullName /* and age */ ?></h2>
+                                    <p class="profile-inner-one-text-one">@<?php echo $user->username ?></p>
+                                    <p class="profile-inner-one-text-two">Member since <?php echo $user->createdAt ?></p>
                                 </div>
                             </div>
 
                             <div class="profile-inner-two">
                                 <div>
                                     <h3>About Me</h3>
-                                    <p><?php echo $user['bio'] ?></p>
+                                    <p><?php echo $user->bio ?></p>
                                 </div>
 
                                 <div class="profile-fk-namings">
@@ -59,12 +59,12 @@ require(base_path("views/shared/header.php"));
                                     <div class="profile-fk-namings-one">
                                         <div>
                                             <label class="profile-fk-namings-gender">Gender</label>
-                                            <p class="profile-fk-namings-gender-text"><?php echo $user['gender'] ?></p>
+                                            <p class="profile-fk-namings-gender-text"><?php echo $user->gender ?></p>
                                         </div>
                                         <div>
                                             <label class="profile-birthday-text">Birthday</label>
                                             <p class="profile-birthday-text-p">
-                                                <?php echo $user['birthdate'] ?>
+                                                <?php echo $user->birthdate ?>
                                             </p>
                                         </div>
                                     </div>
@@ -128,7 +128,7 @@ require(base_path("views/shared/header.php"));
                             <div class="profile-section-fourteen">
                                 <div class="profile-section-fifteen">
                                     <span class="profile-username-label">Username</span>
-                                    <span class="profile-username-text">@<?php echo $user['username'] ?></span>
+                                    <span class="profile-username-text">@<?php echo $user->username ?></span>
                                 </div>
                             </div>
                         </div>

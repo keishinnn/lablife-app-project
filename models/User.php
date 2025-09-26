@@ -1,12 +1,19 @@
 <?php
 
-class UserPreferences {
+namespace Models;
+
+use Core\App;
+use DateTime;
+
+class UserPreferences
+{
     public int $minAge;
     public int $maxAge;
     public int $distance;
     public array $genderPreference; // ["male", "female", "other"]
 
-    public function __construct(array $data) {
+    public function __construct(array $data)
+    {
         $this->minAge = $data['age_range']['min'] ?? 18;
         $this->maxAge = $data['age_range']['max'] ?? 99;
         $this->distance = $data['distance'] ?? 0;
@@ -14,16 +21,16 @@ class UserPreferences {
     }
 }
 
-class UserProfile {
+class User
+{
     public string $id;
     public string $fullName;
     public string $username;
     public string $email;
     public string $gender;
     public string $birthdate;
-    public string $bio;
-    public string $avatarUrl;
-    public UserPreferences $preferences;
+    public ?string $bio;
+    public ?string $avatarUrl;
     public ?float $locationLat;
     public ?float $locationLng;
     public string $lastActive;
@@ -32,16 +39,16 @@ class UserProfile {
     public string $createdAt;
     public string $updatedAt;
 
-    public function __construct(array $data) {
+    public function __construct(array $data)
+    {
         $this->id = $data['id'];
         $this->fullName = $data['full_name'];
         $this->username = $data['username'];
         $this->email = $data['email'];
         $this->gender = $data['gender'];
         $this->birthdate = $data['birthdate'];
-        $this->bio = $data['bio'];
-        $this->avatarUrl = $data['avatar_url'];
-        $this->preferences = new UserPreferences($data['preferences']);
+        $this->bio = $data['bio'] ?? null;
+        $this->avatarUrl = $data['avatar_url'] ?? null;
         $this->locationLat = $data['location_lat'] ?? null;
         $this->locationLng = $data['location_lng'] ?? null;
         $this->lastActive = $data['last_active'];
@@ -51,10 +58,24 @@ class UserProfile {
         $this->updatedAt = $data['updated_at'];
     }
 
-    public function calculateAge(): int {
+    public function calculateAge(): int
+    {
         $birthDate = new DateTime($this->birthdate);
         $today = new DateTime();
         $age = $today->diff($birthDate)->y;
         return $age;
     }
+
+    public static function getCurrentUserProfile(string $id): ?User
+    {
+        $db = App::resolve('Core\Database');
+        $stmt = $db->query("SELECT * FROM users WHERE id = :id LIMIT 1", ['id' => $id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ? new User($row) : null;
+    }
+
+    public function updateIsOnline() {}
+
+    public function updateIsOffline() {}
 }
