@@ -2,9 +2,8 @@
 
 /* Root variables for light/dark */
 :root {
-    --background: #ffffff;
+    --background: linear-gradient(to bottom right, #ffffff, #fdf2f8);
     --foreground: #171717;
-    --font-sans: Arial, Helvetica, sans-serif;
     --font-mono: monospace;
 }
 
@@ -16,13 +15,12 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #0a0a0a;
+        --background: linear-gradient(to bottom right, #020617, #111827);
         --foreground: #ededed;
     }
 }
 
 body {
-    margin: 0;
     font-family: "Geist Sans", Arial, sans-serif;
     background: var(--background);
     color: var(--foreground);
@@ -37,12 +35,6 @@ body {
     border-radius: 1rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     background-color: #fff;
-}
-
-@media (prefers-color-scheme: dark) {
-    .card-swipe {
-        background-color: #1f2937;
-    }
 }
 
 .match-button {
@@ -67,12 +59,7 @@ body {
     border: 1px solid #e5e7eb;
 }
 
-@media (prefers-color-scheme: dark) {
-    .chat-container {
-        background-color: #111827;
-        border: 1px solid #374151;
-    }
-}
+
 
 .chat-scrollbar {
     scrollbar-width: thin;
@@ -96,7 +83,24 @@ body {
     background: #9ca3af;
 }
 
+.bg-culur-gradient {
+    background: linear-gradient(to bottom right, #fff, #fdf2f8);
+}
+
+.bg-secondary-color {
+    background-color: #fff;
+}
+
 @media (prefers-color-scheme: dark) {
+    .chat-container {
+        background-color: #111827;
+        border: 1px solid #374151;
+    }
+
+    .card-swipe {
+        background-color: #1f2937;
+    }
+
     .chat-scrollbar {
         scrollbar-color: #4b5563 transparent;
     }
@@ -108,23 +112,7 @@ body {
     .chat-scrollbar::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
     }
-}
 
-.bg-culur-gradient {
-    background: linear-gradient(to bottom right, #fff, #fdf2f8);
-}
-
-@media (prefers-color-scheme: dark) {
-    .bg-culur-gradient {
-        background: linear-gradient(to bottom right, #020617, #111827);
-    }
-}
-
-.bg-secondary-color {
-    background-color: #fff;
-}
-
-@media (prefers-color-scheme: dark) {
     .bg-secondary-color {
         background-color: #111827;
     }
