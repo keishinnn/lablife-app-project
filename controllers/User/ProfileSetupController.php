@@ -119,8 +119,17 @@ class ProfileSetupController
         ], $avatarFile);
 
         // Delete local tmp avatar if uploaded to Supabase successfully
-        if ($avatarFile && file_exists($avatarFile['tmp_name'])) {
-            unlink($avatarFile['tmp_name']);
+        try {
+            $avatarUrl = User::updateProfile($userId, [
+                'full_name' => $_SESSION['full-name'] ?? '',
+                'gender'    => $_SESSION['gender'] ?? '',
+                'birthdate' => $_SESSION['birthdate'] ?? '',
+                'bio'       => $_SESSION['bio'] ?? ''
+            ], $avatarFile);
+        } finally {
+            if ($avatarFile && file_exists($avatarFile['tmp_name'])) {
+                unlink($avatarFile['tmp_name']);
+            }
         }
 
         // Clear setup sessions
