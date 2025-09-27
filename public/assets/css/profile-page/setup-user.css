@@ -146,6 +146,7 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   margin-top: 2rem;
+  text-decoration: none;
 }
 
 .setup-btn:hover {
@@ -156,6 +157,10 @@
 .setup-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.setup-step-one-container {
+  text-align: center;
 }
 
 /* Dark mode */

@@ -5,22 +5,6 @@ namespace Models;
 use Core\App;
 use DateTime;
 
-class UserPreferences
-{
-    public int $minAge;
-    public int $maxAge;
-    public int $distance;
-    public array $genderPreference; // ["male", "female", "other"]
-
-    public function __construct(array $data)
-    {
-        $this->minAge = $data['age_range']['min'] ?? 18;
-        $this->maxAge = $data['age_range']['max'] ?? 99;
-        $this->distance = $data['distance'] ?? 0;
-        $this->genderPreference = $data['gender_preference'] ?? [];
-    }
-}
-
 class User
 {
     public string $id;
@@ -74,6 +58,63 @@ class User
 
         return $row ? new User($row) : null;
     }
+
+    public static function updateProfile(string $id, array $data, ?array $file = null): ?string
+    {
+        $db = App::resolve('Core\Database');
+        $avatarUrl = $data['avatar_url'] ?? null;
+
+        if ($file && $file['error'] === UPLOAD_ERR_OK) {
+            // validate size
+            if ($file['size'] > 5 * 1024 * 1024) {
+                throw new \Exception("Avatar must be less than 5MB.");
+            }
+
+            // validate type
+            $allowed = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!in_array($file['type'], $allowed)) {
+                throw new \Exception("Invalid file type. Only JPG, PNG, WEBP allowed.");
+            }
+
+            // build filename
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filePath = "{$id}_" . time() . ".{$ext}";
+
+            // upload to Supabase
+            $supabase = App::resolve(\Services\SupabaseService::class);
+            $result   = $supabase->uploadFile(
+                "profile-photos",
+                $filePath,
+                file_get_contents($file['tmp_name']),
+                $file['type']
+            );
+
+            $avatarUrl = $result['url'] ?? null;
+        }
+
+        // update DB
+        $db->query(
+            "UPDATE users
+         SET full_name = :name,
+             gender = :gender,
+             birthdate = :birthdate,
+             bio = :bio,
+             avatar_url = :avatar,
+             updated_at = NOW()
+         WHERE id = :id",
+            [
+                "name"      => $data['full_name'] ?? '',
+                "gender"    => $data['gender'] ?? '',
+                "birthdate" => $data['birthdate'] ?? '',
+                "bio"       => $data['bio'] ?? '',
+                "avatar"    => $avatarUrl,
+                "id"        => $id
+            ]
+        );
+
+        return $avatarUrl;
+    }
+
 
     public static function updateIsOnline(string $id): void
     {

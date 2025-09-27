@@ -1,73 +1,118 @@
 <?php
-
-require base_path('views/shared/header.php');
-
+// root/views/.shared/header.php
+$isLoading = false;
 ?>
 
+<!DOCTYPE html>
+<html lang="en">
 
-<div class="setup-page">
-    <div class="setup-container">
-        <div class="setup-text">
-            <h1>Let's set you up first</h1>
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/assets/css/header.css">
+    <link rel="stylesheet" href="/assets/global.css">
+    <link rel="stylesheet" href="/assets/css/auth-page.css">
+    <link rel="stylesheet" href="/assets/css/index-page.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-page.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/setup-user-pref.css">
+</head>
 
-        <form action="/u/submit-setup" method="POST" id="setup-form" enctype="multipart/form-data">
+<body>
 
-            <div class="setup-row">
-                <div class="setup-field">
-                    <label for="full-name">Full Name</label>
-                    <input
-                        type="text"
-                        name="full-name"
-                        required
-                        placeholder="Enter your full name"
-                        minlength="8"
-                        value="<?= htmlspecialchars($fullName ?? '') ?>">
-                </div>
+    <header>
+    </header>
 
-                <div class="setup-field">
-                    <label>Gender *</label>
-                    <select name="gender" required>
-                        <option value="">-- Select --</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
+    <div class="setup-page">
+        <div class="setup-container">
+            <div class="setup-text">
+                <h1>Set your preferences</h1>
             </div>
 
-            <div class="setup-row">
-                <div class="setup-field">
-                    <label>Birthdate *</label>
-                    <input type="date" name="birthdate" required max="<?= date('Y-m-d', strtotime('-18 years')) ?>">
-                </div>
+            <form action="/u/submit-finish-setup" method="POST" id="preferences-form">
 
-                <div class="setup-field">
-                    <label for="user_avatar">Upload file</label>
-                    <input class="setup-upload" aria-describedby="user_avatar_help" id="user_avatar" type="file" accept="image/*" name="avatar_input">
-                    <div class="setup-help" id="user_avatar_help">
-                        A profile picture is useful to engage
+                <!-- Age Preference -->
+                <div class="age-preference-row">
+                    <div class="setup-field">
+                        <label for="age_min">Minimum Age</label>
+                        <input
+                            type="number"
+                            id="age_min"
+                            name="age_min"
+                            min="18"
+                            max="99"
+                            required
+                            value="<?= htmlspecialchars($ageMin ?? 18) ?>">
+                    </div>
+
+                    <div class="setup-field">
+                        <label for="age_max">Maximum Age</label>
+                        <input
+                            type="number"
+                            id="age_max"
+                            name="age_max"
+                            min="18"
+                            max="99"
+                            required
+                            value="<?= htmlspecialchars($ageMax ?? 35) ?>">
                     </div>
                 </div>
-            </div>
 
-            <div class="setup-field">
-                <label>Bio (optional)</label>
-                <textarea name="bio" maxlength="200" placeholder="Write a short bio..."></textarea>
-            </div>
+                <div class="setup-two-distance-gender-row">
 
-            <?php if (!empty($error)): ?>
-                <div class="setup-error" id="form-error">
-                    <?= htmlspecialchars($error) ?>
+                    <div class="setup-field">
+                        <label for="distance">Preferred Distance (km)</label>
+                        <input
+                            type="number"
+                            id="distance"
+                            name="distance"
+                            min="1"
+                            max="500"
+                            required
+                            value="<?= htmlspecialchars($distance ?? 50) ?>">
+                    </div>
+
+                    <!-- Gender Preference -->
+                    <div class="setup-field">
+                        <label for="gender_preference">Preferred Gender</label>
+                        <select name="gender_preference" id="gender_preference" required>
+                            <option value="">-- Select --</option>
+                            <option value="male" <?= ($genderPreference ?? '') === 'male' ? 'selected' : '' ?>>Male</option>
+                            <option value="female" <?= ($genderPreference ?? '') === 'female' ? 'selected' : '' ?>>Female</option>
+                            <option value="other" <?= ($genderPreference ?? '') === 'other' ? 'selected' : '' ?>>Other</option>
+                        </select>
+                    </div>
                 </div>
-            <?php endif; ?>
+                <!-- Distance Preference -->
 
-            <button class="setup-btn" type="submit" <?= $isLoading ? 'disabled' : '' ?> id="setup-button">
-                <?= $isLoading ? 'Loading...' : 'Next' ?>
-            </button>
 
-        </form>
+                <!-- Error message -->
+                <?php if (!empty($error)): ?>
+                    <div class="setup-error" id="form-error">
+                        <?= htmlspecialchars($error) ?>
+                    </div>
+                <?php endif; ?>
+
+
+
+                <!-- Submit button -->
+                <div class="setup-two-buttons-container">
+                    <a href="/u/setup-profile" class="setup-back-btn">Go Back</a>
+                    <button class="setup-btn" type="submit" <?= $isLoading ? 'disabled' : '' ?> id="preferences-button">
+                        <?= $isLoading ? 'Saving...' : 'Finish Setup' ?>
+                    </button>
+                </div>
+
+                <!-- Step indicator -->
+                <div class="setup-step-two-container">
+                    <p>Step 2 of 2</p>
+                </div>
+
+            </form>
+        </div>
     </div>
-</div>
 
-<?php require(base_path("views/shared/footer.php")) ?>
+    <?php require(base_path("views/shared/footer.php")) ?>

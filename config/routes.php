@@ -17,13 +17,15 @@ $router->post('/logout', 'Auth\\LogoutController@logout');
 // Authenticated User
 $router->get('/u', 'User\\ProfileController@View');
 
+// Showing view in setup profile
+$router->get('/u/setup-profile', 'User\\ProfileSetupController@SetupProfileView');
+$router->get('/u/setup-profile-preferences', 'User\\ProfileSetupController@SetupProfilePreferencesView');
 
-$router->get('/u/setup-profile', 'User\\ProfileController@SetupProfileView');
+// Submitting preferences and basic user information
+$router->post('/u/submit-setup', 'User\\ProfileSetupController@handleStepOneSetup');
+$router->post('/u/submit-finish-setup', 'User\\ProfileSetupController@handleFinishSetup');
 
-$router->get('/u/setup-profile-preferences', 'User\\ProfileController@SetupProfilePreferencesView');
-
-$router->post('/u/submit-setup', 'User\\ProfileController@handleSetupProfile');
-
+// Showing Profile Page
 $router->get('/u/profile', 'User\\ProfileController@ProfileView');
 $router->get('/u/profile-not-found', 'User\\ProfileController@ProfileNotFoundView');
 $router->get('/u/profile-loading', 'User\\ProfileController@ProfileLoadingView');
