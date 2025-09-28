@@ -33,7 +33,7 @@ $isLoading = false;
             </div>
 
             <form action="/u/submit-finish-setup" method="POST" id="preferences-form">
-
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <!-- Age Preference -->
                 <div class="age-preference-row">
                     <div class="setup-field">

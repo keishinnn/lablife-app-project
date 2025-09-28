@@ -48,8 +48,9 @@ require(base_path("views/shared/header.php"));
                         </div>
                     </div>
                 </div>
-                
+
                 <form action="/u/submit-edit-profile" enctype="multipart/form-data" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="profile-edit-page-section-seven">
                         <div class="profile-edit-page-section-eight">
                             <label for="full-name">Full Name *</label>
@@ -151,6 +152,9 @@ require(base_path("views/shared/header.php"));
             // Upload to backend
             fetch('/u/submit-edit-avatar', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': "<?= $_SESSION['csrf_token'] ?>"
+                    },
                     body: formData
                 })
                 .then(res => res.json())

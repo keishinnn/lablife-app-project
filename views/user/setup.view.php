@@ -32,7 +32,7 @@
             </div>
 
             <form action="/u/submit-setup" method="POST" id="setup-form" enctype="multipart/form-data">
-
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <div class="setup-row">
                     <div class="setup-field">
                         <label for="full-name">Full Name</label>

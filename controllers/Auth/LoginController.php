@@ -96,6 +96,10 @@ class LoginController
 
                 // IF NEW USER, REDIRECT TO CREATING DETAILS OF THE ACCOUNT
                 if (!isset($user->avatarUrl)) {
+                    // generate csrf token
+                    if (empty($_SESSION['csrf_token'])) {
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    }
                     $_SESSION['access_token'] = $response['access_token'] ?? null;
                     $_SESSION['user_id'] = $user->id;
                     $isLoading = false;
@@ -105,6 +109,10 @@ class LoginController
 
                 // OTHERWISE REDIRECT TO HOME VIEW
                 User::updateIsOnline($userFetch['id']);
+                // generate csrf token
+                if (empty($_SESSION['csrf_token'])) {
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                }
                 $_SESSION['access_token'] = $response['access_token'] ?? null;
                 $_SESSION['user_id'] = $user->id;
                 $isLoading = false;

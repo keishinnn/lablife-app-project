@@ -30,6 +30,7 @@ class ProfileSetupController
     public function handleStepOneSetup()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         // If step one is already completed, just redirect (don’t overwrite)
         if (!empty($_SESSION['step_one_completed']) && $_SESSION['step_one_completed'] === true) {
             header('Location: /u/setup-profile-preferences');
@@ -77,6 +78,7 @@ class ProfileSetupController
     public function handleFinishSetup()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
         // Make sure step one was completed

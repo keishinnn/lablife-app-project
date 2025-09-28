@@ -4,7 +4,7 @@ namespace Core;
 
 class Auth
 {
-    // Check if user is logged in
+    // Check if user was logged in
     public static function check()
     {
        return isset($_SESSION['access_token']);

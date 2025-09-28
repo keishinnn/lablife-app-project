@@ -31,7 +31,7 @@ use Core\Auth;
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
                     <a href="<?php echo !Auth::check() ? '/' : '/u'; ?>" class="logo">
-                        <img src="assets/images/logo.png" alt="LabLife Logo" class="logo-img">
+                        <img src="/assets/images/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
 

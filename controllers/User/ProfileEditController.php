@@ -23,6 +23,8 @@ class ProfileEditController
     public function handleEditProfile()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
+
         $userId = \Core\Auth::user();
 
         $error = '';
@@ -51,37 +53,10 @@ class ProfileEditController
         view('user/edit/profile.edit.view.php', compact('user', 'error', 'isLoading', 'message'));
     }
 
-    public function handleCancelEdit()
-    {
-        \Core\Middleware::auth();
-
-        // Prepare avatar file from tmp if available
-        $avatarFile = null;
-        if (!empty($_SESSION['avatar_temp'])) {
-            $tmpPath = __DIR__ . '/../../public/uploads/tmp/' . $_SESSION['avatar_temp'];
-
-            if (file_exists($tmpPath)) {
-                $avatarFile = [
-                    'name'     => $_SESSION['avatar_temp'],
-                    'type'     => mime_content_type($tmpPath),
-                    'tmp_name' => $tmpPath,
-                    'error'    => UPLOAD_ERR_OK,
-                    'size'     => filesize($tmpPath)
-                ];
-            }
-        }
-
-        if ($avatarFile && file_exists($avatarFile['tmp_name'])) {
-            unlink($avatarFile['tmp_name']);
-        }
-
-        header('Location: /u/profile');
-        exit;
-    }
-
     public function handleAvatarUpload()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
         if (empty($_FILES['avatar_input'])) {
