@@ -1,6 +1,7 @@
 <?php
 
 use \Core\App;
+use Services\SupabaseService;
 
 function base_path($path)
 {
@@ -10,7 +11,7 @@ function base_path($path)
 function view($path, $data = [])
 {
     extract($data);
-    require base_path('views/' . $path);
+    require base_path('Views/' . $path);
 }
 
 /* function authorize($condition, $status = 403)
@@ -31,7 +32,7 @@ function current_user()
 
     if (!empty($_SESSION['access_token'])) {
         try {
-            $supabase = App::resolve(\Core\Supabase::class); // adjust class namespace/name
+            $supabase = App::resolve(\Services\SupabaseService::class); // adjust class namespace/name
             $resp = $supabase->getUser($_SESSION['access_token']); // should return ['user'=>...]
             if (!empty($resp['user'])) {
                 // cache in session to avoid network call every request

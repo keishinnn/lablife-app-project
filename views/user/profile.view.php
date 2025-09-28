@@ -75,11 +75,11 @@ require(base_path("views/shared/header.php"));
                                     <div class="profile-dating-preferences-grid">
                                         <div>
                                             <label class="profile-dating-age-label">Age Range</label>
-                                            <p class="profile-dating-age-text">null</p>
+                                            <p class="profile-dating-age-text"><?php echo $userPreferences['age_range']['min'] ?> - <?php echo $userPreferences['age_range']['max'] ?></p>
                                         </div>
                                         <div>
                                             <label class="profile-dating-distance-label">Distance</label>
-                                            <p class="profile-dating-distance-text">null</p>
+                                            <p class="profile-dating-distance-text"><?php echo $userPreferences['distance'] ?> km</p>
                                         </div>
                                     </div>
                                 </div>
@@ -92,7 +92,7 @@ require(base_path("views/shared/header.php"));
                             <h3 class="profile-quick-action-text">Quick Actions</h3>
 
                             <div class="profile-section-ten">
-                                <a href="#">
+                                <a href="/u/profile-edit">
                                     <div class="profile-section-eleven">
                                         <div class="profile-section-twelve">
                                             <svg

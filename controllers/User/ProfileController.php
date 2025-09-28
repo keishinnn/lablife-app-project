@@ -6,6 +6,7 @@ namespace Controllers\User;
 
 use Models\User;
 use Core\App;
+use Models\UserPreferences;
 
 class ProfileController
 {
@@ -28,6 +29,7 @@ class ProfileController
         $error = '';
 
         $user = User::getCurrentUserProfile($userId);
+        $userPreferences = UserPreferences::getPreferences($userId);
         $_SESSION['user_id'] = $user->id;
 
         if (!$user) {
@@ -38,7 +40,7 @@ class ProfileController
 
         $isLoading = false;
 
-        view('user/profile.view.php', compact('user', 'isLoading', 'error'));
+        view('user/profile.view.php', compact('user', 'isLoading', 'error', 'userPreferences'));
     }
 
     public function ProfileNotFoundView()
@@ -50,5 +52,4 @@ class ProfileController
     {
         view('user/profile.loading.view.php', compact('user', 'error', 'isLoading'));
     }
-
 }

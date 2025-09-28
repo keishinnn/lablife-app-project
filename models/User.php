@@ -59,7 +59,7 @@ class User
         return $row ? new User($row) : null;
     }
 
-    public static function updateProfile(string $id, array $data, ?array $file = null): ?string
+    public static function setupProfile(string $id, array $data, ?array $file = null): ?string
     {
         $db = App::resolve('Core\Database');
         $avatarUrl = $data['avatar_url'] ?? null;
@@ -111,6 +111,98 @@ class User
                 "id"        => $id
             ]
         );
+
+        return $avatarUrl;
+    }
+
+    public static function editProfile(string $id, array $data)
+    {
+        $db = App::resolve('Core\Database');
+
+        // update DB
+        $db->query(
+            "UPDATE users
+         SET full_name = :full_name,
+             username = :username,
+             gender = :gender,
+             birthdate = :birthdate,
+             bio = :bio,
+             updated_at = NOW()
+         WHERE id = :id",
+            [
+                "full_name" => $data['full_name'] ?? '',
+                "username"  => $data['username'] ?? '',
+                "gender"    => $data['gender'] ?? '',
+                "birthdate" => $data['birthdate'] ?? '',
+                "bio"       => $data['bio'] ?? '',
+                "id"        => $id
+            ]
+        );
+    }
+
+    public static function updateProfilePicture(string $id, array $file): ?string
+    {
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        // Validate size & type
+        if ($file['size'] > 5 * 1024 * 1024) {
+            throw new \Exception("Avatar must be less than 5MB.");
+        }
+
+        $allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array($file['type'], $allowed)) {
+            throw new \Exception("Invalid file type. Only JPG, PNG, WEBP allowed.");
+        }
+
+        $db = App::resolve('Core\Database');
+
+        // Get old avatar URL
+        $oldAvatarUrl = $db->query("SELECT avatar_url FROM users WHERE id = :id", [
+            "id" => $id
+        ])->fetchColumn();
+
+        // Upload new file
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filePath = "{$id}_" . time() . ".{$ext}";
+
+        $supabase = App::resolve(\Services\SupabaseService::class);
+        $result = $supabase->uploadFile(
+            "profile-photos",
+            $filePath,
+            file_get_contents($file['tmp_name']),
+            $file['type']
+        );
+
+        $avatarUrl = $result['url'] ?? null;
+
+        if ($avatarUrl) {
+            if ($oldAvatarUrl && !str_contains($oldAvatarUrl, "default-avatar.png")) {
+                try {
+                    // Extract file path from the URL
+                    $parsed = parse_url($oldAvatarUrl, PHP_URL_PATH);
+                    // Remove the /storage/v1/object/public/profile-photos/ part
+                    $relativePath = str_replace("/storage/v1/object/public/profile-photos/", "", $parsed);
+                    $supabase->deleteFile("profile-photos", $relativePath);
+                } catch (\Exception $e) {
+                    // log if deletion fails
+                    error_log("Failed to delete old avatar: " . $e->getMessage());
+                }
+            }
+
+            // Update DB with new URL
+            $db->query(
+                "UPDATE users
+             SET avatar_url = :avatar,
+                 updated_at = NOW()
+             WHERE id = :id",
+                [
+                    "avatar" => $avatarUrl,
+                    "id" => $id
+                ]
+            );
+        }
 
         return $avatarUrl;
     }

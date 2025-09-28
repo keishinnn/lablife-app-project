@@ -12,14 +12,15 @@ use Core\Auth;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/global.css">
+    <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/auth-page.css">
     <link rel="stylesheet" href="/assets/css/index-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-page.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/edit/profile-edit-page.css">
 </head>
 
 <body>
@@ -34,7 +35,7 @@ use Core\Auth;
                         <span class="logo-text">LabLife</span>
                     </a>
 
-                    <!-- Show the a tags if a user is authenticated -->
+                    <!-- Show the a tags if user is authenticated -->
                     <?php if (Auth::check()) : ?>
                         <div class="nav-links">
                             <a href="#" class="nav-link">Discover</a>

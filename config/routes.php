@@ -29,3 +29,11 @@ $router->post('/u/submit-finish-setup', 'User\\ProfileSetupController@handleFini
 $router->get('/u/profile', 'User\\ProfileController@ProfileView');
 $router->get('/u/profile-not-found', 'User\\ProfileController@ProfileNotFoundView');
 $router->get('/u/profile-loading', 'User\\ProfileController@ProfileLoadingView');
+
+// Show Edit Profile Page
+$router->get('/u/profile-edit', 'User\\ProfileEditController@View');
+$router->post('/u/submit-edit-profile', 'User\\ProfileEditController@handleEditProfile');
+$router->post('/u/cancel-edit', 'User\\ProfileEditController@handleCancelEdit');
+
+$router->post('/u/submit-edit-avatar', 'User\\ProfileEditController@handleAvatarUpload');
+

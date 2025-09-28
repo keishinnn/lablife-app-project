@@ -83,7 +83,7 @@ class SupabaseService
             "Authorization: Bearer {$this->service_role}",
             "Content-Type: {$contentType}",
         ]);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fileContent);
 
         $response = curl_exec($ch);
@@ -131,5 +131,30 @@ class SupabaseService
         ]);
         $response = curl_exec($ch);
         return json_decode($response, true);
+    }
+
+    public function deleteFile($bucket, $filePath)
+    {
+        $url = "{$this->url}/storage/v1/object/{$bucket}/{$filePath}";
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "apikey: {$this->service_role}",
+            "Authorization: Bearer {$this->service_role}"
+        ]);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+
+        $response = curl_exec($ch);
+        if ($response === false) {
+            throw new \Exception("Delete failed: " . curl_error($ch));
+        }
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($httpCode >= 400) {
+            throw new \Exception("Supabase Storage delete error: {$response}");
+        }
+
+        return true;
     }
 }

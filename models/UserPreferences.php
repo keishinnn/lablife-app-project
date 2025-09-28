@@ -3,6 +3,7 @@
 namespace Models;
 
 use Core\App;
+use Core\Middleware;
 
 class UserPreferences
 {
@@ -19,9 +20,51 @@ class UserPreferences
         $this->genderPreference = $data['gender_preference'] ?? '';
     }
 
+    public static function getPreferences(string $userId): array
+    {
+        \Core\Middleware::auth();
+        $db = App::resolve('Core\Database');
+
+        // Get Age Preference
+        $agePref = $db->query(
+            "SELECT min_age, max_age
+         FROM user_age_preference
+         WHERE user_id = :id",
+            ["id" => $userId]
+        )->fetch(\PDO::FETCH_ASSOC);
+
+        // Get Gender Preference
+        $genderPref = $db->query(
+            "SELECT gender
+         FROM user_gender_preference
+         WHERE user_id = :id",
+            ["id" => $userId]
+        )->fetch(\PDO::FETCH_ASSOC);
+
+        // Get Distance Preference
+        $distancePref = $db->query(
+            "SELECT max_distance
+         FROM user_distance_preference
+         WHERE user_id = :id",
+            ["id" => $userId]
+        )->fetch(\PDO::FETCH_ASSOC);
+
+        // Return combined preferences (with sensible defaults if not set yet)
+        return [
+            'age_range' => [
+                'min' => $agePref['min_age'] ?? 18,
+                'max' => $agePref['max_age'] ?? 35,
+            ],
+            'gender_preference' => $genderPref['gender'] ?? 'other',
+            'distance' => $distancePref['max_distance'] ?? 50,
+        ];
+    }
+
+
     // Save or update preferences in normalized tables.
     public function savePreferences(string $userId): void
     {
+        \Core\Middleware::auth();
         $db = App::resolve('Core\Database');
 
         // Save Age Preference

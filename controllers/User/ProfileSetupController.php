@@ -22,12 +22,14 @@ class ProfileSetupController
 
     public function SetupProfilePreferencesView()
     {
-
+        \Core\Middleware::auth();
+        
         view('user/setup.pref.view.php');
     }
 
     public function handleStepOneSetup()
     {
+        \Core\Middleware::auth();
         // If step one is already completed, just redirect (don’t overwrite)
         if (!empty($_SESSION['step_one_completed']) && $_SESSION['step_one_completed'] === true) {
             header('Location: /u/setup-profile-preferences');
@@ -111,16 +113,9 @@ class ProfileSetupController
         }
 
         // Update user profile in DB (persist from session + Supabase avatar)
-        $avatarUrl = User::updateProfile($userId, [
-            'full_name' => $_SESSION['full-name'] ?? '',
-            'gender'    => $_SESSION['gender'] ?? '',
-            'birthdate' => $_SESSION['birthdate'] ?? '',
-            'bio'       => $_SESSION['bio'] ?? ''
-        ], $avatarFile);
-
         // Delete local tmp avatar if uploaded to Supabase successfully
         try {
-            $avatarUrl = User::updateProfile($userId, [
+            $avatarUrl = User::setupProfile($userId, [
                 'full_name' => $_SESSION['full-name'] ?? '',
                 'gender'    => $_SESSION['gender'] ?? '',
                 'birthdate' => $_SESSION['birthdate'] ?? '',
