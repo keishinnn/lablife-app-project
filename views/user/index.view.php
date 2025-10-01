@@ -7,15 +7,15 @@ require base_path('views/shared/header.php');
     <section>
         <h1>
             Find Your Perfect
-            <span class="gradient-text">LabLife</span>
+            <span class="gradient-text">LabLife Match</span>
         </h1>
-        <p>Connect with introverts like you with matching interests.</p>
+        <p>Connect with fellow introverts who share your passions and interests.</p>
 
         <div class="btn-group">
             <a href="#" class="btn btn-primary">
                 Start Discovering →
             </a>
-            <a href="#" class="btn btn-outline">
+            <a href="u/profile" class="btn btn-outline">
                 View Profile
             </a>
         </div>

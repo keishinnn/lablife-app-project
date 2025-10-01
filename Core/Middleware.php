@@ -16,7 +16,19 @@ class Middleware
             header("Location: /login");
             exit;
         }
-        return;
+    }
+
+    /* 
+        If a user was suddenly deleted from the database
+        we need to have a function to check if User Object is not null
+    */
+    public static function checkIfUserExist($user)
+    {
+        if (!$user) {
+            session_destroy();
+            header("Location: /");
+            exit;
+        }
     }
 
     public static function redirectAuthUser()
@@ -28,17 +40,15 @@ class Middleware
         return;
     }
 
-    public static function checkNotSetProfile()
+    public static function checkNotSetProfile($user)
     {
         if (Auth::check()) {
-            if (!isset($user->avatarUrl)) {
+            if (empty($user->avatarUrl) || empty($user->bio)) {
                 header('Location: /u/setup-profile');
                 exit;
             }
         }
-        return;
     }
-
     public static function verifyCSRFToken()
     {
         // Only check for state-changing requests

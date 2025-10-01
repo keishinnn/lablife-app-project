@@ -11,6 +11,10 @@ class ProfileEditController
     {
         \Core\Middleware::auth();
         $userId = \Core\Auth::user();
+        $user = User::getCurrentUserProfile($userId);
+        \Core\Middleware::checkIfUserExist($user);
+        \Core\Middleware::checkNotSetProfile($user);
+
         $isLoading = false;
         $error = '';
         $message = '';
@@ -26,10 +30,6 @@ class ProfileEditController
         \Core\Middleware::verifyCSRFToken();
 
         $userId = \Core\Auth::user();
-
-        $error = '';
-        $message = '';
-        $isLoading = true;
 
         $fullName  = $_POST['full-name'] ?? '';
         $username  = $_POST['username'] ?? '';
@@ -47,10 +47,8 @@ class ProfileEditController
             "id"        => $userId
         ]);
 
-        $user = User::getCurrentUserProfile($userId);
-        $message = "Profile successfully edited";
-        $isLoading = false;
-        view('user/edit/profile.edit.view.php', compact('user', 'error', 'isLoading', 'message'));
+        header('Location: /u/profile');
+        exit;
     }
 
     public function handleAvatarUpload()

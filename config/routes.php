@@ -37,3 +37,10 @@ $router->post('/u/cancel-edit', 'User\\ProfileEditController@handleCancelEdit');
 
 $router->post('/u/submit-edit-avatar', 'User\\ProfileEditController@handleAvatarUpload');
 
+// Get Personality Types
+$router->get('/u/get-ptypes', 'User\\ProfileController@handleGetPTypes');
+$router->post('/u/save-personality', 'User\\ProfileController@handleSetPersonalityType');
+
+//Get Hobbies
+$router->get('/u/get-hobbies', 'User\\ProfileController@handleGetHobbies');
+$router->post('/u/save-hobbies', 'User\\ProfileController@handleSetHobbies');

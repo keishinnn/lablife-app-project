@@ -49,7 +49,7 @@ require(base_path("views/shared/header.php"));
                     </div>
                 </div>
 
-                <form action="/u/submit-edit-profile" enctype="multipart/form-data" method="POST">
+                <form action="/u/submit-edit-profile" enctype="multipart/form-data" method="POST" id="edit-profile-form">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                     <div class="profile-edit-page-section-seven">
                         <div class="profile-edit-page-section-eight">
@@ -125,7 +125,7 @@ require(base_path("views/shared/header.php"));
 
                     <div class="profile-edit-page-section-fourteen">
                         <a href="/u/profile">Cancel</a>
-                        <button type="submit" class="profile-edit-page-section-fourteen-btn"><?php echo $isLoading ? "Saving..." : "Save Changes" ?>
+                        <button type="submit" class="profile-edit-page-section-fourteen-btn" id="edit-profile-save-btn"><?php echo $isLoading ? "Saving..." : "Save Changes" ?>
                         </button>
                     </div>
                 </form>

@@ -10,20 +10,23 @@ class ProfileSetupController
 
     public function SetupProfileView()
     {
-
         \Core\Middleware::auth();
-        $user = \Core\Auth::user();
+        $userId = \Core\Auth::user();
+        $user = User::getCurrentUserProfile($userId);
+        \Core\Middleware::checkIfUserExist($user);
 
         $error = '';
-        $isLoading = false;
 
-        view('user/setup.view.php', compact('error', 'isLoading'));
+        view('user/setup.view.php', compact('error'));
     }
 
     public function SetupProfilePreferencesView()
     {
         \Core\Middleware::auth();
-        
+        $userId = \Core\Auth::user();
+        $user = User::getCurrentUserProfile($userId);
+        \Core\Middleware::checkIfUserExist($user);
+
         view('user/setup.pref.view.php');
     }
 
@@ -139,7 +142,6 @@ class ProfileSetupController
             $_SESSION['avatar_temp']
         );
 
-        // Redirect to home
         header('Location: /u');
         exit;
     }

@@ -10,9 +10,9 @@ use Core\Auth;
     <section>
         <h1>
             Find Your Perfect
-            <span class="gradient-text">LabLife</span>
+            <span class="gradient-text">LabLife Match</span>
         </h1>
-        <p>Connect with introverts like you with matching interests.</p>
+        <p>Connect with fellow introverts who share your passions and interests.</p>
 
         <div class="btn-group">
             <!-- if user was not authenticated -->

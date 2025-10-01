@@ -33,4 +33,9 @@ class Database
     {
         return $this->connection->prepare($sql);
     }
+
+    public function getConnection(): PDO
+    {
+        return $this->connection;
+    }
 }

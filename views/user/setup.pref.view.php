@@ -1,8 +1,4 @@
-<?php
-// root/views/.shared/header.php
-$isLoading = false;
-?>
-
+<!-- root/views/.shared/header.php  -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,15 +6,14 @@ $isLoading = false;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/assets/css/global.css">
     <link rel="stylesheet" href="/assets/css/header.css">
-    <link rel="stylesheet" href="/assets/global.css">
+    <link rel="stylesheet" href="/assets/css/footer.css">
     <link rel="stylesheet" href="/assets/css/auth-page.css">
     <link rel="stylesheet" href="/assets/css/index-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user-pref.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
 </head>
 
 <body>
@@ -86,8 +81,6 @@ $isLoading = false;
                         </select>
                     </div>
                 </div>
-                <!-- Distance Preference -->
-
 
                 <!-- Error message -->
                 <?php if (!empty($error)): ?>
@@ -101,8 +94,8 @@ $isLoading = false;
                 <!-- Submit button -->
                 <div class="setup-two-buttons-container">
                     <a href="/u/setup-profile" class="setup-back-btn">Go Back</a>
-                    <button class="setup-btn" type="submit" <?= $isLoading ? 'disabled' : '' ?> id="preferences-button">
-                        <?= $isLoading ? 'Saving...' : 'Finish Setup' ?>
+                    <button class="setup-btn" type="submit" id="finish-preferences-button">
+                        Finish Setup
                     </button>
                 </div>
 

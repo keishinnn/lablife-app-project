@@ -4,6 +4,7 @@ namespace Models;
 
 use Core\App;
 use DateTime;
+use PDOException;
 
 class User
 {
@@ -53,15 +54,25 @@ class User
     public static function getCurrentUserProfile(string $id): ?User
     {
         $db = App::resolve('Core\Database');
-        $stmt = $db->query("SELECT * FROM users WHERE id = :id LIMIT 1", ['id' => $id]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        return $row ? new User($row) : null;
+        try {
+            $stmt = $db->query("SELECT * FROM users WHERE id = :id LIMIT 1", ['id' => $id]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            return $row ? new User($row) : null;
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public static function setupProfile(string $id, array $data, ?array $file = null): ?string
     {
         $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
         $avatarUrl = $data['avatar_url'] ?? null;
 
         if ($file && $file['error'] === UPLOAD_ERR_OK) {
@@ -92,9 +103,10 @@ class User
             $avatarUrl = $result['url'] ?? null;
         }
 
-        // update DB
-        $db->query(
-            "UPDATE users
+        try {
+            // update DB
+            $db->query(
+                "UPDATE users
          SET full_name = :name,
              gender = :gender,
              birthdate = :birthdate,
@@ -102,26 +114,37 @@ class User
              avatar_url = :avatar,
              updated_at = NOW()
          WHERE id = :id",
-            [
-                "name"      => $data['full_name'] ?? '',
-                "gender"    => $data['gender'] ?? '',
-                "birthdate" => $data['birthdate'] ?? '',
-                "bio"       => $data['bio'] ?? '',
-                "avatar"    => $avatarUrl,
-                "id"        => $id
-            ]
-        );
+                [
+                    "name"      => $data['full_name'] ?? '',
+                    "gender"    => $data['gender'] ?? '',
+                    "birthdate" => $data['birthdate'] ?? '',
+                    "bio"       => $data['bio'] ?? '',
+                    "avatar"    => $avatarUrl,
+                    "id"        => $id
+                ]
+            );
 
-        return $avatarUrl;
+            $pdo->commit();
+
+            return $avatarUrl;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
     }
 
     public static function editProfile(string $id, array $data)
     {
         $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
 
-        // update DB
-        $db->query(
-            "UPDATE users
+        $pdo->beginTransaction();
+        try {
+            $db->query(
+                "UPDATE users
          SET full_name = :full_name,
              username = :username,
              gender = :gender,
@@ -129,15 +152,24 @@ class User
              bio = :bio,
              updated_at = NOW()
          WHERE id = :id",
-            [
-                "full_name" => $data['full_name'] ?? '',
-                "username"  => $data['username'] ?? '',
-                "gender"    => $data['gender'] ?? '',
-                "birthdate" => $data['birthdate'] ?? '',
-                "bio"       => $data['bio'] ?? '',
-                "id"        => $id
-            ]
-        );
+                [
+                    "full_name" => $data['full_name'] ?? '',
+                    "username"  => $data['username'] ?? '',
+                    "gender"    => $data['gender'] ?? '',
+                    "birthdate" => $data['birthdate'] ?? '',
+                    "bio"       => $data['bio'] ?? '',
+                    "id"        => $id
+                ]
+            );
+
+            $pdo->commit();
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
     }
 
     public static function updateProfilePicture(string $id, array $file): ?string
@@ -211,16 +243,43 @@ class User
     public static function updateIsOnline(string $id): void
     {
         $db = App::resolve('Core\Database');
-        $db->query("UPDATE users SET is_online = TRUE WHERE id = :id", [
-            'id' => $id
-        ]);
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $db->query("UPDATE users SET is_online = TRUE WHERE id = :id", [
+                'id' => $id
+            ]);
+
+            $pdo->commit();
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
     }
 
     public static function updateIsOffline(string $id): void
     {
         $db = App::resolve('Core\Database');
-        $db->query("UPDATE users SET is_online = FALSE WHERE id = :id", [
-            'id' => $id
-        ]);
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+        try {
+            $db->query("UPDATE users SET is_online = FALSE WHERE id = :id", [
+                'id' => $id
+            ]);
+
+            $pdo->commit();
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
     }
 }

@@ -1,7 +1,7 @@
 <?php
-
 // root/views/.shared/header.php
 use Core\Auth;
+use Core\App;
 
 ?>
 
@@ -12,21 +12,22 @@ use Core\Auth;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/assets/global.css">
+    <link rel="stylesheet" href="/assets/css/global.css">
     <link rel="stylesheet" href="/assets/css/header.css">
+    <link rel="stylesheet" href="/assets/css/footer.css">
     <link rel="stylesheet" href="/assets/css/auth-page.css">
     <link rel="stylesheet" href="/assets/css/index-page.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/edit/profile-edit-page.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-page.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-page.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/edit/profile-edit-page.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/modals-style/hobbies-modal.css?v=<?php echo time(); ?>">
 </head>
 
 <body>
-
     <header>
-        <nav class="navbar">
+        <nav class=" navbar">
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->

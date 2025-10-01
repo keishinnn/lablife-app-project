@@ -1,7 +1,7 @@
 <?php
 
 // file path = root/public/index.php
-
+ob_start('ob_gzhandler');
 session_start();
 
 const BASE_PATH = __DIR__ . "/../";

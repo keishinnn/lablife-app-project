@@ -1,7 +1,4 @@
-<?php
-// root/views/.shared/header.php
-?>
-
+<!--  root/views/.shared/header.php -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,15 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/assets/css/global.css">
     <link rel="stylesheet" href="/assets/css/header.css">
-    <link rel="stylesheet" href="/assets/global.css">
+    <link rel="stylesheet" href="/assets/css/footer.css">
     <link rel="stylesheet" href="/assets/css/auth-page.css">
     <link rel="stylesheet" href="/assets/css/index-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user-pref.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
 </head>
 
 <body>
@@ -35,7 +31,7 @@
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <div class="setup-row">
                     <div class="setup-field">
-                        <label for="full-name">Full Name</label>
+                        <label for="full-name">Full Name *</label>
                         <input
                             type="text"
                             name="full-name"
@@ -68,7 +64,7 @@
                     </div>
 
                     <div class="setup-field">
-                        <label for="user_avatar">Profile Picture</label>
+                        <label for="user_avatar">Profile Picture *</label>
                         <input class="setup-upload" id="user_avatar" type="file" accept="image/*" name="avatar_input">
 
                         <?php if (!empty($_SESSION['avatar_temp'])): ?>
@@ -84,7 +80,7 @@
                 </div>
 
                 <div class="setup-field">
-                    <label>Bio (optional)</label>
+                    <label>Bio (optional) *</label>
                     <textarea
                         name="bio"
                         maxlength="200"
@@ -97,8 +93,8 @@
                     </div>
                 <?php endif; ?>
 
-                <button class="setup-btn" type="submit" <?= $isLoading ? 'disabled' : '' ?> id="setup-button">
-                    <?= $isLoading ? 'Loading...' : 'Next' ?>
+                <button class="setup-btn" type="submit" id="setup-button">
+                    Next
                 </button>
 
                 <div class="setup-step-two-container">
