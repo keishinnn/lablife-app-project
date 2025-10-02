@@ -1,4 +1,4 @@
-.hobby-tag {
+.interests-tag {
     padding: 6px 12px;
     border: 1px solid #999;
     border-radius: 20px;
@@ -9,17 +9,17 @@
     transition: all 0.3s ease;
 }
 
-.hobby-tag:hover {
+.interests-tag:hover {
     border-color: #ec4899;
 }
 
-.hobby-tag.active {
+.interests-tag.active {
     color: rgb(212, 212, 212);
     border-color: #ec4899;
 }
 
 /* Modal background */
-.p-hb-modal {
+.p-interests-modal {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -32,7 +32,7 @@
     align-items: center;
 }
 
-.hb-modal-content {
+.interests-modal-content {
     background: #fff;
     padding: 3rem;
     border-radius: 10px;
@@ -40,21 +40,19 @@
     max-width: 90%;
     text-align: center;
     position: relative;
-    /* important: makes #pt-loading relative to this box */
     overflow: hidden;
-    /* ensures overlay stays inside rounded corners */
 }
 
 
-.hb-modal-content h2 {
+.interests-modal-content h2 {
     margin-bottom: 3rem;
 }
 
-.hb-modal-content button {
+.interests-modal-content button {
     margin-top: 1rem;
 }
 
-.hb-modal-content button:nth-child(1) {
+.interests-modal-content button:nth-child(1) {
     display: inline-flex;
     align-items: center;
     padding: 0.7rem 1rem;
@@ -71,11 +69,11 @@
     cursor: pointer;
 }
 
-.hb-modal-content button:nth-child(1):hover {
+.interests-modal-content button:nth-child(1):hover {
     background-color: #475368;
 }
 
-.hb-modal-content button:nth-child(2) {
+.interests-modal-content button:nth-child(2) {
     display: inline-flex;
     align-items: center;
     padding: 0.7rem 1rem;
@@ -92,14 +90,13 @@
     cursor: pointer;
 }
 
-.hb-modal-content button:nth-child(2):hover {
+.hinterests-modal-content button:nth-child(2):hover {
     background: linear-gradient(to right, #db2777, #dc2626);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
         0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Close button */
-.hb-close-btn {
+.interests-close-btn {
     position: absolute;
     top: 10px;
     right: 15px;
@@ -108,17 +105,13 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    .hb-modal-content {
-        background: #0f172a;
-    }
-
-    .hb-modal-content {
+    .interests-modal-content {
         background: #0f172a;
     }
 }
 
 @media (max-width: 480px) {
-    .hb-modal-content {
+    .interests-modal-content {
         width: 400px;
     }
 }

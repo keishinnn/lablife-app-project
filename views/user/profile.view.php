@@ -152,11 +152,36 @@ require(base_path("views/shared/header.php"));
 
 
                                 <div style="margin-top: 2rem;">
-                                    <h3 class="profile-dating-preferences-text">Interests</h3>
-                                    <div>
-                                        <button class="profile-pt-btn" style="display: flex; align-items: center; gap: 0.5rem">
-                                            <span style="font-size: 1.5rem;">+</span> Add
-                                        </button>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <h3 class="profile-dating-preferences-text">Interests</h3>
+                                        <?php if (!empty($userInterests)): ?>
+                                            <button style="background: transparent; border: none; padding-bottom: 10px" class="p-page-edit-btn-ha" id="p-interests-edit-btn">
+                                                <svg
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24" height="1.5rem" width="1.5rem">
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: row; gap: 1rem; flex-wrap: wrap;">
+                                        <?php if (!empty($userInterests)): ?>
+                                            <?php foreach ($userInterests as $interest): ?>
+                                                <p class="p-pf-hb-text">
+                                                    <?php echo $interest->name ?>
+                                                </p>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <button class="profile-pt-btn" style="display: flex; align-items: center; gap: 0.5rem" id="p-hb-add-btn">
+                                                <span style="font-size: 1.5rem;">+</span> Add
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -164,7 +189,6 @@ require(base_path("views/shared/header.php"));
                                 <div class="alert alert-danger" style="margin-top: 2rem;"><?php echo $error ?>
                                 </div>
                             <?php endif; ?>
-
                         </div>
                     </div>
 
@@ -221,6 +245,7 @@ require(base_path("views/shared/header.php"));
 
     <?php require(base_path('Views/modals/ptypes-modal.php')) ?>
     <?php require(base_path('Views/modals/hobbies-modal.php')) ?>
+    <?php require(base_path('Views/modals/interests-modal.php')) ?>
 
     <script>
 

@@ -44,3 +44,5 @@ $router->post('/u/save-personality', 'User\\ProfileController@handleSetPersonali
 //Get Hobbies
 $router->get('/u/get-hobbies', 'User\\ProfileController@handleGetHobbies');
 $router->post('/u/save-hobbies', 'User\\ProfileController@handleSetHobbies');
+
+$router->post('/u/save-interests', 'User\\ProfileController@handleSetInterests');

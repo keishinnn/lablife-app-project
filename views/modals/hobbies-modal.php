@@ -1,6 +1,6 @@
-    <div id="hobbiesModal" class="p-ptypes-modal">
-        <div class="ptypes-modal-content">
-            <span class="pt-close-btn" id="p-hb-close-btn">&times;</span>
+    <div id="hobbiesModal" class="p-hb-modal">
+        <div class="hb-modal-content">
+            <span class="hb-close-btn" id="p-hb-close-btn">&times;</span>
             <h2>Select Hobbies</h2>
 
             <form id="hb-form" method="POST" action="/u/save-hobbies">

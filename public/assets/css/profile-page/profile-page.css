@@ -338,124 +338,6 @@
     box-shadow: 0 0 0 4px rgba(156, 163, 175, 0.5);
 }
 
-/* Modal background */
-.p-ptypes-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    justify-content: center;
-    align-items: center;
-}
-
-.ptypes-modal-content {
-    background: #fff;
-    padding: 3rem;
-    border-radius: 10px;
-    width: 400px;
-    max-width: 90%;
-    text-align: center;
-    position: relative;
-    /* important: makes #pt-loading relative to this box */
-    overflow: hidden;
-    /* ensures overlay stays inside rounded corners */
-}
-
-
-.ptypes-modal-content h2 {
-    margin-bottom: 3rem;
-}
-
-.ptypes-modal-content button {
-    margin-top: 5rem;
-}
-
-.ptypes-modal-content button:nth-child(1) {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.7rem 1rem;
-    background-color: #374151;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition: all 0.2s ease;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-}
-
-.ptypes-modal-content button:nth-child(1):hover {
-    background-color: #475368;
-}
-
-.ptypes-modal-content button:nth-child(2) {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.7rem 1rem;
-    background: linear-gradient(to right, #ec4899, #ef4444);
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition: all 0.2s ease;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-}
-
-.ptypes-modal-content button:nth-child(2):hover {
-    background: linear-gradient(to right, #db2777, #dc2626);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-        0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-
-/* Close button */
-.pt-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-.p-page-edit-btn-ha {
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-#personalitySelect,
-#hobbySelect {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    display: block;
-    padding: 0.80rem 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    color: #111827;
-    background-color: #ffffff;
-    cursor: pointer;
-}
-
-/* Focus state */
-#personalitySelect:focus,
-#hobbySelect:focus {
-    border-color: #ec4899;
-    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.3);
-    outline: none;
-}
-
 @media (prefers-color-scheme: dark) {
 
     .profile-header h1,
@@ -523,10 +405,6 @@
         box-shadow: 0 0 0 4px rgba(55, 65, 81, 0.5);
     }
 
-    .ptypes-modal-content {
-        background: #0f172a;
-    }
-
     .p-page-edit-btn-ha {
         color: #afafaf;
     }
@@ -534,14 +412,6 @@
     .p-page-edit-btn-ha:hover {
         color: #fff;
     }
-
-    #personalitySelect,
-    #hobbySelect {
-        border-color: #4b5563;
-        background-color: #1f2937;
-        color: #ffffff;
-    }
-
 
 }
 
@@ -554,10 +424,4 @@
         grid-column: span 2 / span 2;
     }
 
-}
-
-@media (min-width: 374px) {
-    .p-pf-hb-text{
-
-    }
 }

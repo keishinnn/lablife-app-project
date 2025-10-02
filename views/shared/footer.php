@@ -7,6 +7,7 @@
 <script type="module" src="/assets/js/modals/ptype-modal.js"></script>
 <script type="module" src="/assets/js/loading-state/edit-profile-loading.js"></script>
 <script type="module" src="/assets/js/modals/hobbies-modal.js"></script>
+<script type="module" src="/assets/js/modals/interests-modal.js"></script>
 <script type="module" src="/assets/js/loading-state/setup-profile-loading.js"></script>
 
 <!-- Cloudflare Turnstile JS -->

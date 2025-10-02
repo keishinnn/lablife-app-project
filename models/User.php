@@ -43,14 +43,6 @@ class User
         $this->updatedAt = $data['updated_at'];
     }
 
-    public function calculateAge(): int
-    {
-        $birthDate = new DateTime($this->birthdate);
-        $today = new DateTime();
-        $age = $today->diff($birthDate)->y;
-        return $age;
-    }
-
     public static function getCurrentUserProfile(string $id): ?User
     {
         $db = App::resolve('Core\Database');

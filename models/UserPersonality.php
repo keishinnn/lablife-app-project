@@ -8,19 +8,17 @@ use PDOException;
 class UserPersonality
 {
 
-    public string $id;
-    public string $name;
-    public string $description;
+    public string $user_id;
+    public string $personality_id;
     public string $updatedAt;
     public string $createdAt;
 
     public function __construct(array $data)
     {
-        $this->id = $data['id'];
-        $this->name = $data['name'];
-        $this->description = $data['description'];
+        $this->user_id = $data['user_id'];
+        $this->personality_id = $data['personality_id'];
         $this->updatedAt = $data['updated_at'] ?? null;
-        $this->createdAt = $data['updated_at'] ?? null;
+        $this->createdAt = $data['created_at'] ?? null;
     }
 
     // GET ALL USER PERSONALITIES
