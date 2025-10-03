@@ -22,6 +22,7 @@ use Core\App;
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/hobbies-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css?v=<?php echo time(); ?>">

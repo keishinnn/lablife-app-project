@@ -48,7 +48,7 @@ class ProfileController
         $_SESSION['user_id'] = $user->id;
         $isLoading = false;
 
-        view('user/profile.view.php', compact('user', 'isLoading', 'error', 'userPreferences', 'personalityType', 'ptypes', 'hobbies', 'userHobbies', 'interests', 'userInterests'));
+        view('user/profile/profile.view.php', compact('user', 'isLoading', 'error', 'userPreferences', 'personalityType', 'ptypes', 'hobbies', 'userHobbies', 'interests', 'userInterests'));
     }
 
     public function handleGetPTypes()
@@ -96,10 +96,11 @@ class ProfileController
             $user = \Models\User::getCurrentUserProfile($userId);
             $userPreferences = \Models\UserPreferences::getCurrentUserPreferences($userId);
             $personalityType = \Models\UserPersonality::getCurrentUserPersonality($userId);
-            $ptypes = \Models\UserPersonality::getAllPersonalityTypes();
-            $hobbies = \Models\UserHobbies::getAllHobbies();
             $userHobbies = \Models\UserHobbies::getCurrentUserHobbies($userId);
             $userInterests = UserInterests::getCurrentUserInterests($userId);
+            $ptypes = \Models\UserPersonality::getAllPersonalityTypes();
+            $hobbies = \Models\UserHobbies::getAllHobbies();
+            $interests = \Models\UserInterests::getAllInterests();
 
             view('user/profile.view.php', compact(
                 'user',
@@ -109,7 +110,8 @@ class ProfileController
                 'hobbies',
                 'userHobbies',
                 'error',
-                'userInterests'
+                'userInterests',
+                'interests'
             ));
             return;
         }
@@ -138,11 +140,11 @@ class ProfileController
             $user = \Models\User::getCurrentUserProfile($userId);
             $userPreferences = \Models\UserPreferences::getCurrentUserPreferences($userId);
             $personalityType = \Models\UserPersonality::getCurrentUserPersonality($userId);
-            $ptypes = \Models\UserPersonality::getAllPersonalityTypes();
-            $hobbies = \Models\UserHobbies::getAllHobbies();
-            $interests =  UserInterests::getAllInterests();
             $userHobbies = \Models\UserHobbies::getCurrentUserHobbies($userId);
             $userInterests = UserInterests::getCurrentUserInterests($userId);
+            $ptypes = \Models\UserPersonality::getAllPersonalityTypes();
+            $hobbies = \Models\UserHobbies::getAllHobbies();
+            $interests = \Models\UserInterests::getAllInterests();
 
             view('user/profile.view.php', compact(
                 'user',
@@ -152,8 +154,8 @@ class ProfileController
                 'hobbies',
                 'userHobbies',
                 'error',
-                'interests',
-                'userInterests'
+                'userInterests',
+                'interests'
             ));
             return;
         }

@@ -79,16 +79,20 @@ class UserHobbies
         }
     }
 
-
-
     public static function getAllHobbies()
     {
         $db = App::resolve('Core\Database');
 
         try {
             $stmt = $db->query("SELECT * FROM hobbies ORDER BY name ASC");
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $hobbies = [];
+            foreach ($rows as $row) {
+                $hobbies[] = new UserHobbies($row);
+            }
+
+            return $hobbies;
         } catch (PDOException $e) {
             throw new \Exception("Database error: " . $e->getMessage());
         } catch (\Exception $e) {

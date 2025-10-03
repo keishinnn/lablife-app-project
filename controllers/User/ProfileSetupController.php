@@ -3,7 +3,6 @@
 namespace Controllers\User;
 
 use Models\User;
-use Core\App;
 
 class ProfileSetupController
 {
@@ -17,7 +16,7 @@ class ProfileSetupController
 
         $error = '';
 
-        view('user/setup.view.php', compact('error'));
+        view('user/profile-setup/setup.view.php', compact('error'));
     }
 
     public function SetupProfilePreferencesView()
@@ -27,7 +26,7 @@ class ProfileSetupController
         $user = User::getCurrentUserProfile($userId);
         \Core\Middleware::checkIfUserExist($user);
 
-        view('user/setup.pref.view.php');
+        view('user/profile-setup/setup.pref.view.php');
     }
 
     public function handleStepOneSetup()
@@ -68,7 +67,6 @@ class ProfileSetupController
                 $_SESSION['avatar_temp'] = $fileName; // store new filename
             }
         }
-
 
         // Mark step one as completed
         $_SESSION['step_one_completed'] = true;

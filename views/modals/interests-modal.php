@@ -8,14 +8,14 @@
 
                 <div id="hobbies-container" style="display:flex; flex-wrap:wrap; gap:10px;">
                     <?php foreach ($interests as $interest):
-                        $isSelected = isset($userInterests) && in_array($interest['id'], array_map(fn($uh) => $uh->id, $userInterests));
+                        $isSelected = isset($userInterests) && in_array($interest->id, array_map(fn($uh) => $uh->id, $userInterests));
                     ?>
                         <div class="interests-tag <?= $isSelected ? 'active' : '' ?>"
-                            data-id="<?= $interest['id']; ?>">
-                            <?= $interest['name']; ?>
+                            data-id="<?= $interest->id; ?>">
+                            <?= $interest->name; ?>
                         </div>
                         <?php if ($isSelected): ?>
-                            <input type="hidden" name="interests[]" value="<?= $interest['id']; ?>">
+                            <input type="hidden" name="interests[]" value="<?= $interest->id; ?>">
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </div>

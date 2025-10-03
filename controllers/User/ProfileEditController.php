@@ -21,7 +21,7 @@ class ProfileEditController
 
         $user = User::getCurrentUserProfile($userId);
 
-        view('user/edit/profile.edit.view.php', compact('user', 'error', 'isLoading', 'message'));
+        view('user/profile/profile.edit.view.php', compact('user', 'error', 'isLoading', 'message'));
     }
 
     public function handleEditProfile()

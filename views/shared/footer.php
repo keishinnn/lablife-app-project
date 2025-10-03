@@ -9,7 +9,11 @@
 <script type="module" src="/assets/js/modals/hobbies-modal.js"></script>
 <script type="module" src="/assets/js/modals/interests-modal.js"></script>
 <script type="module" src="/assets/js/loading-state/setup-profile-loading.js"></script>
+<script type="module" src="/assets/js/loading-state/profile-nav-loading.js"></script>
+<script type="module" src="/assets/js/loading-state/profile-edit-loading.js"></script>
+<script type="module" src="/assets/js/upload-photo/profile-edit-upload-photo.js"></script>
 
+public\assets\js\loading-state\profile-edit-cancel-loading.js
 <!-- Cloudflare Turnstile JS -->
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 

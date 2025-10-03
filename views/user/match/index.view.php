@@ -23,7 +23,13 @@ require base_path('views/shared/header.php');
         </div>
     </section>
 
-    <?php require(base_path('Views/user/profile/loading/profile.loading.view.php')) ?>
+    <!-- Loader to replace section -->
+    <div id="pf-loading" class="profile-get-loading-container">
+        <div class="profile-get-loading-section">
+            <div class="profile-get-loading-icon"></div>
+            <p class="profile-get-loading-text">Loading profile...</p>
+        </div>
+    </div>
 </main>
 
 

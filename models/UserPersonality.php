@@ -8,17 +8,13 @@ use PDOException;
 class UserPersonality
 {
 
-    public string $user_id;
-    public string $personality_id;
-    public string $updatedAt;
-    public string $createdAt;
+    public string $id;
+    public string $name;
 
     public function __construct(array $data)
     {
-        $this->user_id = $data['user_id'];
-        $this->personality_id = $data['personality_id'];
-        $this->updatedAt = $data['updated_at'] ?? null;
-        $this->createdAt = $data['created_at'] ?? null;
+        $this->id = $data['id'];
+        $this->name = $data['name'];
     }
 
     // GET ALL USER PERSONALITIES
@@ -28,7 +24,15 @@ class UserPersonality
 
         try {
             $stmt = $db->query("SELECT * FROM personality_types");
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $personality_types = [];
+            foreach ($rows as $row) {
+                $personality_types[] = new UserPersonality($row);
+            }
+
+            return $personality_types;
         } catch (PDOException $e) {
             throw new \Exception("Database error: " . $e->getMessage());
         } catch (\Exception $e) {
@@ -83,7 +87,7 @@ class UserPersonality
 
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            return $row ? $row : null;
+            return new UserPersonality($row);
         } catch (PDOException $e) {
             throw new \Exception("Database error: " . $e->getMessage());
         } catch (\Exception $e) {

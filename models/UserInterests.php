@@ -88,7 +88,14 @@ class UserInterests
         try {
             $stmt = $db->query("SELECT * FROM interests ORDER BY name ASC");
 
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $interests = [];
+            foreach ($rows as $row) {
+                $interests[] = new UserHobbies($row);
+            }
+
+            return $interests;
         } catch (PDOException $e) {
             throw new \Exception("Database error: " . $e->getMessage());
         } catch (\Exception $e) {
