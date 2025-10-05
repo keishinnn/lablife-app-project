@@ -43,6 +43,13 @@ class ProfileController
         view('user/profile.view.php', compact('user', 'isLoading', 'error', 'userPreferences'));
     }
 
+    public function ShowEditPreferencesView(){
+        \Core\Middleware::auth();
+        $userId = \Core\Auth::user();
+
+        view('user/edit/preferences.edit.view.php');
+    }
+
     public function ProfileNotFoundView()
     {
         view('user/profile.view.php', compact('user', 'error', 'isLoading'));

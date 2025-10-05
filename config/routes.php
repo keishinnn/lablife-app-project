@@ -37,3 +37,6 @@ $router->post('/u/cancel-edit', 'User\\ProfileEditController@handleCancelEdit');
 
 $router->post('/u/submit-edit-avatar', 'User\\ProfileEditController@handleAvatarUpload');
 
+// Edit Preferences
+$router->get('/u/profile-preferences-edit', 'User\\ProfilePreferencesController@View');
+$router->post('/u/submit-edit-preferences', 'User\\ProfilePreferencesController@Update');

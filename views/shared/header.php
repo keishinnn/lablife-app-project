@@ -21,6 +21,7 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/edit/profile-edit-page.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/edit/preference-edit-page.css">
 </head>
 
 <body>

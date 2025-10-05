@@ -21,7 +21,7 @@ class ProfileEditController
     }
 
     public function handleEditProfile()
-    {
+    {  
         \Core\Middleware::auth();
         \Core\Middleware::verifyCSRFToken();
 

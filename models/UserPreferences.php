@@ -62,7 +62,7 @@ class UserPreferences
 
 
     // Save or update preferences in normalized tables.
-    public function savePreferences(string $userId): void
+    public function savePreferences(string $userId)
     {
         \Core\Middleware::auth();
         $db = App::resolve('Core\Database');

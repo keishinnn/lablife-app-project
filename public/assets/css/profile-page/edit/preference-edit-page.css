@@ -1,0 +1,38 @@
+.preferences-form .age-range input[type="number"] {
+    all: unset; 
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #2a2f3d;
+    background-color: #2f3445;
+    color: #fff;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+
+.age-range input[type="text"],
+.age-range input[type="number"] {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #2a2f3d !important;
+    background-color: #2f3445 !important;
+    color: #ffffff !important;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    appearance: none; 
+}
+
+.age-range input[type="text"]:focus,
+.age-range input[type="number"]:focus {
+    border-color: #ff4f81 !important;
+    box-shadow: 0 0 0 2px rgba(255, 79, 129, 0.15) !important;
+    outline: none !important;
+}
+
+.age-range .age-range-sep {
+    color: #ccc;
+    font-weight: 500;
+}
