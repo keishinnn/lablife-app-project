@@ -1,12 +1,14 @@
 <?php
 
-// file path = root/Models/Match/MatchCandidate.php
-
 namespace Models\Match;
 
 use Models\User\User;
 use Models\Match\MatchSession;
 use Core\App;
+use Models\User\UserHobbies;
+use Models\User\UserInterests;
+use Models\User\UserPersonality;
+use Models\User\UserPreferences;
 use PDO;
 
 class MatchCandidate extends User
@@ -16,88 +18,90 @@ class MatchCandidate extends User
         parent::__construct($data);
     }
 
-    /**
-     * Find a potential match for the current user and create a 1-min session.
-     */
     public static function findPotentialMatch(string $currentUserId)
     {
         $db = App::resolve('Core\Database');
         $pdo = $db->getConnection();
 
-        // 1) Get current user's preferences
-        $prefsStmt = $pdo->prepare("
-            SELECT 
-                uap.min_age, uap.max_age,
-                ARRAY_AGG(ugp.gender) AS gender_pref,
-                ARRAY_AGG(uh.hobby_id) AS hobbies,
-                ARRAY_AGG(ui.interest_id) AS interests,
-                ARRAY_AGG(up.personality_id) AS personalities
-            FROM users u
-            LEFT JOIN user_age_preferences uap ON u.id = uap.user_id
-            LEFT JOIN user_gender_preferences ugp ON u.id = ugp.user_id
-            LEFT JOIN user_hobbies uh ON u.id = uh.user_id
-            LEFT JOIN user_interests ui ON u.id = ui.user_id
-            LEFT JOIN user_personality up ON u.id = up.user_id
-            WHERE u.id = :currentUserId
-            GROUP BY u.id
-        ");
-        $prefsStmt->execute(['currentUserId' => $currentUserId]);
-        $prefs = $prefsStmt->fetch(PDO::FETCH_ASSOC);
+        // 1) Fetch current user's preferences
+        $userPreferencesData = UserPreferences::getCurrentUserPreferences($currentUserId);
+        $userPreferences = $userPreferencesData instanceof UserPreferences
+            ? $userPreferencesData
+            : new UserPreferences($userPreferencesData);
 
-        if (!$prefs) return null;
+        $userPersonalityType = UserPersonality::getCurrentUserPersonality($currentUserId);
+        $userHobbies = UserHobbies::getCurrentUserHobbies($currentUserId) ?? [];
+        $userInterests = UserInterests::getCurrentUserInterests($currentUserId) ?? [];
 
-        $minAge = $prefs['min_age'] ?? 18;
-        $maxAge = $prefs['max_age'] ?? 50;
-        $genderPref = $prefs['gender_pref'] ? '{' . implode(',', $prefs['gender_pref']) . '}' : '{}';
-        $hobbies = $prefs['hobbies'] ?? [];
-        $interests = $prefs['interests'] ?? [];
-        $personalities = $prefs['personalities'] ?? [];
+        $minAge = $userPreferences->minAge ?? 18;
+        $maxAge = $userPreferences->maxAge ?? 50;
+        $genderPref = $userPreferences->genderPreference
+            ? explode(',', $userPreferences->genderPreference)
+            : ['other'];
 
-        // 2) Find top candidate based on shared attributes
+        $hobbies = array_map(fn($h) => $h->id, $userHobbies);
+        $interests = array_map(fn($i) => $i->id, $userInterests);
+        $personalities = $userPersonalityType ? [$userPersonalityType->id] : [];
+
+        // Convert arrays to PostgreSQL literal strings
+        $genderPrefPg = count($genderPref) ? '{' . implode(',', $genderPref) . '}' : '{}';
+        $hobbiesPg = count($hobbies) ? '{' . implode(',', $hobbies) . '}' : '{}';
+        $interestsPg = count($interests) ? '{' . implode(',', $interests) . '}' : '{}';
+        $personalitiesPg = count($personalities) ? '{' . implode(',', $personalities) . '}' : '{}';
+
+        // 2) Main query
         $stmt = $pdo->prepare("
-            SELECT u.*, 
-                COUNT(DISTINCT uh.hobby_id) AS shared_hobbies,
-                COUNT(DISTINCT ui.interest_id) AS shared_interests,
-                COUNT(DISTINCT up.personality_id) AS shared_personalities
-            FROM users u
-            LEFT JOIN user_hobbies uh ON uh.user_id = u.id AND uh.hobby_id = ANY(:hobbies)
-            LEFT JOIN user_interests ui ON ui.user_id = u.id AND ui.interest_id = ANY(:interests)
-            LEFT JOIN user_personality up ON up.user_id = u.id AND up.personality_id = ANY(:personalities)
-            WHERE u.id != :currentUserId
-              AND u.id NOT IN (
-                    SELECT target_id FROM user_likes WHERE user_id = :currentUserId
-                    UNION
-                    SELECT target_id FROM user_dislikes WHERE user_id = :currentUserId
-                    UNION
-                    SELECT CASE WHEN user1_id = :currentUserId THEN user2_id ELSE user1_id END
-                    FROM matches
-                    WHERE user1_id = :currentUserId OR user2_id = :currentUserId
-              )
-              AND EXTRACT(YEAR FROM AGE(u.birthdate)) BETWEEN :minAge AND :maxAge
-              AND u.gender = ANY(:genderPref::text[])
-            GROUP BY u.id
-            ORDER BY shared_hobbies + shared_interests + shared_personalities DESC
-            LIMIT 1
-        ");
+    SELECT *
+    FROM (
+        SELECT u.id, u.full_name, u.username, u.email, u.gender, u.birthdate,
+               u.bio, u.avatar_url, u.location_lat, u.location_lng, u.last_active,
+               u.is_verified, u.is_online, u.created_at, u.updated_at,
+               COUNT(DISTINCT uh.hobby_id) AS shared_hobbies,
+               COUNT(DISTINCT ui.interest_id) AS shared_interests,
+               COUNT(DISTINCT up.personality_id) AS shared_personalities
+        FROM users u
+        LEFT JOIN user_hobbies uh 
+            ON uh.user_id = u.id AND uh.hobby_id = ANY(:hobbies::uuid[])
+        LEFT JOIN user_interests ui 
+            ON ui.user_id = u.id AND ui.interest_id = ANY(:interests::uuid[])
+        LEFT JOIN user_personality_type up 
+            ON up.user_id = u.id AND up.personality_id = ANY(:personalities::uuid[])
+        WHERE u.id != :currentUserId
+          AND u.id NOT IN (
+                SELECT to_user_id FROM likes WHERE from_user_id = :currentUserId
+                UNION
+                SELECT to_user_id FROM dislikes WHERE from_user_id = :currentUserId
+                UNION
+                SELECT CASE WHEN user1_id = :currentUserId THEN user2_id ELSE user1_id END
+                FROM matches
+                WHERE user1_id = :currentUserId OR user2_id = :currentUserId
+          )
+          AND EXTRACT(YEAR FROM AGE(u.birthdate)) BETWEEN :minAge AND :maxAge
+          AND u.gender = ANY(:genderPref::text[])
+        GROUP BY u.id, u.full_name, u.username, u.email, u.gender, u.birthdate,
+                 u.bio, u.avatar_url, u.location_lat, u.location_lng, u.last_active,
+                 u.is_verified, u.is_online, u.created_at, u.updated_at
+    ) AS sub
+    ORDER BY sub.shared_hobbies + sub.shared_interests + sub.shared_personalities DESC
+    LIMIT 1
+");
 
         $stmt->execute([
             'currentUserId' => $currentUserId,
             'minAge' => $minAge,
             'maxAge' => $maxAge,
-            'genderPref' => $genderPref,
-            'hobbies' => $hobbies,
-            'interests' => $interests,
-            'personalities' => $personalities
+            'genderPref' => $genderPrefPg,
+            'hobbies' => $hobbiesPg,
+            'interests' => $interestsPg,
+            'personalities' => $personalitiesPg
         ]);
 
         $candidate = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (!$candidate) return null;
 
-        // 3) Create a 1-minute match session
+        // 3) Create 1-min match session
         $session = MatchSession::createSession($currentUserId, $candidate['id'], 60);
 
-        // 4) Return both candidate info and session
         return [
             'candidate' => $candidate,
             'session' => $session

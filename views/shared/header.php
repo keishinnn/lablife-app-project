@@ -27,6 +27,7 @@ use Core\App;
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css">
     <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/profile-page/edit/preference-edit-page.css">
 </head>
 
 <body>

@@ -11,9 +11,14 @@ require base_path('views/shared/header.php');
         </h1>
 
         <div style="text-align: center;">
-            <a href="/u/discover/matched-user" class="btn btn-primary">
-                Start Finding →
-            </a>
+            <form action="/u/discover/find-match" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
+                <button type="submit" class="btn btn-primary">
+                    Start Finding →
+                </button>
+            </form>
+
         </div>
 
     </section>

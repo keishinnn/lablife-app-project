@@ -9,8 +9,9 @@ class UserPersonality
 {
 
     public string $id;
-    public string $name;
+    public string $name; 
 
+    // only one personality type can be selected
     public function __construct(?array $data)
     {
         $this->id = $data['id'];

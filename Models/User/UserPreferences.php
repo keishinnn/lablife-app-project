@@ -10,7 +10,7 @@ class UserPreferences
     public int $minAge;
     public int $maxAge;
     public int $distance;
-    public string $genderPreference; // ["male", "female", "other"]
+    public string $genderPreference; // ["male", "female", "other"] only one can be selected
 
     public function __construct(?array $data)
     {

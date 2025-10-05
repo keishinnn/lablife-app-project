@@ -37,6 +37,10 @@ $router->post('/u/cancel-edit', 'User\\Profile\\ProfileEditController@handleCanc
 
 $router->post('/u/submit-edit-avatar', 'User\\Profile\\ProfileEditController@handleAvatarUpload');
 
+// Edit Preferences
+$router->get('/u/profile-preferences-edit', 'User\\Profile\\ProfilePreferencesController@View');
+$router->post('/u/submit-edit-preferences', 'User\\Profile\\ProfilePreferencesController@Update');
+
 // Get Personality Types
 $router->get('/u/get-ptypes', 'User\\Profile\\ProfileController@handleGetPTypes');
 $router->post('/u/save-personality', 'User\\Profile\\ProfileController@handleSetPersonalityType');
@@ -50,3 +54,6 @@ $router->post('/u/save-interests', 'User\\Profile\\ProfileController@handleSetIn
 // Showing Discover Page
 $router->get('/u/discover', 'User\\Discover\\DiscoverController@View');
 $router->get('/u/discover/matched-user', 'User\\Discover\\DiscoverController@MatchedUserView');
+
+// Find Potential Match
+$router->post('/u/discover/find-match', 'User\\Discover\\DiscoverController@handleFindPotentialMatch');
