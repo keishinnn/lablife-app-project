@@ -1,6 +1,6 @@
 <?php
 
-namespace Models;
+namespace Models\User;
 
 use Core\App;
 use PDOException;
@@ -11,7 +11,7 @@ class UserInterests
     public ?string $id;
     public ?string $name;
 
-    public function __construct(array $data)
+    public function __construct(?array $data)
     {
         $this->id = $data['id'] ?? null;
         $this->name = $data['name'] ?? null;
@@ -31,6 +31,10 @@ class UserInterests
             );
 
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (!$rows) {
+                return null;
+            }
 
             $userInterests = [];
             foreach ($rows as $row) {
@@ -59,13 +63,13 @@ class UserInterests
 
             $stmt = $pdo->prepare(
                 "INSERT INTO user_interests (user_id, interest_id, created_at, updated_at) 
-             VALUES (:user_id, :hobby_id, NOW(), NOW())"
+             VALUES (:user_id, :interest_id, NOW(), NOW())"
             );
 
             foreach ($interestIds as $interestId) {
                 $stmt->execute([
                     "user_id"  => $userId,
-                    "hobby_id" => $interestId
+                    "interest_id" => $interestId
                 ]);
             }
 
@@ -90,9 +94,13 @@ class UserInterests
 
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
+            if (!$rows) {
+                return null;
+            }
+
             $interests = [];
             foreach ($rows as $row) {
-                $interests[] = new UserHobbies($row);
+                $interests[] = new UserInterests($row);
             }
 
             return $interests;

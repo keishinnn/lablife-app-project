@@ -1,6 +1,6 @@
 <?php
 
-namespace Models;
+namespace Models\User;
 
 use Core\App;
 use PDOException;
@@ -12,7 +12,7 @@ class UserPreferences
     public int $distance;
     public string $genderPreference; // ["male", "female", "other"]
 
-    public function __construct(array $data)
+    public function __construct(?array $data)
     {
         $this->minAge = $data['age_range']['min'] ?? 18;
         $this->maxAge = $data['age_range']['max'] ?? 99;

@@ -35,6 +35,7 @@ body {
     border-radius: 1rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     background-color: #fff;
+    aspect-ratio: 3 / 4;
 }
 
 .match-button {

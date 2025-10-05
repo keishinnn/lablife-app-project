@@ -2,7 +2,7 @@
 
 namespace Controllers\Auth;
 
-use Models\User;
+use Models\User\User;
 use Core\Auth;
 
 class LogoutController

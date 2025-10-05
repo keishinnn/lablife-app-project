@@ -158,7 +158,7 @@ require(base_path("views/shared/header.php"));
                                             </p>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <button class="profile-pt-btn" style="display: flex; align-items: center; gap: 0.5rem" id="p-hb-add-btn">
+                                        <button class="profile-pt-btn" style="display: flex; align-items: center; gap: 0.5rem" id="p-interests-add-btn">
                                             <span style="font-size: 1.5rem;">+</span> Add
                                         </button>
                                     <?php endif; ?>

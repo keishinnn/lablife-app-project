@@ -5,7 +5,7 @@
 namespace Controllers\Auth;
 
 use Core\App;
-use Models\User;
+use Models\User\User;
 
 class LoginController
 {

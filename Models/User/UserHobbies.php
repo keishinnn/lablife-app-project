@@ -1,6 +1,6 @@
 <?php
 
-namespace Models;
+namespace Models\User;
 
 use Core\App;
 use PDOException;
@@ -11,7 +11,7 @@ class UserHobbies
     public ?string $id;
     public ?string $name;
 
-    public function __construct(array $data)
+    public function __construct(?array $data)
     {
         $this->id = $data['id'] ?? null;
         $this->name = $data['name'] ?? null;
@@ -31,6 +31,10 @@ class UserHobbies
             );
 
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (!$rows) {
+                return null;
+            }
 
             $userHobbies = [];
             foreach ($rows as $row) {
@@ -86,6 +90,10 @@ class UserHobbies
         try {
             $stmt = $db->query("SELECT * FROM hobbies ORDER BY name ASC");
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (!$rows) {
+                return null;
+            }
 
             $hobbies = [];
             foreach ($rows as $row) {

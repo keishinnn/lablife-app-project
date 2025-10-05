@@ -25,7 +25,8 @@ use Core\App;
     <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/hobbies-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css?v=<?php echo time(); ?>">
 </head>
 
 <body>
@@ -42,7 +43,7 @@ use Core\App;
                     <!-- Show the a tags if user is authenticated -->
                     <?php if (Auth::check()) : ?>
                         <div class="nav-links">
-                            <a href="#" class="nav-link">Discover</a>
+                            <a href="/u/discover" class="nav-link">Discover</a>
                             <a href="#" class="nav-link">Matches</a>
                             <a href="#" class="nav-link">
                                 Messages

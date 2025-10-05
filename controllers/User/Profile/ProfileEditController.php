@@ -1,8 +1,8 @@
 <?php
 
-namespace Controllers\User;
+namespace Controllers\User\Profile;
 
-use Models\User;
+use Models\User\User;
 
 class ProfileEditController
 {

@@ -2,13 +2,13 @@
 
 // file path = root/controllers/User/ProfileController.php
 
-namespace Controllers\User;
+namespace Controllers\User\Profile;
 
-use Models\User;
-use Models\UserPersonality;
-use Models\UserPreferences;
-use Models\UserHobbies;
-use Models\UserInterests;
+use Models\User\User;
+use Models\User\UserPersonality;
+use Models\User\UserPreferences;
+use Models\User\UserHobbies;
+use Models\User\UserInterests;
 
 class ProfileController
 {
@@ -40,10 +40,10 @@ class ProfileController
         $hobbies =  UserHobbies::getAllHobbies();
         $interests =  UserInterests::getAllInterests();
 
-        $userPreferences = UserPreferences::getCurrentUserPreferences($userId);
-        $personalityType = UserPersonality::getCurrentUserPersonality($userId);
-        $userHobbies = UserHobbies::getCurrentUserHobbies($userId);
-        $userInterests = UserInterests::getCurrentUserInterests($userId);
+        $userPreferences = UserPreferences::getCurrentUserPreferences($userId) ?? null;
+        $personalityType = UserPersonality::getCurrentUserPersonality($userId) ?? null;
+        $userHobbies = UserHobbies::getCurrentUserHobbies($userId) ?? null;
+        $userInterests = UserInterests::getCurrentUserInterests($userId) ?? null;
 
         $_SESSION['user_id'] = $user->id;
         $isLoading = false;
@@ -87,20 +87,20 @@ class ProfileController
         $error = '';
 
         try {
-            \Models\UserHobbies::syncUserHobbies($userId, $hobbyIds);
+            \Models\User\UserHobbies::syncUserHobbies($userId, $hobbyIds);
         } catch (\Exception $e) {
             $error = $e->getMessage();
         }
 
         if ($error) {
-            $user = \Models\User::getCurrentUserProfile($userId);
-            $userPreferences = \Models\UserPreferences::getCurrentUserPreferences($userId);
-            $personalityType = \Models\UserPersonality::getCurrentUserPersonality($userId);
-            $userHobbies = \Models\UserHobbies::getCurrentUserHobbies($userId);
+            $user = \Models\User\User::getCurrentUserProfile($userId);
+            $userPreferences = \Models\User\UserPreferences::getCurrentUserPreferences($userId);
+            $personalityType = \Models\User\UserPersonality::getCurrentUserPersonality($userId);
+            $userHobbies = \Models\User\UserHobbies::getCurrentUserHobbies($userId);
             $userInterests = UserInterests::getCurrentUserInterests($userId);
-            $ptypes = \Models\UserPersonality::getAllPersonalityTypes();
-            $hobbies = \Models\UserHobbies::getAllHobbies();
-            $interests = \Models\UserInterests::getAllInterests();
+            $ptypes = \Models\User\UserPersonality::getAllPersonalityTypes();
+            $hobbies = \Models\User\UserHobbies::getAllHobbies();
+            $interests = \Models\User\UserInterests::getAllInterests();
 
             view('user/profile.view.php', compact(
                 'user',
@@ -131,22 +131,22 @@ class ProfileController
         $error = '';
 
         try {
-            \Models\UserInterests::syncUserInterests($userId, $interestIds);
+            \Models\User\UserInterests::syncUserInterests($userId, $interestIds);
         } catch (\Exception $e) {
             $error = $e->getMessage();
         }
 
         if ($error) {
-            $user = \Models\User::getCurrentUserProfile($userId);
-            $userPreferences = \Models\UserPreferences::getCurrentUserPreferences($userId);
-            $personalityType = \Models\UserPersonality::getCurrentUserPersonality($userId);
-            $userHobbies = \Models\UserHobbies::getCurrentUserHobbies($userId);
+            $user = \Models\User\User::getCurrentUserProfile($userId);
+            $userPreferences = \Models\User\UserPreferences::getCurrentUserPreferences($userId);
+            $personalityType = \Models\User\UserPersonality::getCurrentUserPersonality($userId);
+            $userHobbies = \Models\User\UserHobbies::getCurrentUserHobbies($userId);
             $userInterests = UserInterests::getCurrentUserInterests($userId);
-            $ptypes = \Models\UserPersonality::getAllPersonalityTypes();
-            $hobbies = \Models\UserHobbies::getAllHobbies();
-            $interests = \Models\UserInterests::getAllInterests();
+            $ptypes = \Models\User\UserPersonality::getAllPersonalityTypes();
+            $hobbies = \Models\User\UserHobbies::getAllHobbies();
+            $interests = \Models\User\UserInterests::getAllInterests();
 
-            view('user/profile.view.php', compact(
+            view('user/profile/profile.view.php', compact(
                 'user',
                 'userPreferences',
                 'personalityType',

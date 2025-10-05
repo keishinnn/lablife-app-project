@@ -1,6 +1,6 @@
 <?php
 
-namespace Models;
+namespace Models\User;
 
 use Core\App;
 use PDOException;
@@ -11,7 +11,7 @@ class UserPersonality
     public string $id;
     public string $name;
 
-    public function __construct(array $data)
+    public function __construct(?array $data)
     {
         $this->id = $data['id'];
         $this->name = $data['name'];
@@ -26,6 +26,10 @@ class UserPersonality
             $stmt = $db->query("SELECT * FROM personality_types");
 
             $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (!$rows) {
+                return null;
+            }
 
             $personality_types = [];
             foreach ($rows as $row) {
@@ -71,7 +75,7 @@ class UserPersonality
     }
 
     // GET SPECIFIC USER PERSONALITY
-    public static function getCurrentUserPersonality(string $userId)
+    public static function getCurrentUserPersonality(string $userId): ?self
     {
         $db = App::resolve('Core\Database');
 
@@ -87,7 +91,11 @@ class UserPersonality
 
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            return new UserPersonality($row);
+            if (!$row) {
+                return null;
+            }
+
+            return new self($row);
         } catch (PDOException $e) {
             throw new \Exception("Database error: " . $e->getMessage());
         } catch (\Exception $e) {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Controllers\User;
+namespace Controllers\User\Profile;
 
-use Models\User;
+use Models\User\User;
 
 class ProfileSetupController
 {
@@ -89,7 +89,7 @@ class ProfileSetupController
         }
 
         // Save preferences
-        $preferences = new \Models\UserPreferences([
+        $preferences = new \Models\User\UserPreferences([
             'age_range' => [
                 'min' => $_POST['age_min'] ?? 18,
                 'max' => $_POST['age_max'] ?? 35,

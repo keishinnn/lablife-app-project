@@ -8,7 +8,7 @@
 
                 <div id="personalitySelect-container">
                     <select name="personality_id" id="personalitySelect" required>
-                        <?php foreach ($ptypes as $ptype): ?>
+                        <?php foreach ($ptypes ?? [] as $ptype): ?>
                             <option value="<?php echo $ptype->id; ?>"
                                 <?php echo (isset($personalityType) && $ptype->id === $personalityType->id) ? 'selected' : ''; ?>>
                                 <?php echo $ptype->name; ?>

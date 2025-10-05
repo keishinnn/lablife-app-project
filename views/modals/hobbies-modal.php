@@ -7,8 +7,8 @@
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
                 <div id="hobbies-container" style="display:flex; flex-wrap:wrap; gap:10px;">
-                    <?php foreach ($hobbies as $hobby):
-                        $isSelected = isset($userHobbies) && in_array($hobby->id, array_map(fn($uh) => $uh->id, $userHobbies));
+                    <?php foreach ($hobbies ?? [] as $hobby):
+                        $isSelected = isset($userHobbies) && in_array($hobby->id, array_map(fn($uh) => $uh->id, $userHobbies ?? []));
                     ?>
                         <div class="hobby-tag <?= $isSelected ? 'active' : '' ?>"
                             data-id="<?= $hobby->id; ?>">
