@@ -83,8 +83,6 @@ class UserInterests
         }
     }
 
-
-
     public static function getAllInterests()
     {
         $db = App::resolve('Core\Database');

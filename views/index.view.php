@@ -1,9 +1,5 @@
 <?php
-
 require(base_path("views/shared/header.php"));
-
-use Core\Auth;
-
 ?>
 
 <main class="hero">
@@ -15,22 +11,12 @@ use Core\Auth;
         <p>Connect with fellow introverts who share your passions and interests.</p>
 
         <div class="btn-group">
-            <!-- if user was not authenticated -->
-            <?php if (Auth::check()): ?>
-                <a href="#" class="btn btn-primary">
-                    Start Discovering →
-                </a>
-                <a href="u/profile" class="btn btn-outline">
-                    View Profile
-                </a>
-            <?php else: ?>
-                <a href="/register" class="btn btn-primary">
-                    Get Started →
-                </a>
-                <a href="/login" class="btn btn-outline">
-                    Explore
-                </a>
-            <?php endif; ?>
+            <a href="/register" class="btn btn-primary">
+                Get Started →
+            </a>
+            <a href="/login" class="btn btn-outline">
+                Explore
+            </a>
         </div>
     </section>
 </main>

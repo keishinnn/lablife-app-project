@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const loading = document.getElementById("pt-loading"); // full-page overlay
     const ptSaveBtn = document.getElementById("pt-save-btn");
 
+     if (!ptModal) return;
+
     // Open modal
     if (ptBtn) {
         ptBtn.addEventListener("click", function () {

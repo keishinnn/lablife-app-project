@@ -11,10 +11,16 @@ function view($path, $data = [])
     require base_path('Views/' . $path);
 }
 
-function calculateAge($birthdate): int
+function calculateAge(string $birthdate): int
 {
-    $birthDate = new DateTime($birthdate);
     $today = new DateTime();
-    $age = $today->diff($birthDate)->y;
+    $birthDate = new DateTime($birthdate);
+    $age = $today->format('Y') - $birthDate->format('Y');
+
+    $monthDiff = $today->format('m') - $birthDate->format('m');
+    if ($monthDiff < 0 || ($monthDiff === 0 && $today->format('d') < $birthDate->format('d'))) {
+        $age--;
+    }
+
     return $age;
 }

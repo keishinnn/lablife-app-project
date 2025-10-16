@@ -54,7 +54,6 @@ class ProfileEditController
     public function handleAvatarUpload()
     {
         \Core\Middleware::auth();
-        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
         if (empty($_FILES['avatar_input'])) {

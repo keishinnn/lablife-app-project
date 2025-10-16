@@ -2,16 +2,16 @@
     <p>&copy; <?= date('Y') ?> LabLife. All rights reserved.</p>
 </footer>
 
-<script type="module" src="/assets/js/register-validation.js"></script>
+<script type="module" src="/assets/js/register-validation.js?v=<?php echo time(); ?>"></script>
 <script type="module" src="/assets/js/login-loading.js"></script>
-<script type="module" src="/assets/js/modals/ptype-modal.js"></script>
+<script type="module" src="/assets/js/modals/ptype-modal.js?v=<?php echo time(); ?>"></script>
 <script type="module" src="/assets/js/loading-state/edit-profile-loading.js"></script>
-<script type="module" src="/assets/js/modals/hobbies-modal.js"></script>
-<script type="module" src="/assets/js/modals/interests-modal.js"></script>
+<script type="module" src="/assets/js/modals/hobbies-modal.js?v=<?php echo time(); ?>"></script>
+<script type="module" src="/assets/js/modals/interests-modal.js?v=<?php echo time(); ?>"></script>
 <script type="module" src="/assets/js/loading-state/setup-profile-loading.js"></script>
 <script type="module" src="/assets/js/loading-state/profile-nav-loading.js"></script>
-<script type="module" src="/assets/js/loading-state/profile-edit-loading.js?v=<?php echo time(); ?>"></script>
-<script type="module" src="/assets/js/upload-photo/profile-edit-upload-photo.js"></script>
+<script type="module" src="/assets/js/loading-state/profile-edit-loading.js"></script>
+<script type="module" src="/assets/js/upload-photo/profile-edit-upload-photo.js?v=<?php echo time(); ?>"></script>
 <script type="module" src="/assets/js/loading-state/edit-preferences-loading.js"></script>
 
 <!-- Cloudflare Turnstile JS -->
@@ -25,6 +25,13 @@
     </div>
 </div>
 
+<!-- Finding Match Loading -->
+<div id="search-loading" class="profile-loading-container">
+    <div class="profile-loading-section">
+        <div class="profile-loading-icon"></div>
+        <p class="profile-loading-text">Finding your match...</p>
+    </div>
+</div>
 
 </body>
 

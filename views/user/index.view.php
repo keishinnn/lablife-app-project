@@ -14,7 +14,7 @@ require base_path('views/shared/header.php');
         <p>Connect with fellow introverts who share your passions and interests.</p>
 
         <div class="btn-group">
-            <a href="#" class="btn btn-primary">
+            <a href="u/discover" class="btn btn-primary">
                 Start Discovering →
             </a>
             <a href="/u/profile" class="btn btn-outline nav-profile">

@@ -1,0 +1,56 @@
+.notification-rejected-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 50;
+    transition: all 0.3s;
+    opacity: 0;
+}
+
+.notification-rejected-container.visible {
+    opacity: 1;
+}
+
+.notification-rejected-section {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1.5rem;
+    max-width: 24rem;
+    overflow: hidden;
+}
+
+.notification-rejected-section-one h3 {
+    color: #1f2937;
+}
+
+/* SVG outline sits on top */
+.notification-border-svg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.notification-border-path {
+    stroke-dasharray: 0;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.1s linear;
+}
+
+.notification-rejected-section-one {
+    position: relative;
+    z-index: 2;
+}
+
+
+@media (prefers-color-scheme: dark) {
+    .notification-rejected-section {
+        background-color: #1f2937;
+    }
+
+    .notification-rejected-section-one h3 {
+        color: #ffffff;
+    }
+}

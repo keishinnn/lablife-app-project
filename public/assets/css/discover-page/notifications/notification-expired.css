@@ -1,0 +1,12 @@
+.notification-expired-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 50;
+    transition: all 0.3s;
+    opacity: 0;
+}
+
+.notification-expired-container.visible {
+    opacity: 1;
+}

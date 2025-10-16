@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const loading = document.getElementById("pt-loading");
     const hbSaveBtn = document.getElementById("p-hb-save-btn");
 
+    if (!hobbiesModal) return;
+
     // Open modal
     if (hobbiesBtn) {
         hobbiesBtn.addEventListener("click", function () {

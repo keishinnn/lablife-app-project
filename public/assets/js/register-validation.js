@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const formError = document.getElementById("form-error");
     const signUpBtn = document.getElementById("sign-up-btn");
 
+    if (!form || !emailInput || !passwordInput || !formError || !signUpBtn) return;
+
     form.addEventListener("submit", function (e) {
         e.preventDefault();
 

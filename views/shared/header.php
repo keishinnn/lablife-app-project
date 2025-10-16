@@ -1,7 +1,6 @@
 <?php
 // root/views/.shared/header.php
 use Core\Auth;
-use Core\App;
 
 ?>
 
@@ -11,7 +10,8 @@ use Core\App;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Lablife</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/assets/css/global.css">
     <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/footer.css">
@@ -24,10 +24,17 @@ use Core\App;
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/hobbies-modal.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css">
-    <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/edit/preference-edit-page.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/discover-loading.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notif-recon-loading.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css?v=<?php echo time(); ?>">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 
 <body>
@@ -58,12 +65,12 @@ use Core\App;
                     <?php if (Auth::check()): ?>
                         <form action="/logout" method="post">
                             <button class="btn btn-signout" type="submit">
-                                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <!--                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 
                             0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 
                             0 013 3v1" />
-                                </svg>
+                                </svg> -->
                                 Sign Out
                             </button>
                         </form>

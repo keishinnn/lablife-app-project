@@ -11,6 +11,7 @@ class SupabaseService
     protected $url;
     protected $anonKey;
     protected $service_role;
+    protected $accessToken;
 
     public function __construct($config)
     {

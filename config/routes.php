@@ -57,3 +57,19 @@ $router->get('/u/discover/matched-user', 'User\\Discover\\DiscoverController@Mat
 
 // Find Potential Match
 $router->post('/u/discover/find-match', 'User\\Discover\\DiscoverController@handleFindPotentialMatch');
+$router->post('/u/discover/start-search', 'User\\Discover\\DiscoverController@handleFindPotentialMatch');
+$router->get('/u/discover/check-match', 'User\\Discover\\DiscoverController@checkMatch');
+$router->post('/u/discover/stop-search', 'User\\Discover\\DiscoverController@handleStopSearch');
+
+// Like and Dislike Other User
+$router->post('/u/discover/like', 'User\\Discover\\DiscoverController@handleLikeOtherUser');
+$router->post('/u/discover/dislike', 'User\\Discover\\DiscoverController@handledisLikeOtherUser');
+
+// Match Session Services
+$router->post('/u/discover/set-expired-session', 'User\\Discover\\DiscoverController@handleSetExpiredSession');
+$router->post('/u/discover/set-rejected-session', 'User\\Discover\\DiscoverController@handleSetRejectedSession');
+$router->post('/u/discover/set-matched-session', 'User\\Discover\\DiscoverController@handleSetMatchedSession');
+
+// Get Supabase Access token
+$router->get('/u/get-access-token', 'Services\\SupabaseService@getUser');
+

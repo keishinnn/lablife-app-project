@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const loading = document.getElementById("pt-loading");
     const interestsSaveBtn = document.getElementById("p-interests-save-btn");
 
+    if (!interestModal) return;
+
     // Open modal
     if (interestsEditBtn) {
         interestsEditBtn.addEventListener("click", function () {

@@ -25,10 +25,46 @@ class MatchSearch
 
             $stmt->execute(['userId' => $userId]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
-
         } catch (PDOException $e) {
             throw $e;
         }
+    }
+
+    public static function stopSearch(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $db->prepare("DELETE FROM active_match_searches WHERE user_id = :user_id AND status IN ('active', 'expired', 'matched')");
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function deactivateUser(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $stmt = $pdo->prepare("
+        UPDATE active_match_searches
+        SET status = 'expired'
+        WHERE user_id = :userId
+    ");
+
+        $stmt->execute(['userId' => $userId]);
     }
 
     public static function getActiveUsersExcept(string $userId)
@@ -37,10 +73,13 @@ class MatchSearch
         $pdo = $db->getConnection();
 
         $stmt = $pdo->prepare("
-            SELECT user_id 
-            FROM active_match_searches
-            WHERE status = 'active' AND user_id != :userId;
-        ");
+        SELECT user_id 
+        FROM active_match_searches
+        WHERE status = 'active'
+          AND user_id != :userId
+          AND last_active > NOW() - INTERVAL '30 seconds'
+        ORDER BY created_at ASC;
+    ");
 
         $stmt->execute(['userId' => $userId]);
         return $stmt->fetchAll(PDO::FETCH_COLUMN);

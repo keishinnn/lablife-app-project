@@ -60,4 +60,152 @@ class MatchSession
             throw $e;
         }
     }
+
+    public static function checkSession(string $userId, string $otherUserId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        try {
+            // 1️⃣ Check if both users are in an active match session
+            $checkSessionStmt = $pdo->prepare("
+            SELECT id 
+            FROM match_sessions
+            WHERE 
+                status = 'pending'
+                AND expires_at > NOW()
+                AND (
+                    (user_a = :userId AND user_b = :otherUserId)
+                    OR (user_b = :userId AND user_a = :otherUserId)
+                )
+            LIMIT 1
+        ");
+
+            $checkSessionStmt->execute([
+                ':userId' => $userId,
+                ':otherUserId' => $otherUserId
+            ]);
+
+            $session = $checkSessionStmt->fetch(PDO::FETCH_ASSOC);
+
+            return $session;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public static function setMatchSessionExpired(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            UPDATE match_sessions
+            SET status = 'expired', expires_at = NOW()
+            WHERE status = 'pending'
+            AND (user_a = :user_id OR user_b = :user_id)
+        ");
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function setMatchSessionRejected(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            UPDATE match_sessions
+            SET status = 'rejected', expires_at = NOW()
+            WHERE status = 'pending'
+            AND (user_a = :user_id OR user_b = :user_id)
+        ");
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function setMatchSessionMatched(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            UPDATE match_sessions
+            SET status = 'matched', expires_at = NOW()
+            WHERE status = 'pending'
+            AND (user_a = :user_id OR user_b = :user_id)
+        ");
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function deleteSession(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            UPDATE match_sessions
+            SET status = 'expired', expires_at = NOW()
+            WHERE status = 'pending'
+            AND (user_a = :user_id OR user_b = :user_id)
+        ");
+
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
 }
