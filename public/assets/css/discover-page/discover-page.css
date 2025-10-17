@@ -246,6 +246,10 @@
     .discover-match-card-swipe {
         background-color: #1f2937;
     }
+
+    #match-timer-text {
+        color: #111827;
+    }
 }
 
 @media (min-width: 640px) {

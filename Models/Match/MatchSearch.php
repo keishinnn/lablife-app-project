@@ -53,6 +53,91 @@ class MatchSearch
         }
     }
 
+    public static function setStatusInMatch(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            UPDATE active_match_searches
+            SET status = 'in_match', last_active = NOW()
+            WHERE user_id = :user_id
+              AND status IN ('active', 'expired')
+        ");
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function setStatusActive(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            UPDATE active_match_searches
+            SET status = 'active', last_active = NOW()
+            WHERE user_id = :user_id
+              AND status IN ('active', 'expired')
+        ");
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function setStatusExpired(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            UPDATE active_match_searches
+            SET status = 'expired', last_active = NOW()
+            WHERE user_id = :user_id
+              AND status IN ('active', 'in_match')
+        ");
+            $stmt->execute([':user_id' => $userId]);
+
+            $pdo->commit();
+
+            return $stmt;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+
     public static function deactivateUser(string $userId)
     {
         $db = App::resolve('Core\Database');

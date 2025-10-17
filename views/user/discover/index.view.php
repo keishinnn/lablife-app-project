@@ -76,8 +76,20 @@ use Core\Auth;
     let activeSearchSub = null;
     let searchStarted = false;
 
+    let cleanupInProgress = false;
+    let searchLocked = false;
+    let isIntentionalNavigation = false;
+
     findMatchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (searchLocked) {
+            console.warn("Search is already active — ignoring duplicate click.");
+            return;
+        }
+
+        searchLocked = true;
+
         findBtn.disabled = true;
         statusMsg.textContent = "Searching for matches...";
         discoverLoading.style.display = 'flex';
@@ -86,8 +98,6 @@ use Core\Auth;
         showStopSearchContainer();
 
         try {
-            // Subscribe to Supabase realtime for new active users
-
             matchSessionSub = supabaseClient
                 .channel('public:match_sessions')
                 .on(
@@ -98,17 +108,19 @@ use Core\Auth;
                     },
                     (payload) => {
                         const session = payload.new;
+                        console.log(session);
 
-                        // Check if the current user is part of this session
-                        if (session.user_a === currentUser || session.user_b === currentUser) {
+                        if ((session.user_a === currentUser || session.user_b === currentUser) && session.status === 'pending') {
+                            isIntentionalNavigation = true;
 
                             if (matchSessionSub) matchSessionSub.unsubscribe();
+                            if (activeSearchSub) activeSearchSub.unsubscribe();
 
                             const partnerId = session.user_a === currentUser ? session.user_b : session.user_a;
 
                             window.location.href = `/u/discover/matched-user?partner=${partnerId}&match=${session.id}`;
-
-                            cleanupSearch();
+                            sessionStorage.setItem('searching', 'false');
+                            setSearchInMatch();
                         }
                     }
                 )
@@ -120,19 +132,20 @@ use Core\Auth;
                 .channel('public:active_match_searches')
                 .on(
                     'postgres_changes', {
-                        event: 'UPDATE',
+                        event: '*',
                         schema: 'public',
                         table: 'active_match_searches',
                     },
                     (payload) => {
                         const session = payload.new;
+                        console.log(session);
 
                         // Check if the current user is part of this session
                         if (session.user_id === currentUser && session.status == 'expired') {
                             hideStopSearchContainer();
                             showStartSearchContainer();
-                            cleanupSearch();
                             if (activeSearchSub) activeSearchSub.unsubscribe();
+                            if (matchSessionSub) matchSessionSub.unsubscribe();
 
                             statusMsg.textContent = "Failed to find match";
                             findBtn.disabled = false;
@@ -162,7 +175,7 @@ use Core\Auth;
 
     stopSearchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        cleanupSearch();
+        await setSearchExpired(true);
 
         showStartSearchContainer();
         hideStopSearchContainer();
@@ -170,18 +183,56 @@ use Core\Auth;
         statusMsg.textContent = "Find Your Match";
         discoverLoading.style.display = 'none';
         findBtn.disabled = false;
+        searchLocked = false;
     });
 
     // Cleanup listener — runs when the user leaves the page
-    async function cleanupSearch() {
+    async function setSearchExpired(fromStopButton = false) {
+        if (cleanupInProgress) {
+            console.warn("Cleanup already in progress — skipping.");
+            return;
+        }
+        cleanupInProgress = true;
+
         try {
-            console.log("Cleaning up active match search for user:", currentUser);
-            await fetch('/u/discover/stop-search', {
+            if (matchSessionSub) {
+                await matchSessionSub.unsubscribe();
+                matchSessionSub = null;
+            }
+            if (activeSearchSub) {
+                await activeSearchSub.unsubscribe();
+                activeSearchSub = null;
+            }
+
+            await fetch('/u/discover/set-search-expired', {
                 method: 'POST',
                 keepalive: true
             });
         } catch (err) {
-            console.warn("Cleanup failed or not needed:", err);
+            console.warn("Cleanup failed:", err);
+        } finally {
+            cleanupInProgress = false;
+            if (!fromStopButton) searchLocked = false;
+        }
+    }
+
+    async function setSearchInMatch() {
+        try {
+            if (matchSessionSub) {
+                await matchSessionSub.unsubscribe();
+                matchSessionSub = null;
+            }
+            if (activeSearchSub) {
+                await activeSearchSub.unsubscribe();
+                activeSearchSub = null;
+            }
+
+            await fetch('/u/discover/set-search-in-match', {
+                method: 'POST',
+                keepalive: true
+            });
+        } catch (err) {
+            console.warn("Cleanup failed:", err);
         }
     }
 
@@ -218,7 +269,19 @@ use Core\Auth;
     }
 
     // Listen for page unloads, tab close, navigation, etc.
-    window.addEventListener('beforeunload', cleanupSearch);
-    window.addEventListener('pagehide', cleanupSearch);
+    window.addEventListener('beforeunload', (event) => {
+        unsubscribeAll();
+        if (!isIntentionalNavigation) setSearchExpired(false);
+    });
+
+    window.addEventListener('pagehide', (event) => {
+        unsubscribeAll();
+        if (!isIntentionalNavigation) setSearchExpired(false);
+    });
+
+    window.addEventListener('load', () => {
+        const reconLoading = document.getElementById('recon-loading');
+        if (reconLoading) reconLoading.style.display = 'none';
+    });
 </script>
 <?php require base_path('views/shared/footer.php') ?>

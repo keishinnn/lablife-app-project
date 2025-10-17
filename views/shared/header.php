@@ -29,8 +29,8 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/edit/preference-edit-page.css">
     <link rel="stylesheet" href="/assets/css/discover-page/discover-loading.css">
-    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification.css">
-    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notif-recon-loading.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css?v=<?php echo time(); ?>">
 

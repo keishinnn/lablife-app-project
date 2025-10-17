@@ -11,7 +11,7 @@ use Core\Auth;
     <div class="discover-container" id="discover-container-id">
         <header>
             <div class="discover-section-backBtn-section">
-                <button title="Go back">
+                <button title="Go back" id="discover-back-btn">
                     <svg class="discover-backBtn-svg"
                         fill="none"
                         stroke="currentColor"
@@ -19,7 +19,7 @@ use Core\Auth;
                         <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth={2}
+                            strokeWidth="2"
                             d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
@@ -137,6 +137,11 @@ use Core\Auth;
     const dashArray = radius * Math.PI * 2;
     const progressBar = document.querySelector('.match-timer-bar');
     const progressText = document.getElementById('match-timer-text');
+    let timerPaused = false;
+    let timerInterval = null;
+
+    // back button
+    const discoverBackBtn = document.getElementById('discover-back-btn');
 
     // form variables
     const submitLikeForm = document.getElementById('submit-like-form');
@@ -162,6 +167,7 @@ use Core\Auth;
     const rejectProgressBar = document.querySelector(".notification-border-path");
     const rejectDuration = 3;
     let rejectStart = null;
+    let expiredStart = null;
     let rejectAnimating = false;
 
     // Expired Session Notification
@@ -174,14 +180,19 @@ use Core\Auth;
     let matchesSub = null;
     let dislikesSub = null;
 
-    if (progressBar && progressText) {
-        progressBar.style.strokeDasharray = dashArray;
-        progressBar.style.strokeDashoffset = 0;
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
 
-        const interval = setInterval(() => {
+        timerInterval = setInterval(async () => {
+            if (timerPaused) return;
+
             remaining--;
+
             if (remaining < 0) {
-                clearInterval(interval);
+                clearInterval(timerInterval);
+                timerInterval = null;
+                await setSessionStatusExpired();
+                showMatchExpired();
                 return;
             }
 
@@ -191,6 +202,12 @@ use Core\Auth;
             progressBar.style.strokeDashoffset = dashOffset;
             progressText.textContent = `${remaining}s`;
         }, 1000);
+    }
+
+    if (progressBar && progressText) {
+        progressBar.style.strokeDasharray = dashArray;
+        progressBar.style.strokeDashoffset = 0;
+        startTimer();
     } else {
         console.error("match-timer-bar or match-timer-text element not found.");
     }
@@ -207,10 +224,16 @@ use Core\Auth;
                 const match = payload.new;
                 console.log(match);
 
-                if (match.user1_id === currentUser || match.user2_id === currentUser && match.user1_id === partnerId || match.user2_id === partnerId) {
-                    showMatchedModal();
+                if (
+                    (match.user1_id === currentUser || match.user2_id === currentUser) &&
+                    (match.user1_id === partnerId || match.user2_id === partnerId)
+                ) {
+                    timerPaused = true;
+                    clearInterval(timerInterval);
+                    timerInterval = null;
 
-                    if (matchesSub) matchesSub.unsubscribe();
+                    setSessionStatusMatched();
+                    showMatchedModal();
                 }
             }
         )
@@ -226,33 +249,22 @@ use Core\Auth;
                 schema: 'public',
                 table: 'match_sessions',
             },
-            (payload) => {
+            async (payload) => {
                 const session = payload.new;
-                console.log(session);
 
-                if ((session.user_a === currentUser || session.user_b === currentUser) && session.status === 'expired') {
-                    if (matchSessionSub) matchSessionSub.unsubscribe();
-                    showMatchExpired();
+                const isUserInSession = session.user_a === currentUser || session.user_b === currentUser;
 
-                    (async () => {
-                        try {
-                            await cleanupMatchSession();
+                if (isUserInSession && session.status === 'rejected') {
+                    const selfRejected = sessionStorage.getItem('selfRejected') === 'true';
+                    if (selfRejected) {
+                        sessionStorage.removeItem('selfRejected');
+                        return;
+                    }
 
-                            // Trigger new search before redirect
-                            const res = await fetch('/u/discover/start-search', {
-                                method: 'POST'
-                            });
+                    showNoMatchThisTime();
 
-                            if (!res.ok) throw new Error('Failed to start search');
-
-                            sessionStorage.setItem('searching', 'true');
-
-                            window.location.href = '/u/discover';
-                        } catch (err) {
-                            console.error("Failed to auto-restart search:", err);
-                            window.location.href = '/u/discover';
-                        }
-                    })();
+                    const notificationDuration = 3000;
+                    await new Promise((resolve) => setTimeout(resolve, notificationDuration));
                 }
             }
         )
@@ -274,18 +286,22 @@ use Core\Auth;
                 if (dislike.from_user_id === partnerId && dislike.to_user_id === currentUser) {
 
                     showNoMatchThisTime();
-                    if (dislikesSub) dislikesSub.unsubscribe();
+                    setSessionStatusRejected();
+                    unsubscribeAll();
+
 
                 } else if (dislike.from_user_id === currentUser && dislike.to_user_id === partnerId) {
 
                     showNoMatchThisTime();
+                    setSessionStatusRejected();
+                    unsubscribeAll();
 
-                    if (dislikesSub) dislikesSub.unsubscribe();
                 } else {
 
                     showNoMatchThisTime();
+                    setSessionStatusRejected();
+                    unsubscribeAll();
 
-                    if (dislikesSub) dislikesSub.unsubscribe();
                 }
             }
         )
@@ -340,21 +356,11 @@ use Core\Auth;
         }
     });
 
-    function showMatchedModal() {
-        if (!matchedNotification) return;
-
-        matchedModal.style.display = 'flex';
-        matchedNotification.classList.add('visible');
-    }
-
     keepSearchingBtn.addEventListener('click', async (e) => {
         try {
             isIntentionalNavigation = true;
-
-            const res = await fetch('/u/discover/start-search', {
-                method: 'POST'
-            });
-            if (!res.ok) throw new Error('Failed to start search');
+            hideMatchedModal();
+            showReconLoading();
 
             sessionStorage.setItem('searching', 'true');
             window.location.href = '/u/discover';
@@ -363,6 +369,64 @@ use Core\Auth;
             window.location.href = '/u/discover';
         }
     });
+
+    discoverBackBtn.addEventListener('click', async (e) => {
+        try {
+            isIntentionalNavigation = true;
+            sessionStorage.setItem('selfRejected', 'true');
+            unsubscribeAll();
+            await setSessionStatusRejected();
+            await setSearchExpired();
+
+            window.location.href = '/u/discover';
+        } catch (err) {
+            console.error('Failed to navigate', err);
+            window.location.href = '/u/discover';
+        }
+    });
+
+    async function setSearchExpired(fromStopButton = false) {
+        if (cleanupInProgress) {
+            console.warn("Cleanup already in progress — skipping.");
+            return;
+        }
+        cleanupInProgress = true;
+
+        try {
+            if (matchSessionSub) {
+                await matchSessionSub.unsubscribe();
+                matchSessionSub = null;
+            }
+            if (activeSearchSub) {
+                await activeSearchSub.unsubscribe();
+                activeSearchSub = null;
+            }
+
+            await fetch('/u/discover/set-search-expired', {
+                method: 'POST',
+                keepalive: true
+            });
+        } catch (err) {
+            console.warn("Cleanup failed:", err);
+        } finally {
+            cleanupInProgress = false;
+            if (!fromStopButton) searchLocked = false;
+        }
+    }
+
+    function showMatchedModal() {
+        if (!matchedNotification) return;
+
+        matchedModal.style.display = 'flex';
+        matchedNotification.classList.add('visible');
+    }
+
+    function hideMatchedModal() {
+        if (!matchedNotification) return;
+
+        matchedModal.style.display = 'none';
+        matchedNotification.classList.remove('visible');
+    }
 
     function animateBorder(timestamp) {
         if (!rejectStart) rejectStart = timestamp;
@@ -391,21 +455,21 @@ use Core\Auth;
     }
 
     function animateExpiredBorder(timestamp) {
-        if (!rejectStart) rejectStart = timestamp;
-        const elapsed = (timestamp - rejectStart) / 1000;
+        if (!expiredStart) expiredStart = timestamp;
+        const elapsed = (timestamp - expiredStart) / 1000;
 
         if (elapsed <= rejectDuration) {
             const progress = elapsed / rejectDuration;
             const offset = expiredProgressBar.getTotalLength() * progress;
             expiredProgressBar.style.strokeDashoffset = -offset;
-            requestAnimationFrame(animateBorder);
+            requestAnimationFrame(animateExpiredBorder);
         } else {
             rejectAnimating = false;
         }
     }
 
     function startExpiredBorderAnimation() {
-        if (!animateExpiredBorder || rejectAnimating) return;
+        if (!expiredProgressBar || rejectAnimating) return;
 
         rejectAnimating = true;
         rejectStart = null;
@@ -417,9 +481,19 @@ use Core\Auth;
     }
 
     // Cleanup listener — runs when the user leaves the page
-    async function cleanupMatchSession() {
+    async function setSessionStatusMatched() {
         try {
-            console.log("Cleaning up match session for user:", currentUser);
+            await fetch('/u/discover/set-matched-session', {
+                method: 'POST',
+                keepalive: true
+            });
+        } catch (err) {
+            console.warn("Cleanup failed or not needed:", err);
+        }
+    }
+
+    async function setSessionStatusRejected() {
+        try {
             await fetch('/u/discover/set-rejected-session', {
                 method: 'POST',
                 keepalive: true
@@ -429,13 +503,43 @@ use Core\Auth;
         }
     }
 
+    async function setSessionStatusExpired() {
+        try {
+            await fetch('/u/discover/set-expired-session', {
+                method: 'POST',
+                keepalive: true
+            });
+        } catch (err) {
+            console.warn("Cleanup failed or not needed:", err);
+        }
+    }
+
+    async function setSearchActive() {
+        try {
+            if (matchSessionSub) {
+                await matchSessionSub.unsubscribe();
+                matchSessionSub = null;
+            }
+            if (activeSearchSub) {
+                await activeSearchSub.unsubscribe();
+                activeSearchSub = null;
+            }
+
+            await fetch('/u/discover/set-search-active', {
+                method: 'POST',
+                keepalive: true
+            });
+        } catch (err) {
+            console.warn("Cleanup failed:", err);
+        }
+    }
+
     async function restartSearch() {
         try {
             isIntentionalNavigation = true;
+            unsubscribeAll();
             showReconLoading();
-            await cleanupMatchSession();
 
-            // Trigger new search before redirect
             const res = await fetch('/u/discover/start-search', {
                 method: 'POST'
             });
@@ -443,7 +547,6 @@ use Core\Auth;
             if (!res.ok) throw new Error('Failed to start search');
 
             sessionStorage.setItem('searching', 'true');
-            hideReconLoading();
             window.location.href = '/u/discover';
         } catch (err) {
             console.error("Failed to auto-restart search:", err);
@@ -510,7 +613,6 @@ use Core\Auth;
   </svg>`;
             heart.classList.add('heart-feedback');
 
-            // Randomize small offsets so hearts don't overlap
             const xOffset = Math.random() * 40 - 20;
             const yOffset = Math.random() * 10 - 5;
             heart.style.left = `${rect.left + rect.width / 2 + xOffset}px`;
@@ -519,7 +621,6 @@ use Core\Auth;
 
             container.appendChild(heart);
 
-            // Remove after animation ends
             setTimeout(() => heart.remove(), 1000);
         }
     }
@@ -542,7 +643,6 @@ use Core\Auth;
             `;
             heartBreak.classList.add('heart-feedback');
 
-            // Randomize small offsets so hearts don't overlap
             const xOffset = Math.random() * 40 - 20;
             const yOffset = Math.random() * 10 - 5;
             heartBreak.style.left = `${rect.left + rect.width / 2 + xOffset}px`;
@@ -551,18 +651,26 @@ use Core\Auth;
 
             container.appendChild(heartBreak);
 
-            // Remove after animation ends
             setTimeout(() => heartBreak.remove(), 1000);
         }
     }
 
+    function unsubscribeAll() {
+        [matchesSub, matchSessionSub, dislikesSub].forEach(sub => {
+            sub?.unsubscribe();
+        });
+        matchesSub = matchSessionSub = dislikesSub = null;
+    }
+
     // Listen for page unloads, tab close, navigation, etc.
     window.addEventListener('beforeunload', (event) => {
-        if (!isIntentionalNavigation) cleanupMatchSession();
+        unsubscribeAll();
+        if (!isIntentionalNavigation) setSessionStatusRejected();
     });
 
     window.addEventListener('pagehide', (event) => {
-        if (!isIntentionalNavigation) cleanupMatchSession();
+        unsubscribeAll();
+        if (!isIntentionalNavigation) setSessionStatusRejected();
     });
 </script>
 

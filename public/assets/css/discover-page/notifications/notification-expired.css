@@ -5,8 +5,15 @@
     z-index: 50;
     transition: all 0.3s;
     opacity: 0;
+    pointer-events: none;
 }
 
 .notification-expired-container.visible {
     opacity: 1;
+}
+
+.notification-expired-border-path {
+    stroke-dasharray: 0;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.1s linear;
 }

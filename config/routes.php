@@ -59,16 +59,21 @@ $router->get('/u/discover/matched-user', 'User\\Discover\\DiscoverController@Mat
 $router->post('/u/discover/find-match', 'User\\Discover\\DiscoverController@handleFindPotentialMatch');
 $router->post('/u/discover/start-search', 'User\\Discover\\DiscoverController@handleFindPotentialMatch');
 $router->get('/u/discover/check-match', 'User\\Discover\\DiscoverController@checkMatch');
-$router->post('/u/discover/stop-search', 'User\\Discover\\DiscoverController@handleStopSearch');
+
+// Active Match Services
+$router->post('/u/discover/stop-search', 'User\\Discover\\SearchController@handleStopSearch');
+$router->post('/u/discover/set-search-in-match', 'User\\Discover\\SearchController@handleSetSearchInMatch');
+$router->post('/u/discover/set-search-expired', 'User\\Discover\\SearchController@handleSetSearchExpired');
+$router->post('/u/discover/set-search-active', 'User\\Discover\\SearchController@handleSetSearchActive');
 
 // Like and Dislike Other User
-$router->post('/u/discover/like', 'User\\Discover\\DiscoverController@handleLikeOtherUser');
-$router->post('/u/discover/dislike', 'User\\Discover\\DiscoverController@handledisLikeOtherUser');
+$router->post('/u/discover/like', 'User\\Discover\\ReactionController@handleLikeOtherUser');
+$router->post('/u/discover/dislike', 'User\\Discover\\ReactionController@handledisLikeOtherUser');
 
 // Match Session Services
-$router->post('/u/discover/set-expired-session', 'User\\Discover\\DiscoverController@handleSetExpiredSession');
-$router->post('/u/discover/set-rejected-session', 'User\\Discover\\DiscoverController@handleSetRejectedSession');
-$router->post('/u/discover/set-matched-session', 'User\\Discover\\DiscoverController@handleSetMatchedSession');
+$router->post('/u/discover/set-expired-session', 'User\\Discover\\MatchSessionController@handleSetExpiredSession');
+$router->post('/u/discover/set-rejected-session', 'User\\Discover\\MatchSessionController@handleSetRejectedSession');
+$router->post('/u/discover/set-matched-session', 'User\\Discover\\MatchSessionController@handleSetMatchedSession');
 
 // Get Supabase Access token
 $router->get('/u/get-access-token', 'Services\\SupabaseService@getUser');
