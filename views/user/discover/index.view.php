@@ -135,6 +135,7 @@ use Core\Auth;
                         event: '*',
                         schema: 'public',
                         table: 'active_match_searches',
+                        filter: `user_id=eq.${currentUser}`,
                     },
                     (payload) => {
                         const session = payload.new;
@@ -270,12 +271,10 @@ use Core\Auth;
 
     // Listen for page unloads, tab close, navigation, etc.
     window.addEventListener('beforeunload', (event) => {
-        unsubscribeAll();
         if (!isIntentionalNavigation) setSearchExpired(false);
     });
 
     window.addEventListener('pagehide', (event) => {
-        unsubscribeAll();
         if (!isIntentionalNavigation) setSearchExpired(false);
     });
 

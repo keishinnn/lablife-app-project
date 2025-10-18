@@ -191,7 +191,6 @@ use Core\Auth;
             if (remaining < 0) {
                 clearInterval(timerInterval);
                 timerInterval = null;
-                await setSessionStatusExpired();
                 showMatchExpired();
                 return;
             }
@@ -254,6 +253,12 @@ use Core\Auth;
 
                 const isUserInSession = session.user_a === currentUser || session.user_b === currentUser;
 
+                const isPartnerInSession = session.user_a === partnerId || session.user_b === partnerId;
+
+                if ((isUserInSession && isPartnerInSession) && session.status === 'expired') {
+
+                }
+
                 if (isUserInSession && session.status === 'rejected') {
                     const selfRejected = sessionStorage.getItem('selfRejected') === 'true';
                     if (selfRejected) {
@@ -272,41 +277,32 @@ use Core\Auth;
             console.log("🛰️ Subscription status on match_sessions:", status);
         });
 
-    dislikesSub = supabaseClient
-        .channel('public:dislikes')
+    let dislikeSub = null;
+
+    dislikeSub = supabaseClient
+        .channel('public:dislikes_from_current_to_partner')
         .on(
             'postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'dislikes',
+                filter: `from_user_id=in.(${currentUser},${partnerId})`
             },
             (payload) => {
-                const dislike = payload.new;
+                const dislike = payload.new
 
-                if (dislike.from_user_id === partnerId && dislike.to_user_id === currentUser) {
-
+                if (
+                    (dislike.from_user_id === partnerId && dislike.to_user_id === currentUser) ||
+                    (dislike.from_user_id === currentUser && dislike.to_user_id === partnerId)
+                ) {
                     showNoMatchThisTime();
                     setSessionStatusRejected();
-                    unsubscribeAll();
-
-
-                } else if (dislike.from_user_id === currentUser && dislike.to_user_id === partnerId) {
-
-                    showNoMatchThisTime();
-                    setSessionStatusRejected();
-                    unsubscribeAll();
-
-                } else {
-
-                    showNoMatchThisTime();
-                    setSessionStatusRejected();
-                    unsubscribeAll();
-
+                    dislikeSub.unsubscribe();
                 }
             }
         )
         .subscribe((status) => {
-            console.log("🛰️ Subscription status on matches:", status);
+            console.log("Subscription status for dislike 1:", status);
         });
 
     submitLikeForm.addEventListener('submit', async (e) => {
@@ -539,12 +535,6 @@ use Core\Auth;
             isIntentionalNavigation = true;
             unsubscribeAll();
             showReconLoading();
-
-            const res = await fetch('/u/discover/start-search', {
-                method: 'POST'
-            });
-
-            if (!res.ok) throw new Error('Failed to start search');
 
             sessionStorage.setItem('searching', 'true');
             window.location.href = '/u/discover';

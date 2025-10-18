@@ -26,5 +26,4 @@ require base_path('views/shared/header.php');
     <?php require(base_path('Views/user/profile/loading/profile.loading.view.php')) ?>
 </main>
 
-
 <?php require base_path('views/shared/footer.php') ?>

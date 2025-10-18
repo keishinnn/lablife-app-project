@@ -8,7 +8,7 @@
                 rx="16" ry="16"
                 fill="none"
                 stroke="#c43838ff"
-                stroke-width="4" />
+                stroke-width="2" />
         </svg>
 
 
