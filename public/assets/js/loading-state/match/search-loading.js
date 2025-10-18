@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (profileLink && pfLoading && heroSection) {
         profileLink.addEventListener("click", function (e) {
-            // Hide the hero section and show loader
             heroSection.style.display = "none";
             pfLoading.style.display = "flex";
         });

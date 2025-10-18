@@ -1,11 +1,9 @@
 .profile-get-loading-container {
+    background: var(--background);
+    min-height: 100vh;
     display: none;
-    width: 100%;
-    height: 100%;
-
-    /* center content */
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 }
 
 .profile-get-loading-section {
@@ -24,7 +22,7 @@
 
 .profile-get-loading-text {
     margin-top: 1rem;
-    color: #ffffff;
+    color: #4b5563;
 }
 
 @keyframes spin {

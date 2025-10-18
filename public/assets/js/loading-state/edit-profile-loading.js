@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const btn = document.getElementById("edit-profile-save-btn");
     const form = document.getElementById("edit-profile-form");
-    const loading = document.getElementById("pt-loading"); // full-page overlay
+    const loading = document.getElementById("pt-loading"); 
 
     if (btn) {
         form.addEventListener("submit", function () {
@@ -10,5 +10,4 @@ document.addEventListener("DOMContentLoaded", function () {
             btn.textContent = "Saving...";
         });
     }
-
 });

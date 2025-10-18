@@ -124,7 +124,7 @@ require(base_path("views/shared/header.php"));
                     <?php endif; ?>
 
                     <div class="profile-edit-page-section-fourteen">
-                        <a href="/u/profile">Cancel</a>
+                        <a href="/u/profile" class="profile-edit-cancel-btn">Cancel</a>
                         <button type="submit" class="profile-edit-page-section-fourteen-btn" id="edit-profile-save-btn"><?php echo $isLoading ? "Saving..." : "Save Changes" ?>
                         </button>
                     </div>
@@ -132,9 +132,6 @@ require(base_path("views/shared/header.php"));
             </div>
         </div>
     </div>
-
-    <!-- Loading state in Edit Profile Cancel Button-->
-    <?php require(base_path('Views/user/profile/loading/profile.loading.view.php')) ?>
 </div>
 
 <?php require(base_path("views/shared/footer.php")) ?>

@@ -16,10 +16,8 @@ class LogoutController
             session_start();
         }
 
-        if (\Core\Middleware::auth()) {
-            User::updateIsOffline(Auth::user());
-        }
-        
+        User::updateIsOffline(Auth::user());
+
         // Clear session data
         $_SESSION = [];
         if (ini_get("session.use_cookies")) {

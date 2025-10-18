@@ -1,0 +1,23 @@
+.matches-loading-container {
+    background: var(--background);
+    min-height: 100vh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.matches-loading-section {
+    text-align: center;
+}
+
+.matches-loading-section p {
+    margin-top: 1rem;
+    color: #4b5563;
+}
+
+
+@media (prefers-color-scheme: dark) {
+    .matches-loading-section p {
+        color: #9ca3af;
+    }
+}

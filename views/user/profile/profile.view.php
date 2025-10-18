@@ -177,7 +177,7 @@ require(base_path("views/shared/header.php"));
                         <h3 class="profile-quick-action-text">Quick Actions</h3>
 
                         <div class="profile-section-ten">
-                            <a href="/u/profile-edit">
+                            <a href="/u/profile-edit" class="profile-edit-action">
                                 <div class="profile-section-eleven">
                                     <div class="profile-section-twelve">
                                         <svg
@@ -237,9 +237,6 @@ require(base_path("views/shared/header.php"));
             </div>
         </div>
     </div>
-
-    <!-- Loading state in Edit Profile -->
-    <?php require(base_path('Views/user/profile/loading/profile.loading.view.php')) ?>
 </div>
 
 

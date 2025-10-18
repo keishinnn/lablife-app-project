@@ -1,0 +1,52 @@
+<?php
+
+namespace Models\Match;
+
+use Models\User\User;
+use Core\App;
+use PDO;
+use PDOException;
+
+class Matches
+{
+    public string $user1_id;
+    public string $user2_id;
+
+    public function __construct(array $data)
+    {
+        $this->user1_id = $data['user1_id'];
+        $this->user2_id = $data['user2_id'];
+    }
+
+    public static function getAllUserMatches(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                SELECT user1_id, user2_id
+                FROM matches
+                WHERE user1_id = :userId OR user2_id = :userId
+                ");
+            $stmt->execute(['userId' => $userId]);
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$rows) {
+                return [];
+            }
+
+            $matches = [];
+            foreach ($rows as $row) {
+                $matches[] = new Matches($row);
+            }
+
+            return array_map(fn($row) => new Matches($row), $rows);
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+}

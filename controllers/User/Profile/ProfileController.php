@@ -163,4 +163,20 @@ class ProfileController
         header('Location: /u/profile');
         exit;
     }
+
+    public function handleSetOffline()
+    {
+        \Core\Middleware::auth();
+        $userId = \Core\Auth::user();
+
+        User::updateIsOffline($userId);
+    }
+
+    public function handleSetOnline()
+    {
+        \Core\Middleware::auth();
+        $userId = \Core\Auth::user();
+
+        User::updateIsOnline($userId);
+    }
 }

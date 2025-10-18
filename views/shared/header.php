@@ -22,17 +22,19 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/hobbies-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css">
     <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css">
     <link rel="stylesheet" href="/assets/css/profile-page/edit/preference-edit-page.css">
     <link rel="stylesheet" href="/assets/css/discover-page/discover-loading.css">
-    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notif-recon-loading.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notif-recon-loading.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css">
+    <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css?v=<?php echo time(); ?>">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
@@ -43,7 +45,7 @@ use Core\Auth;
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
-                    <a href="<?php echo !Auth::check() ? '/' : '/u'; ?>" class="logo">
+                    <a href="<?php echo !Auth::check() ? '/' : '/u'; ?>" class="logo" id="nav-logo-btn">
                         <img src="/assets/images/logo.png" alt="LabLife Logo" class="logo-img">
                         <span class="logo-text">LabLife</span>
                     </a>
@@ -52,7 +54,7 @@ use Core\Auth;
                     <?php if (Auth::check()) : ?>
                         <div class="nav-links">
                             <a href="/u/discover" class="nav-link">Discover</a>
-                            <a href="#" class="nav-link">Matches</a>
+                            <a href="/u/matches" class="nav-link">Matches</a>
                             <a href="#" class="nav-link">
                                 Messages
                                 <span class="badge"></span>
@@ -81,3 +83,5 @@ use Core\Auth;
             </div>
         </nav>
     </header>
+
+    <div id="page-content">

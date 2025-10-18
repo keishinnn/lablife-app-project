@@ -17,6 +17,10 @@ $router->post('/logout', 'Auth\\LogoutController@logout');
 // Authenticated User
 $router->get('/u', 'User\\Profile\\ProfileController@View');
 
+// Mark as offline if user leaves page without signing out
+$router->post('/u/set-offline', 'User\\Profile\\ProfileController@handleSetOffline');
+$router->post('/u/set-online', 'User\\Profile\\ProfileController@handleSetOnline');
+
 // Showing view in setup profile
 $router->get('/u/setup-profile', 'User\\Profile\\ProfileSetupController@SetupProfileView');
 $router->get('/u/setup-profile-preferences', 'User\\Profile\\ProfileSetupController@SetupProfilePreferencesView');
@@ -78,3 +82,5 @@ $router->post('/u/discover/set-matched-session', 'User\\Discover\\MatchSessionCo
 // Get Supabase Access token
 $router->get('/u/get-access-token', 'Services\\SupabaseService@getUser');
 
+// Showing Matches Page
+$router->get('/u/matches', 'User\\Matches\\MatchesController@View');

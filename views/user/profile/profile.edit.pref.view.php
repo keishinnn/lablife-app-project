@@ -87,16 +87,13 @@ require(base_path("views/shared/header.php"));
                     </div>
 
                     <div class="profile-edit-page-section-fourteen">
-                        <a href="/u/profile">Cancel</a>
+                        <a href="/u/profile" class="profile-edit-pref-cancel-btn">Cancel</a>
                         <button type="submit" class="profile-edit-page-section-fourteen-btn" id="edit-pref-save-btn">Save Changes</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-    <!-- Loading state in Edit Profile -->
-    <?php require(base_path('Views/user/profile/loading/profile.loading.view.php')) ?>
 </div>
 
 <?php require(base_path("views/shared/footer.php")) ?>
