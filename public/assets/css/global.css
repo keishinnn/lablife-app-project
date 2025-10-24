@@ -5,6 +5,7 @@
     --background: linear-gradient(to bottom right, #ffffff, #fdf2f8);
     --foreground: #171717;
     --font-mono: monospace;
+    --bg-secondary: #0f172a;
 }
 
 * {
@@ -60,11 +61,10 @@ body {
     border: 1px solid #e5e7eb;
 }
 
-
-
 .chat-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
+    scroll-behavior: smooth;
 }
 
 .chat-scrollbar::-webkit-scrollbar {

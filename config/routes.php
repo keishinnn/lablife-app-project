@@ -84,3 +84,9 @@ $router->get('/u/get-access-token', 'Services\\SupabaseService@getUser');
 
 // Showing Matches Page
 $router->get('/u/matches', 'User\\Matches\\MatchesController@View');
+
+// Show Messages Page
+$router->get('/u/messages', 'User\\Messages\\MessagesController@View');
+
+// Create Channel Message
+$router->post('/u/matches/create-channel', 'User\\Matches\\MatchesController@handleCreateOrGetChannel');

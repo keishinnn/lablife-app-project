@@ -1,0 +1,115 @@
+.chat-header-section {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
+}
+
+.chat-header-section-one {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-header-section-three {
+    display: flex;
+    align-items: center;
+}
+
+.chat-header-section-three> :not([hidden])~ :not([hidden]) {
+    margin-left: 0.75rem;
+}
+
+.chat-header-section-four {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+}
+
+.chat-header-section-four img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 9999px;
+    position: relative;
+    z-index: 0;
+}
+
+.chat-header-section-five h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.chat-header-section-five p {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.chat-header-section-six {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.chat-header-section-seven {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chat-header-section-seven button:nth-child(1) {
+    padding: 0.75rem;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    color: #ffffff;
+    transition: all 0.2s;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+}
+
+.chat-header-section-seven button:nth-child(1):hover {
+    background: linear-gradient(to right, #2563eb, #7c3aed);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.chat-header-section-seven button:nth-child(2) {
+    cursor: pointer;
+    border-radius: 9999px;
+    padding: 0.5rem;
+    position: relative;
+    transition: background-color 0.2s;
+    border: none;
+}
+
+.chat-header-section-seven button:nth-child(2):hover {
+    background-color: #4b5563;
+}
+
+.chat-header-three-dots {
+    color: #000000;
+    background-color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+    .chat-header-section {
+        background-color: #0f172a;
+        border-color: #374151;
+    }
+
+    .chat-header-section-two button:hover {
+        background-color: #374151;
+    }
+
+    .chat-header-section-five h2 {
+        color: #ffffff;
+    }
+
+    .chat-header-section-five p {
+        color: #9ca3af;
+    }
+
+    .chat-header-three-dots {
+        color: #ffffff;
+    }
+}

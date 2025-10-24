@@ -56,7 +56,6 @@ class DiscoverController
     {
         \Core\Middleware::auth();
         $userId = \Core\Auth::user();
-        $db = \Core\App::resolve('Core\Database')->getConnection();
 
         // Start the search (insert/update active search)
         MatchSearch::startSearch($userId);
@@ -72,14 +71,6 @@ class DiscoverController
                 $session = MatchSession::createSession($userId, $matchedUser['candidate_id'], 60);
 
                 if ($session) {
-                    // Mark both users as matched
-                    $stmt = $db->prepare("
-                    UPDATE active_match_searches 
-                    SET status = 'matched', last_active = NOW()
-                    WHERE user_id IN (:a, :b)
-                ");
-                    $stmt->execute(['a' => $userId, 'b' => $matchedUser['candidate_id']]);
-
                     echo json_encode([
                         'status' => 'matched',
                         'match_id' => $session['id'],

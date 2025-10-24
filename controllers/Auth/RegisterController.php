@@ -36,6 +36,14 @@ class RegisterController
 
         try {
 
+            $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
+
+            if (!$turnstile->validate($turnstileResponse, $_SERVER['REMOTE_ADDR'])) {
+                $error = "Captcha validation failed. Please try again.";
+                view("auth/register.view.php", compact('error', 'email', 'siteKey'));
+                return;
+            }
+
             if ($supabase->userExists($email)) {
                 $error = "Email already exists. Please login instead.";
                 view("auth/register.view.php", compact('error', 'email', 'siteKey'));

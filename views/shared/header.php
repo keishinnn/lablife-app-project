@@ -1,5 +1,5 @@
 <?php
-// root/views/.shared/header.php
+// root/views/shared/header.php
 use Core\Auth;
 
 ?>
@@ -22,7 +22,7 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/hobbies-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css">
@@ -33,10 +33,16 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css">
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notif-recon-loading.css">
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css">
-    <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css">
+    <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/messages-page.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-interface.css?v=<?php echo time(); ?>">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stream-chat@8/dist/browser.full-bundle.min.js"></script>
+
 </head>
 
 <body>
@@ -55,7 +61,7 @@ use Core\Auth;
                         <div class="nav-links">
                             <a href="/u/discover" class="nav-link">Discover</a>
                             <a href="/u/matches" class="nav-link">Matches</a>
-                            <a href="#" class="nav-link">
+                            <a href="/u/messages" class="nav-link">
                                 Messages
                                 <span class="badge"></span>
                             </a>
