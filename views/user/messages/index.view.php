@@ -331,9 +331,7 @@ $chatsLength = 1;
             if (!activeChannel || activeChannel.id !== event.channel_id) return;
             if (event.user?.id === userId) return;
 
-            if (document.hasFocus()) {
-                await activeChannel.markRead();
-            }
+            await activeChannel.markRead();
 
             const chatLink = chatListContainer.querySelector(`a[href="/u/messages/${channel.id}"]`);
             if (chatLink) {
