@@ -25,7 +25,7 @@ require base_path('views/shared/header.php');
                 <div class="matches-section-four">
                     <!-- loop for every matches -->
                     <?php foreach ($matchedUsers as $matchedUser): ?>
-                        <a class="matched-message-link" data-id="<?= $matchedUser->id ?>">
+                        <a class="matched-message-link" data-id="<?= $matchedUser->id ?>" href="/u/messages?channelId=${channel.id}">
                             <div class="matches-section-five">
                                 <div class="matches-section-img">
                                     <img src="<?php echo $matchedUser->avatarUrl ?>" alt="<?php echo htmlspecialchars($matchedUser->fullName) ?>">
@@ -116,7 +116,8 @@ require base_path('views/shared/header.php');
                 const data = await res.json();
 
                 if (data.success) {
-                    window.location.href = '/u/messages';
+                    const channelId = data.channel_id;
+                    window.location.href = `/u/messages?channelId=${channelId}`;
                 } else {
                     console.error('Error:', data.error);
                 }

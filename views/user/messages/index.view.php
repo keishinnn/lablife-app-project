@@ -1,41 +1,37 @@
 <?php
-
-use Core\Auth;
-
 require base_path('views/shared/header.php');
-$chatsLength = 1;
-
 ?>
-<div class="messages-container">
-    <?php if ($chatsLength === 0): ?>
-        <div class="chat-list-section-one">
-            <div class="chat-list-section-two">
-                <span>💬</span>
-            </div>
-            <h2>No conversations yet</h2>
-            <p>Start swiping to find matches and begin conversations!</p>
-            <a href="/u/discover">Start Swiping</a>
-        </div>
-    <?php else: ?>
-        <div class="messages-chat-list">
-            <!-- left side -->
-            <?php require(base_path('Views/user/messages/chat/chat.list.view.php')) ?>
-        </div>
 
-        <!-- right side -->
-        <div class="messages-chat-conversation">
+<div class="messages-container" id="message-container-wrapper">
+    <div class="messages-chat-list">
+        <!-- left side -->
+        <?php require(base_path('Views/user/messages/chat/chat.list.view.php')) ?>
+    </div>
 
-            <?php require(base_path('Views/user/messages/chat/chat.header.view.php')) ?>
-            <div style="flex: 1 1 0%; min-height: 0;">
-                <?php require(base_path('Views/user/messages/chat/chat.view.php')) ?>
-            </div>
+    <!-- right side -->
+    <div class="messages-chat-conversation">
+
+        <?php require(base_path('Views/user/messages/chat/chat.header.view.php')) ?>
+        <div style="flex: 1 1 0%; min-height: 0;">
+            <?php require(base_path('Views/user/messages/chat/chat.view.php')) ?>
         </div>
+    </div>
 
-    <?php endif; ?>
+</div>
+
+<div class="chat-list-section-one" id="empty-state">
+    <div class="chat-list-section-two">
+        <span>💬</span>
+    </div>
+    <h2>No conversations yet</h2>
+    <p>Start swiping to find matches and begin conversations!</p>
+    <a href="/u/discover">Start Swiping</a>
 </div>
 
 <script type="module">
     let activeChannel = null;
+    let renderedMessageIds = new Set();
+    let openIntentionalChannel = <?= json_encode($channelId) ?>
 
     const apiKey = <?= json_encode($_ENV['STREAM_API_KEY']) ?>;
     const userId = <?= json_encode($streamToken['userId']) ?>;
@@ -52,6 +48,12 @@ $chatsLength = 1;
     const sendMssgInput = document.getElementById('send-message-input');
     const sendMssgForm = document.querySelector('.chat-interface-form');
 
+    // variables for displaying no message channels
+    const emptyChannels = document.getElementById('empty-state');
+    const messageContainerWrapper = document.getElementById('message-container-wrapper');
+
+    const backBtn = document.querySelector('.back-to-list-btn');
+
     const chatClient = StreamChat.getInstance(apiKey);
 
     await chatClient.connectUser({
@@ -61,6 +63,8 @@ $chatsLength = 1;
     }, token, {
         presence: true
     });
+
+    const channelListeners = new Map();
 
     chatClient.on('user.presence.changed', event => {
         const updatedUser = event.user;
@@ -78,7 +82,7 @@ $chatsLength = 1;
         if (currentHeaderName && currentHeaderName.textContent === updatedUser.name) {
             chatHeaderNameContainer.querySelector('p').textContent = updatedUser.online ?
                 'Online' :
-                `Last active ${calculateTime(updatedUser.last_active)} ago`;
+                `Last active ${calculateTime(updatedUser.last_active)}`;
 
             const headerDot = chatHeaderImgContainer.querySelector('div');
             if (headerDot) {
@@ -103,6 +107,16 @@ $chatsLength = 1;
         presence: true
     });
 
+    if (channels.length === 0) {
+        emptyChannels.style.display = 'flex';
+        messageContainerWrapper.style.display = 'none';
+        messageContainerWrapper.pointerEvents = 'none';
+    } else {
+        emptyChannels.style.display = 'none';
+        messageContainerWrapper.style.display = 'flex';
+        messageContainerWrapper.pointerEvents = 'none';
+    }
+
     chatListContainer.innerHTML = "";
 
     channels.forEach((channel, index) => {
@@ -111,7 +125,10 @@ $chatsLength = 1;
         const lastMessage = channel.state.messages.slice(-1)[0];
         const unreadCount = channel.countUnread();
 
-        let lastMessageText = truncateText(lastMessage?.text || "No messages yet", 30);
+        const isUser = lastMessage?.user?.id === userId;
+        const prefix = isUser ? "You: " : "";
+        let lastMessageText = prefix + truncateText(lastMessage?.text || "No messages yet", 30);
+
         const lastMessageTime = lastMessage?.created_at ?
             new Date(lastMessage.created_at).toLocaleTimeString([], {
                 hour: '2-digit',
@@ -120,7 +137,7 @@ $chatsLength = 1;
             "";
 
         const chatItem = `
-            <a href="/u/messages/${channel.id}" class="chat-item">
+            <a href="/u/messages?channelId=${channel.id}" class="chat-item">
                 <div class="chat-list-section-five">
                     <div class="chat-list-section-six">
                         <div class="chat-list-section-seven">
@@ -174,7 +191,8 @@ $chatsLength = 1;
 
         if (index === 0) {
             renderChatInterface(channel);
-            const firstChatLink = chatListContainer.querySelector(`a[href="/u/messages/${channel.id}"]`);
+            const firstChatLink = chatListContainer.querySelector(`a[href="/u/messages?channelId=${channel.id}"]`);
+
             if (firstChatLink) {
                 chatListContainer.querySelectorAll('a').forEach(a => a.classList.remove('active-chat'));
                 firstChatLink.classList.add('active-chat');
@@ -182,11 +200,14 @@ $chatsLength = 1;
         }
     });
 
+
+
     chatClient.on((event) => {
         if (!event.channel_id) return;
 
         const channelId = event.channel_id;
-        const chatLink = chatListContainer.querySelector(`a[href="/u/messages/${channelId}"]`);
+        const chatLink = chatListContainer.querySelector(`a[href="/u/messages?channelId=${channelId}"]`);
+
         if (!chatLink) return;
 
         const messagePreview = chatLink.querySelector('.chat-list-section-eight p');
@@ -229,14 +250,12 @@ $chatsLength = 1;
             const isUser = event.user?.id === userId;
             const prefix = isUser ? "You: " : "";
 
-            // update preview for both you and partner
             if (messagePreview) {
                 messagePreview.style.fontWeight = isUser ? 'normal' : 'bold';
                 messagePreview.style.color = isUser ? '#9ca3af' : '#fff';
                 messagePreview.textContent = prefix + truncateText(event.message.text, 30);
             }
 
-            // update time label
             const lastMessageTime = new Date(event.message.created_at).toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit'
@@ -272,22 +291,52 @@ $chatsLength = 1;
     });
 
 
-    chatListContainer.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const channelId = link.getAttribute('href').split('/').pop();
-            const selectedChannel = channels.find(ch => ch.id === channelId);
-            if (!selectedChannel) return;
+    chatListContainer.addEventListener('click', async (e) => {
+        const link = e.target.closest('a.chat-item');
+        if (!link) return;
 
+        e.preventDefault();
+        const channelId = new URL(link.href).searchParams.get('channelId');
+        const selectedChannel = channels.find(ch => ch.id === channelId);
+        if (!selectedChannel) return;
+
+        // Update active class
+        chatListContainer.querySelectorAll('a').forEach(a => a.classList.remove('active-chat'));
+        link.classList.add('active-chat');
+
+        renderChatInterface(selectedChannel);
+
+        if (window.matchMedia("(max-width: 48rem)").matches) {
+            const messagesContainer = document.querySelector('.messages-container');
+            messagesContainer.classList.add('show-conversation');
+        }
+
+    });
+
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            const messagesContainer = document.querySelector('.messages-container');
+            messagesContainer.classList.remove('show-conversation');
+        });
+    }
+
+
+    if (openIntentionalChannel) {
+        const selectedChannel = channels.find(ch => ch.id === openIntentionalChannel);
+        if (selectedChannel) {
             chatListContainer.querySelectorAll('a').forEach(a => a.classList.remove('active-chat'));
-            link.classList.add('active-chat');
+            const link = chatListContainer.querySelector(`a[href="/u/messages?channelId=${selectedChannel.id}"]`);
+            if (link) link.classList.add('active-chat');
 
             renderChatInterface(selectedChannel);
-        });
-    });
-    const channelListeners = new Map();
+        }
+    } else if (channels.length > 0) {
+        renderChatInterface(channels[0]);
+    }
 
     async function renderChatInterface(channel) {
+        renderedMessageIds = new Set();
+
         if (activeChannel && channelListeners.has(activeChannel.id)) {
             const oldHandlers = channelListeners.get(activeChannel.id);
             activeChannel.off('message.new', oldHandlers.messageHandler);
@@ -323,8 +372,6 @@ $chatsLength = 1;
         messages.forEach(msg => renderMessage(msg));
         await channel.markRead();
 
-
-
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
         const messageHandler = async (event) => {
@@ -333,7 +380,8 @@ $chatsLength = 1;
 
             await activeChannel.markRead();
 
-            const chatLink = chatListContainer.querySelector(`a[href="/u/messages/${channel.id}"]`);
+            const chatLink = chatListContainer.querySelector(`a[href="/u/messages?channelId=${channel.id}"]`);
+
             if (chatLink) {
                 const chatItemImgContainer = chatLink.querySelector('.chat-list-section-six');
                 const messagePreview = chatLink.querySelector('.chat-list-section-eight p');
@@ -360,14 +408,16 @@ $chatsLength = 1;
                 typingIndicator.style.display = "none";
         };
 
-        channel.on('message.new', messageHandler);
-        channel.on('typing.start', typingStartHandler);
-        channel.on('typing.stop', typingStopHandler);
-        channelListeners.set(channel.id, {
-            messageHandler,
-            typingStartHandler,
-            typingStopHandler
-        });
+        if (!channelListeners.has(channel.id)) {
+            channel.on('message.new', messageHandler);
+            channel.on('typing.start', typingStartHandler);
+            channel.on('typing.stop', typingStopHandler);
+            channelListeners.set(channel.id, {
+                messageHandler,
+                typingStartHandler,
+                typingStopHandler
+            });
+        }
 
         let typingTimeout;
         sendMssgInput.oninput = async () => {
@@ -386,7 +436,10 @@ $chatsLength = 1;
             const text = sendMssgInput.value.trim();
             if (!text) return;
 
+            const tempId = 'temp-' + Date.now();
+
             renderMessage({
+                id: tempId,
                 text,
                 user: {
                     id: userId
@@ -405,6 +458,9 @@ $chatsLength = 1;
     }
 
     function renderMessage(msg) {
+        if (renderedMessageIds.has(msg.id)) return;
+        renderedMessageIds.add(msg.id);
+
         const isUser = msg.user.id === userId;
         const time = new Date(msg.created_at).toLocaleTimeString([], {
             hour: '2-digit',
@@ -423,6 +479,7 @@ $chatsLength = 1;
     `;
         chatContainer.insertAdjacentHTML('afterbegin', messageBubble);
     }
+
 
     function calculateTime(dateString) {
         const now = new Date();
@@ -448,7 +505,20 @@ $chatsLength = 1;
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     window.addEventListener('beforeunload', () => {
+        channelListeners.forEach((handlers, channelId) => {
+            const channel = chatClient.channel(channelId);
+            channel.off('message.new', handlers.messageHandler);
+            channel.off('typing.start', handlers.typingStartHandler);
+            channel.off('typing.stop', handlers.typingStopHandler);
+        });
         chatClient.disconnectUser();
+    });
+
+    window.addEventListener('resize', () => {
+        const messagesContainer = document.querySelector('.messages-container');
+        if (window.matchMedia("(min-width: 48.001rem)").matches) {
+            messagesContainer.classList.remove('show-conversation');
+        }
     });
 </script>
 

@@ -128,6 +128,8 @@ use Core\Auth;
         '<?= $_ENV['SUPABASE_ANON_KEY'] ?>'
     );
 
+    const startChatBtn = document.getElementById('start-chat-btn');
+
     // match timer variables
     const duration = 60;
     let remaining = duration;
@@ -169,6 +171,10 @@ use Core\Auth;
     let rejectStart = null;
     let expiredStart = null;
     let rejectAnimating = false;
+
+    // showing start chat loading
+    const messageLoading = document.getElementById("messages-loading");
+    const pageContent = document.getElementById("page-content");
 
     // Expired Session Notification
     const expiredModal = document.getElementById('expired-modal');
@@ -380,6 +386,47 @@ use Core\Auth;
             window.location.href = '/u/discover';
         }
     });
+
+    startChatBtn.addEventListener('click', async (e) => {
+        const userId = partnerId;
+
+        pageContent.style.pointerEvents = "none";
+        pageContent.style.display = "none";
+        messageLoading.style.display = "flex";
+
+        try {
+            await fetch('/u/discover/set-search-expired', {
+                method: 'POST',
+                keepalive: true
+            });
+
+            const res = await fetch('/u/matches/create-channel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<?= $_SESSION["csrf_token"] ?? "" ?>'
+                },
+                body: JSON.stringify({
+                    targetUserId: userId
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                const channelId = data.channel_id;
+                window.location.href = `/u/messages?channelId=${channelId}`;
+            } else {
+                console.error('Error:', data.error);
+            }
+        } catch (err) {
+            console.error('Failed to create channel:', err);
+            messageLoading.style.display = "none";
+            pageContent.style.display = "block";
+        }
+    });
+
+
 
     async function setSearchExpired(fromStopButton = false) {
         if (cleanupInProgress) {
@@ -655,12 +702,18 @@ use Core\Auth;
     // Listen for page unloads, tab close, navigation, etc.
     window.addEventListener('beforeunload', (event) => {
         unsubscribeAll();
-        if (!isIntentionalNavigation) setSessionStatusRejected();
+        if (!isIntentionalNavigation) {
+            setSearchExpired(false);
+            setSessionStatusRejected();
+        }
     });
 
     window.addEventListener('pagehide', (event) => {
         unsubscribeAll();
-        if (!isIntentionalNavigation) setSessionStatusRejected();
+        if (!isIntentionalNavigation) {
+            setSearchExpired(false);
+            setSessionStatusRejected();
+        }
     });
 </script>
 

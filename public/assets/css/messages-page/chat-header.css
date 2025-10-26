@@ -80,6 +80,7 @@
     position: relative;
     transition: background-color 0.2s;
     border: none;
+    background: transparent;
 }
 
 .chat-header-section-seven button:nth-child(2):hover {
@@ -89,6 +90,10 @@
 .chat-header-three-dots {
     color: #000000;
     background-color: inherit;
+}
+
+.svg-report-block-button {
+    color: #000000;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -110,6 +115,10 @@
     }
 
     .chat-header-three-dots {
+        color: #ffffff;
+    }
+
+    .svg-report-block-button {
         color: #ffffff;
     }
 }

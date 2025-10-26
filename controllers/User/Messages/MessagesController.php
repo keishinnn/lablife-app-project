@@ -15,8 +15,10 @@ class MessagesController
         $user = User::getCurrentUserProfile($userId);
         \Core\Middleware::checkIfUserExist($user);
 
+        $channelId = $_GET['channelId'] ?? null;
+
         $streamToken = Stream::getStreamUserToken($userId, $user->fullName, $user->avatarUrl);
 
-        view('user/messages/index.view.php', compact('streamToken'));
+        view('user/messages/index.view.php', compact('streamToken', 'channelId'));
     }
 }

@@ -1,7 +1,19 @@
 <div class="chat-header-section">
     <div class="chat-header-section-one">
-
         <div class="chat-header-section-three">
+            <button class="back-to-list-btn">
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    class="message-backBtn-svg">
+                    <path
+                        d="M5 12H19M5 12L11 6M5 12L11 18"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
             <div class="chat-header-section-four">
                 <!-- is online? -->
                 <div></div>
@@ -33,7 +45,10 @@
                     <svg
                         width="20"
                         height="20"
-                        viewBox="0 0 16 16">
+                        viewBox="0 0 16 16"
+                        class="svg-report-block-button"
+                        fill="white"
+                        stoke="currentColor">
                         <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
                     </svg>
                 </button>

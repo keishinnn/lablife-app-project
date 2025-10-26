@@ -35,13 +35,17 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css">
     <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css">
     <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
-    <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/messages-page/messages-page.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-interface.css?v=<?php echo time(); ?>">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stream-chat@8/dist/browser.full-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stream-video-js@latest/dist/index.global.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/@stream-io/video-react-sdk@latest/dist/css/styles.css">
+
 
 </head>
 
