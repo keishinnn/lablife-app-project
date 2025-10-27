@@ -90,3 +90,12 @@ $router->get('/u/messages', 'User\\Messages\\MessagesController@View');
 
 // Create Channel Message
 $router->post('/u/matches/create-channel', 'User\\Matches\\MatchesController@handleCreateOrGetChannel');
+
+// Video Call
+$router->post('/u/video/initiate-video-call', 'User\\Messages\\VideoCallController@handleInitiateCall');
+$router->post('/u/video/get-video-token', 'User\\Messages\\VideoCallController@handleGetStreamVideoToken');
+$router->post('/u/video/receive-call', 'User\\Messages\\VideoCallController@handleReceiveVideoCall');
+$router->post('/u/video/end-video-call', 'User\\Messages\\VideoCallController@handleEndVideoCall');
+
+// test video call
+$router->get('/u/test-video-call', 'User\\Messages\\VideoCallController@View');

@@ -123,7 +123,7 @@ class Stream
                 throw new \Exception("Error fetching user data.");
             }
 
-            $token = $serverClient->createToken($userId);
+            $token = $serverClient->getStreamToken($userId, $userData['full_name'], $userData['avatar_url']);
 
             return [
                 'token' => $token,

@@ -20,12 +20,11 @@
 <script type="module" src="/assets/js/user/set-online-status.js"></script>
 <script type="module" src="/assets/js/loading-state/matches/matches-loading.js"></script>
 <script type="module" src="/assets/js/loading-state/profile/profile-loading.js"></script>
-<script type="module" src="/assets/js/loading-state/global-loading.js?v=<?php echo time(); ?>"></script>
+<script type="module" src="/assets/js/loading-state/global-loading.js"></script>
 <script type="module" src="/assets/js/loading-state/messages/messages-loading.js?v=<?php echo time(); ?>"></script>
 
 <!-- Cloudflare Turnstile JS -->
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
 
 <!-- Loader inside modal -->
 <div id="pt-loading" class="profile-loading-container">

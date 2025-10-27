@@ -21,4 +21,6 @@ class MessagesController
 
         view('user/messages/index.view.php', compact('streamToken', 'channelId'));
     }
+
+
 }

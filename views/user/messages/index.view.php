@@ -200,8 +200,6 @@ require base_path('views/shared/header.php');
         }
     });
 
-
-
     chatClient.on((event) => {
         if (!event.channel_id) return;
 
@@ -263,7 +261,6 @@ require base_path('views/shared/header.php');
             const timeLabel = chatLink.querySelector('.chat-list-section-nine span');
             if (timeLabel) timeLabel.textContent = lastMessageTime;
 
-            // unread badge logic (only show for receiver)
             if (!isUser) renderUnreadBadge(unreadCount);
             else removeUnreadBadge();
         }
@@ -300,7 +297,6 @@ require base_path('views/shared/header.php');
         const selectedChannel = channels.find(ch => ch.id === channelId);
         if (!selectedChannel) return;
 
-        // Update active class
         chatListContainer.querySelectorAll('a').forEach(a => a.classList.remove('active-chat'));
         link.classList.add('active-chat');
 
