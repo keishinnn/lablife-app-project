@@ -39,6 +39,7 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/messages-page/messages-page.css">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-interface.css">
+    <link rel="stylesheet" href="/assets/css/video-call/video-call.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stream-chat@8/dist/browser.full-bundle.min.js"></script>
