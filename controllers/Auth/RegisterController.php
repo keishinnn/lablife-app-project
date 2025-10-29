@@ -36,6 +36,13 @@ class RegisterController
 
         try {
 
+            // Check if user agreed to privacy policy and terms
+            if (empty($_POST['agree_privacy'])) {
+                $error = "You must agree to our Privacy Policy and Terms of Service before creating an account.";
+                view("auth/register.view.php", compact('error', 'email', 'siteKey'));
+                return;
+            }
+
             if ($supabase->userExists($email)) {
                 $error = "Email already exists. Please login instead.";
                 view("auth/register.view.php", compact('error', 'email', 'siteKey'));

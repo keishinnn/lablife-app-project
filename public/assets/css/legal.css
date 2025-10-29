@@ -1,0 +1,98 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist+Sans&family=Geist+Mono&display=swap");
+
+/* Base Layout */
+body {
+  font-family: "Geist Sans", Arial, sans-serif;
+  background: linear-gradient(to bottom right, #020617, #111827);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Main Container */
+.container {
+  max-width: 800px;
+  width: 90%;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 50px;
+  margin: 40px auto;
+  text-align: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Headings */
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  background: #fff;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin-top: 30px;
+  color: #ef4444;
+}
+
+/* Paragraphs */
+p {
+  line-height: 1.7;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+/* Link/Button Styles */
+a {
+  text-decoration: none;
+}
+
+/* Match the main app button style */
+.match-button {
+  background: linear-gradient(to right, #ec4899, #ef4444);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: inline-block;
+  margin-top: 25px;
+}
+
+.match-button:hover {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  .container {
+    background: linear-gradient(to bottom right, #ffffff, #fdf2f8);
+    color: #171717;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: linear-gradient(to bottom right, #020617, #111827);
+    color: #ededed;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .match-button {
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+  }
+
+  .match-button:hover {
+    box-shadow: 0 6px 14px rgba(255, 255, 255, 0.2);
+  }
+}

@@ -37,6 +37,15 @@ require (base_path("views/shared/header.php"));
             <div class="login-error" id="form-error" style="<?= !empty($error) ? '' : 'display:none;' ?>">
                 <?= htmlspecialchars($error ?? '') ?>
             </div>
+            <div class="policy-consent">
+                <label class="checkbox-container">
+                    <input type="checkbox" name="agree_privacy" required>
+                    I have read and agree to the 
+                    <a href="/privacy-policy" target="_blank">Privacy Policy</a>
+                    and 
+                    <a href="/terms" target="_blank">Terms of Service</a>.
+                </label>
+            </div>
 
             <button type="submit" id="sign-up-btn">
                 Sign Up

@@ -84,3 +84,7 @@ $router->get('/u/get-access-token', 'Services\\SupabaseService@getUser');
 
 // Showing Matches Page
 $router->get('/u/matches', 'User\\Matches\\MatchesController@View');
+
+// Privacy and Terms 
+$router->get('/privacy-policy', 'PagesController@privacyPolicy');
+$router->get('/terms', 'PagesController@terms');

@@ -118,3 +118,15 @@ body {
         background-color: #111827;
     }
 }
+.policy-consent {
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: var(--foreground);
+}
+.policy-consent a {
+    color: #ec4899;
+    text-decoration: none;
+}
+.policy-consent a:hover {
+    text-decoration: underline;
+}
