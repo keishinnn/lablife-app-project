@@ -26,7 +26,7 @@
 
         <div class="chat-header-section-six">
             <div class="chat-header-section-seven">
-                <button title="Start Video Call">
+                <button title="Start Video Call" id="start-video-call-btn">
                     <svg
                         style="width: 1.25rem; height: 1.25rem;"
                         fill="none"

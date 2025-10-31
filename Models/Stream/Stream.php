@@ -8,7 +8,6 @@ use Models\User\User;
 
 class Stream
 {
-
     public string $token;
 
     public function __construct(string $token)
@@ -101,7 +100,7 @@ class Stream
 
             $hash = sha1($combinedIds);
             $shortHash = substr(base_convert(substr($hash, 0, 15), 16, 36), 0, 12);
-            $callId = 'call_' . $shortHash;
+            $callId = 'call_' . time();  // Use timestamp to make it unique per call
 
             return [
                 'callId' => $callId,
@@ -112,6 +111,9 @@ class Stream
         }
     }
 
+    /**
+     * Get Stream Video token (different from chat token)
+     */
     public static function getStreamVideoToken(string $userId)
     {
         $serverClient = App::resolve('Services\StreamService');
@@ -123,14 +125,14 @@ class Stream
                 throw new \Exception("Error fetching user data.");
             }
 
-            $token = $serverClient->getStreamToken($userId, $userData['full_name'], $userData['avatar_url']);
+            $token = $serverClient->getStreamVideoToken(
+                $userId,
+                $userData['full_name'],
+                $userData['avatar_url']
+            );
 
-            return [
-                'token' => $token,
-                'userId' => $userId,
-                'userName' => $userData['full_name'],
-                'userImage' => $userData['avatar_url'] ?? null
-            ];
+            // Return the token data directly (already flat from service)
+            return $token;
         } catch (\Exception $e) {
             throw $e;
         }

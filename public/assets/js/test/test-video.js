@@ -48,14 +48,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         await call.join({ create: true });
 
-        // Enable camera & mic
-        await call.camera.enable();
-        await call.microphone.enable();
+        // Get list of all cameras
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const obsCamera = devices.find(d => d.label.includes("OBS Virtual Camera"));
 
-        const localEl = document.getElementById("localVideo");
+        if (obsCamera) {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: obsCamera.deviceId },
+                audio: true,
+            });
+
+            const localEl = document.getElementById("localVideo");
+            localEl.srcObject = stream;
+            localEl.play();
+
+            // Attach manually to the Stream Video call
+            await call.publishStream(stream, { video: true, audio: true });
+        } else {
+            // fallback to default webcam if OBS is not running
+            await call.camera.enable();
+            await call.microphone.enable();
+        }
+
         const remoteEl = document.getElementById("remoteVideo");
-
-        call.camera.attach(localEl);
 
         call.on("participantJoined", e => {
             console.log("👤 Remote participant joined:", e.participant.userId);
@@ -64,4 +79,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         console.log("📞 Joined call:", call.id);
     });
+
 });
