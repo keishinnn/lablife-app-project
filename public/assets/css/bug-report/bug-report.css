@@ -1,0 +1,107 @@
+body {
+    font-family: "Geist Sans", sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+  }
+  
+  /* Form Page */
+  .bug-report-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    text-align: center;
+  }
+  
+  .bug-report-container h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .bug-report-container h1 span {
+    color: #ff5277;
+  }
+  
+  .bug-report-container p {
+    max-width: 500px;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+  
+  .bug-report-form {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: left;
+  }
+  
+  .bug-report-form label {
+    font-weight: 600;
+  }
+  
+  .bug-report-form input,
+  .bug-report-form textarea {
+    width: 100%;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+  
+  .bug-report-form textarea {
+    height: 150px;
+  }
+  
+  .submit-wrap {
+    text-align: center;
+  }
+  
+  .submit-wrap button {
+    background: #ff5277;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.2s ease;
+  }
+  
+  .submit-wrap button:hover {
+    background: #ff3a61;
+  }
+  
+  /* Success Page */
+  .bug-report-success {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .bug-report-success h1 {
+    color: #ff5277;
+  }
+  
+  .bug-report-success a {
+    margin-top: 1rem;
+    text-decoration: none;
+    color: #fff;
+    background: #ff5277;
+    padding: 10px 25px;
+    border-radius: 50px;
+    transition: background 0.2s ease;
+  }
+  
+  .bug-report-success a:hover {
+    background: #ff3a61;
+  }
+  

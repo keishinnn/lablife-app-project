@@ -3,8 +3,18 @@
 <?php require(base_path('Views/user/profile/loading/profile.loading.view.php')) ?>
 <?php require(base_path('Views/user/loading/global.loading.view.php')) ?>
 
-<footer>
-    <p>&copy; <?= date('Y') ?> LabLife. All rights reserved.</p>
+<footer class="site-footer">
+  <p>&copy; <?= date('Y') ?> LabLife. All rights reserved.</p>
+  <button id="bugReportBtn" class="report-bug-btn">Report a Bug</button>
+
+  <script>
+    const bugBtn = document.getElementById('bugReportBtn');
+    if (bugBtn) {
+      bugBtn.addEventListener('click', () => {
+        window.location.href = '/bug-report';
+      });
+    }
+  </script>
 </footer>
 
 <script type="module" src="/assets/js/register-validation.js"></script>

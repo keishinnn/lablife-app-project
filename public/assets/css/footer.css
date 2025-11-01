@@ -4,3 +4,38 @@ footer {
     border-top: 1px solid rgba(143, 143, 143, 0.1);
     color: #9ca3af;
 }
+
+.site-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 0;
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--foreground);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .site-footer p {
+    margin-bottom: 1rem;
+    opacity: 0.8;
+    font-size: 0.9rem;
+  }
+  
+  .report-bug-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease, border 0.2s ease;
+  }
+  
+  .report-bug-btn:hover {
+    background: #ff5277;
+    border-color: #ff5277;
+  }
+  

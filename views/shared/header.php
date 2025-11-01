@@ -35,6 +35,7 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css">
     <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/footer.css?v=<?php echo time(); ?>">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>

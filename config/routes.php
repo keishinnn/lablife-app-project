@@ -88,3 +88,9 @@ $router->get('/u/matches', 'User\\Matches\\MatchesController@View');
 // Privacy and Terms 
 $router->get('/privacy-policy', 'PagesController@privacyPolicy');
 $router->get('/terms', 'PagesController@terms');
+
+// Bug Report
+$router->get('/bug-report', 'BugReportController@showForm');
+$router->post('/submit-bug', 'BugReportController@submit');
+
+
