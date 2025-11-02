@@ -65,7 +65,7 @@ class StreamService
         try {
             $payload = [
                 'user_id' => $userId,
-                'iat' => time(),
+                'iat' => time() - 10,
                 'exp' => time() + 3600,
                 'type' => 'video',
                 'permissions' => [

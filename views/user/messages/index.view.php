@@ -414,6 +414,8 @@ require base_path('views/shared/header.php');
         videoCallBtn.addEventListener('click', async () => {
             if (!activeChannel) return;
 
+            videoCallBtn.disabled = true;
+
             const callId = `call_${Date.now()}`;
 
             try {
@@ -433,6 +435,8 @@ require base_path('views/shared/header.php');
             } catch (error) {
                 console.error("Failed to initiate call:", error);
                 alert("Failed to start call. Please try again.");
+            } finally {
+                videoCallBtn.disabled = false;
             }
         });
     }
@@ -598,10 +602,8 @@ require base_path('views/shared/header.php');
     async function startVideoCall(callId, isCaller) {
         const messagesContainer = document.querySelector('.messages-container');
 
-        if (window.currentAutoCancelTimer) {
-            clearTimeout(window.currentAutoCancelTimer);
-            window.currentAutoCancelTimer = null;
-        }
+        // RESET PREVIOUS CALL STATE
+        await cleanupCall()
 
         try {
             console.log("🎥 Starting video call:", callId, "| isCaller:", isCaller);
@@ -612,6 +614,7 @@ require base_path('views/shared/header.php');
             callView.classList.add('video-call-container');
             callView.innerHTML = `
             <video id="remoteVideo" class="remote-video" autoplay playsinline></video>
+            <audio id="remoteAudio" autoplay playsinline></audio>
             <video id="localVideo" class="local-video" autoplay muted playsinline></video>
             <div class="controls-bar">
                 <button id="toggleMic" class="control-btn"><i class="fa-solid fa-microphone"></i></button>
@@ -648,6 +651,7 @@ require base_path('views/shared/header.php');
             // Create call
             const call = client.call("default", callId);
             const remoteVideo = document.getElementById("remoteVideo");
+            const remoteAudio = document.getElementById("remoteAudio");
             const localVideo = document.getElementById("localVideo");
 
             // Join call
@@ -674,26 +678,15 @@ require base_path('views/shared/header.php');
             }
             console.log("✅ Joined call");
 
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevice = devices.find(d => d.kind === "videoinput" && d.label.includes("OBS"));
-            console.log("Using virtual camera:", videoDevice);
-
             // Enable local media AFTER join
             console.log("📤 Enabling local media...");
             await call.camera.enable({
                 publish: true
             });
-            await call.camera.state.ready;
-
             await call.microphone.enable({
                 publish: true
             });
             console.log("✅ Camera and Microphone enabled");
-
-            // Verify publishing state
-            console.log("📹 Camera status:", call.camera.state.status);
-            console.log("🎤 Microphone status:", call.microphone.state.status);
-            console.log("📡 Published tracks:", call.state.localParticipant?.publishedTracks);
 
             // Attach local preview using getUserMedia
             const localStream = await getMediaStream();
@@ -703,156 +696,132 @@ require base_path('views/shared/header.php');
                 console.log("✅ Local preview attached");
             }
 
-            // CRITICAL: Add debouncing to prevent infinite loops
-            let isProcessing = false;
-            let lastProcessedState = null;
+            // Track bound elements to prevent duplicate bindings
+            const boundElements = new Set();
             let processCount = 0;
-            const MAX_PROCESS_COUNT = 50; // Limit to 50 updates total
+            const MAX_PROCESS_COUNT = 10;
 
-            // Handle remote participants using reactive subscription
-            console.log("🔄 Setting up remote participant subscription...");
+            // Helper function to show call ended notification
+            function showCallEndedNotification(message) {
+                // Remove existing notification if any
+                const existingNotification = callView.querySelector('.call-ended-notification');
+                if (existingNotification) return;
 
-            const videoSubscription = call.state.remoteParticipants$.subscribe((participants) => {
-                // PREVENT INFINITE LOOPS
-                if (processCount >= MAX_PROCESS_COUNT) {
-                    console.warn("⚠️ Max process count reached, stopping updates");
-                    return;
-                }
+                const notification = document.createElement('div');
+                notification.className = 'call-ended-notification';
+                notification.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 2rem 3rem;
+                border-radius: 1rem;
+                font-size: 1.5rem;
+                font-weight: bold;
+                text-align: center;
+                z-index: 1000;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            `;
+                notification.innerHTML = `
+                <div style="margin-bottom: 1rem;">📞</div>
+                <div>${message}</div>
+                <div style="font-size: 1rem; font-weight: normal; margin-top: 0.5rem; opacity: 0.7;">
+                    Ending call...
+                </div>
+            `;
+                callView.appendChild(notification);
+            }
 
-                processCount++;
-                console.log(`🔄 Remote participants changed (${processCount}/${MAX_PROCESS_COUNT}):`, participants.size);
+            // Helper function to bind participant video and audio
+            function bindParticipant(participant) {
+                const elementKey = `${participant.sessionId}`;
 
-                if (participants.size === 0) {
-                    console.log("⚠️ No remote participants yet");
+                // Skip if already bound
+                if (boundElements.has(elementKey)) {
+                    console.log("⏭️ Already bound:", elementKey);
                     return;
                 }
 
                 try {
-                    participants.forEach((participant) => {
-                        if (participant.userId === userId) return;
-
-                        // Create a state fingerprint to detect actual changes
-                        const stateFingerprint = JSON.stringify({
-                            userId: participant.userId,
-                            publishedTracks: participant.publishedTracks,
-                            hasVideo: !!participant.videoStream,
-                            hasAudio: !!participant.audioStream
-                        });
-
-                        // Skip if nothing changed
-                        if (lastProcessedState === stateFingerprint) {
-                            console.log("⏭️ State unchanged, skipping...");
-                            return;
-                        }
-
-                        lastProcessedState = stateFingerprint;
-
-                        console.log("📌 Processing participant:", {
-                            userId: participant.userId,
-                            sessionId: participant.sessionId,
-                            publishedTracks: participant.publishedTracks,
-                            hasVideoStream: !!participant.videoStream,
-                            hasAudioStream: !!participant.audioStream
-                        });
-
-                        // Log ALL properties of the participant
-                        console.log("🔍 All participant properties:", Object.keys(participant));
-
-                        // Try to find video-related properties
-                        for (const key in participant) {
-                            if (key.toLowerCase().includes('video') || key.toLowerCase().includes('track')) {
-                                console.log(`🎬 Found property "${key}":`, participant[key]);
-                            }
-                        }
-
-                        // Method 1: Use SDK's bindVideoElement with explicit video element
-                        if (participant.publishedTracks?.length > 0) {
-                            try {
-                                // Try binding video element
-                                call.bindVideoElement(remoteVideo, participant.sessionId);
-                                console.log("✅ bindVideoElement succeeded for sessionId:", participant.sessionId);
-                            } catch (e) {
-                                console.warn("⚠️ bindVideoElement failed:", e);
-                            }
-                        }
-
-                        // Method 2: Direct stream access if available
-                        if (participant.videoStream || participant.audioStream) {
-                            try {
-                                let stream = remoteVideo.srcObject;
-                                if (!(stream instanceof MediaStream)) {
-                                    stream = new MediaStream();
-                                }
-
-                                if (participant.videoStream) {
-                                    const videoTracks = participant.videoStream.getVideoTracks();
-                                    if (videoTracks.length > 0) {
-                                        console.log("📹 Adding video track from videoStream");
-                                        stream.getVideoTracks().forEach(t => stream.removeTrack(t));
-                                        stream.addTrack(videoTracks[0]);
-                                    }
-                                }
-
-                                if (participant.audioStream) {
-                                    const audioTracks = participant.audioStream.getAudioTracks();
-                                    if (audioTracks.length > 0) {
-                                        console.log("🔊 Adding audio track from audioStream");
-                                        stream.getAudioTracks().forEach(t => stream.removeTrack(t));
-                                        stream.addTrack(audioTracks[0]);
-                                    }
-                                }
-
-                                if (stream.getTracks().length > 0) {
-                                    remoteVideo.srcObject = stream;
-                                    remoteVideo.play().catch(e => console.warn("Remote play error:", e));
-                                    console.log("✅ Remote stream applied");
-                                }
-                            } catch (e) {
-                                console.warn("⚠️ Direct stream method failed:", e);
-                            }
-                        }
-
-                        // Method 3: Check call.state for video tracks
-                        try {
-                            console.log("🎯 Checking call.state.callParticipants...");
-                            const callParticipants = call.state.callParticipants;
-                            if (callParticipants && callParticipants.length > 0) {
-                                const remoteParticipant = callParticipants.find(p => p.userId === participant.userId);
-                                if (remoteParticipant) {
-                                    console.log("🎯 Found in callParticipants:", {
-                                        keys: Object.keys(remoteParticipant),
-                                        tracks: remoteParticipant.publishedTracks
-                                    });
-
-                                    // Log all properties that might contain video
-                                    for (const key in remoteParticipant) {
-                                        console.log(`  - ${key}:`, typeof remoteParticipant[key], remoteParticipant[key]);
-                                    }
-                                }
-                            }
-                        } catch (e) {
-                            console.warn("⚠️ callParticipants check failed:", e);
-                        }
+                    console.log("🔗 Binding participant:", {
+                        sessionId: participant.sessionId,
+                        userId: participant.userId,
+                        publishedTracks: participant.publishedTracks
                     });
+
+                    // Bind video element using Stream SDK method
+                    const unbindVideo = call.bindVideoElement(
+                        remoteVideo,
+                        participant.sessionId,
+                        "videoTrack"
+                    );
+                    console.log("✅ Video bound for:", participant.sessionId);
+
+                    // Bind audio element using Stream SDK method
+                    const unbindAudio = call.bindAudioElement(
+                        remoteAudio,
+                        participant.sessionId
+                    );
+                    console.log("✅ Audio bound for:", participant.sessionId);
+
+                    // Mark as bound
+                    boundElements.add(elementKey);
+
+                    // Store unbind functions for cleanup
+                    if (!window.currentCallUnbinders) {
+                        window.currentCallUnbinders = [];
+                    }
+                    window.currentCallUnbinders.push(unbindVideo, unbindAudio);
+
                 } catch (e) {
-                    console.warn("Error occured:", e);
+                    console.error("❌ Failed to bind participant:", e);
                 }
-            });
+            }
 
-            // Listen to specific track events (limited logging)
-            let trackEventCount = 0;
-            const MAX_TRACK_EVENTS = 20;
-
-            call.on("call.session_participant_joined", (event) => {
-                if (trackEventCount++ < MAX_TRACK_EVENTS) {
-                    console.log("👤 Participant joined:", event.participant);
+            // Subscribe to participant changes
+            console.log("🔄 Setting up participant subscription...");
+            const subscription = call.state.participants$.subscribe((participants) => {
+                if (processCount >= MAX_PROCESS_COUNT) {
+                    console.warn("⚠️ Max process count reached");
+                    return;
                 }
+
+                processCount++;
+                console.log(`🔄 Participants updated (${processCount}/${MAX_PROCESS_COUNT}):`, participants.length);
+
+                participants.forEach((participant) => {
+                    // Skip local participant
+                    if (participant.userId === userId) return;
+
+                    // Only bind if they have published tracks
+                    if (participant.publishedTracks && participant.publishedTracks.length > 0) {
+                        bindParticipant(participant);
+                    }
+                });
             });
 
             call.on("call.session_participant_left", (event) => {
-                if (trackEventCount++ < MAX_TRACK_EVENTS) {
-                    console.log("👋 Participant left:", event.participant);
+                if (event.participant?.userId !== userId) {
+                    console.log("👋 Other participant left");
+                    showCallEndedNotification("Call ended");
+
+                    // Delay cleanup so notification is visible
+                    setTimeout(async () => {
+                        await cleanupCall();
+                    }, 2000); // 2 seconds
                 }
+            });
+
+            call.on("call.session_ended", () => {
+                console.log("📞 Call session ended");
+                showCallEndedNotification("Call ended");
+
+                // Delay cleanup
+                setTimeout(async () => {
+                    await cleanupCall();
+                }, 2000); // 2 seconds
             });
 
             // Controls
@@ -898,10 +867,26 @@ require base_path('views/shared/header.php');
 
             endBtn.addEventListener("click", async () => {
                 try {
-                    // Unsubscribe from remote participants
-                    if (videoSubscription) {
-                        videoSubscription.unsubscribe();
-                        console.log("🔌 Unsubscribed from remote participants");
+                    // Unsubscribe from participants
+                    if (subscription) {
+                        subscription.unsubscribe();
+                        console.log("🔌 Unsubscribed from participants");
+                    }
+
+                    // Remove all event listeners
+                    call.off("call.session_ended");
+                    call.off("call.session_participant_left");
+
+                    // Call unbind functions
+                    if (window.currentCallUnbinders) {
+                        window.currentCallUnbinders.forEach(unbind => {
+                            try {
+                                unbind();
+                            } catch (e) {
+                                console.warn("Unbind error:", e);
+                            }
+                        });
+                        delete window.currentCallUnbinders;
                     }
 
                     // Stop local tracks
@@ -921,62 +906,123 @@ require base_path('views/shared/header.php');
                         await endInitiateVideoCall(window.currentCallMessageId);
                         delete window.currentCallMessageId;
                     }
+
+                    // Show "Call ended" notification before cleanup
+                    showCallEndedNotification("Call ended");
+
+                    // Delay cleanup by 2 seconds
+                    setTimeout(async () => {
+                        await cleanupCall();
+                    }, 2000);
                 } catch (e) {
                     console.warn("Error leaving call:", e);
                 }
 
-                callView.remove();
-                messagesContainer.style.display = 'block';
                 delete window.currentCall;
                 delete window.currentStream;
+
             });
 
             // Save references
             window.currentCall = call;
             window.currentStream = localStream;
-            window.currentCallSubscription = videoSubscription;
+            window.currentCallSubscription = subscription;
 
         } catch (err) {
             console.error("❌ Video call error:", err);
             alert("Failed to start video call: " + (err?.message || err));
-            messagesContainer.style.display = 'block';
+            await cleanupCall();
             const callView = document.querySelector('.video-call-container');
             if (callView) callView.remove();
+            messagesContainer.style.display = 'flex';
         }
     }
 
     async function getMediaStream() {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
+            const webcams = devices.filter(d => d.kind === "videoinput");
 
-            // Try to find OBS Virtual Camera first
-            let camera = devices.find(d => d.kind === "videoinput" && d.label.includes("OBS Virtual Camera"));
+            if (webcams.length > 0)
+                return await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: webcams[0].deviceId
+                    },
+                    audio: true
+                });
 
-            // If OBS Virtual Camera is not found, use default webcam
-            if (!camera) {
-                camera = devices.find(d => d.kind === "videoinput");
-            }
+            const obsCamera = devices.find(d => d.label.includes("OBS Virtual Camera"));
+            if (obsCamera)
+                return await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: obsCamera.deviceId
+                    },
+                    audio: true
+                });
 
-            if (!camera) {
-                alert("No camera found. Please connect one or enable OBS Virtual Camera.");
-                return null;
-            }
-
-            console.log("🎥 Using camera:", camera.label);
-
-            return await navigator.mediaDevices.getUserMedia({
-                video: {
-                    deviceId: {
-                        exact: camera.deviceId
-                    }
-                },
-                audio: true
-            });
+            alert("No camera found. Please connect one or enable OBS Virtual Camera.");
+            return null;
         } catch (err) {
             console.error("Camera error:", err);
-            alert("Failed to access camera: " + err.message);
             return null;
         }
+    }
+
+    async function cleanupCall() {
+        const callView = document.querySelector('.video-call-container');
+        const messagesContainer = document.querySelector('.messages-container');
+
+        // Enable video call button if you have one
+        if (window.videoCallBtn) videoCallBtn.disabled = false;
+
+        try {
+            // Unsubscribe & remove event listeners
+            if (window.currentCall) {
+                window.currentCall.off("call.session_ended");
+                window.currentCall.off("call.session_participant_left");
+
+                if (window.currentCallSubscription) {
+                    window.currentCallSubscription.unsubscribe();
+                }
+
+                if (window.currentCallUnbinders) {
+                    window.currentCallUnbinders.forEach(unbind => unbind());
+                    delete window.currentCallUnbinders;
+                }
+
+                // Stop local tracks
+                if (window.currentStream) {
+                    window.currentStream.getTracks().forEach(t => t.stop());
+                }
+
+                // Leave call safely
+                await window.currentCall.leave().catch(e => console.warn("Leave error:", e));
+
+                // Mark call as inactive (optional, depends on backend)
+                if (window.currentCallMessageId) {
+                    await endInitiateVideoCall(window.currentCallMessageId).catch(e => console.warn(e));
+                    delete window.currentCallMessageId;
+                }
+            }
+        } catch (e) {
+            console.warn("Cleanup error:", e);
+        }
+
+        // Clear timers
+        if (window.currentAutoCancelTimer) {
+            clearTimeout(window.currentAutoCancelTimer);
+            window.currentAutoCancelTimer = null;
+        }
+
+        // Remove UI
+        if (callView) callView.remove();
+        if (messagesContainer) messagesContainer.style.display = 'flex';
+
+        // Clear references
+        delete window.currentCall;
+        delete window.currentStream;
+        delete window.currentCallSubscription;
+        delete window.currentCallId;
     }
 
     async function renderChatInterface(channel) {
@@ -1169,16 +1215,6 @@ require base_path('views/shared/header.php');
 
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    window.addEventListener('beforeunload', () => {
-        channelListeners.forEach((handlers, channelId) => {
-            const channel = chatClient.channel(channelId);
-            channel.off('message.new', handlers.messageHandler);
-            channel.off('typing.start', handlers.typingStartHandler);
-            channel.off('typing.stop', handlers.typingStopHandler);
-        });
-        chatClient.disconnectUser();
-    });
-
     window.addEventListener('resize', () => {
         const messagesContainer = document.querySelector('.messages-container');
         if (window.matchMedia("(min-width: 48.001rem)").matches) {
@@ -1186,11 +1222,20 @@ require base_path('views/shared/header.php');
         }
     });
 
-    // 🧹 Cleanup when user reloads or closes tab
     window.addEventListener("beforeunload", async (event) => {
         try {
+            channelListeners.forEach((handlers, channelId) => {
+                const channel = chatClient.channel(channelId);
+                channel.off('message.new', handlers.messageHandler);
+                channel.off('typing.start', handlers.typingStartHandler);
+                channel.off('typing.stop', handlers.typingStopHandler);
+            });
+            chatClient.disconnectUser();
+
             if (window.currentCall) {
                 console.log("Cleaning up video call before unload...");
+
+                cleanupCall();
 
                 // End the Stream call session if exists
                 await window.currentCall.leave();
