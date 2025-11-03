@@ -29,13 +29,6 @@ require base_path('views/shared/header.php');
 </div>
 
 <script type="module">
-    console.log(window.StreamVideoClient);
-
-    // reset states
-    if (window.currentAutoCancelTimer) {
-        clearTimeout(window.currentAutoCancelTimer);
-        window.currentAutoCancelTimer = null;
-    }
     delete window.currentCall;
     delete window.currentStream;
 
@@ -69,6 +62,17 @@ require base_path('views/shared/header.php');
 
     const chatClient = StreamChat.getInstance(apiKey);
 
+    const channelListeners = new Map();
+    let isCurrentlyInCall = false;
+
+    const messagesContainer = document.querySelector('.messages-container');
+    const callView = document.querySelector('.video-call-container');
+    const footer = document.querySelector('footer');
+    const navbar = document.querySelector('.navbar-inner');
+
+    const searchChatInput = document.getElementById('search-chat-input');
+    const noResultsMessage = document.getElementById('no-results-message')
+
     await chatClient.connectUser({
         id: userId,
         name: userName,
@@ -76,8 +80,6 @@ require base_path('views/shared/header.php');
     }, chatToken, {
         presence: true
     });
-
-    const channelListeners = new Map();
 
     chatClient.on('user.presence.changed', event => {
         const updatedUser = event.user;
@@ -104,7 +106,6 @@ require base_path('views/shared/header.php');
         }
     });
 
-
     const filters = {
         members: {
             $in: [userId]
@@ -130,12 +131,12 @@ require base_path('views/shared/header.php');
         if (
             lastMessage.text === "Video call invitation" &&
             lastMessage.call_is_active === true &&
-            lastMessage.user.id !== userId
+            lastMessage.user.id !== userId &&
+            !isCurrentlyInCall
         ) {
             showIncomingCallPopup(lastMessage);
         }
     }
-
 
     if (channels.length === 0) {
         emptyChannels.style.display = 'flex';
@@ -154,21 +155,14 @@ require base_path('views/shared/header.php');
         const partner = members[0]?.user;
         const lastMessage = [...channel.state.messages]
             .reverse()
-            .find(m => m.text && !["Video call invitation", "Call declined"].includes(m.text));
+            .find(m => m.text && !["Video call invitation", "Call declined", "Call accepted", "Call declined - User is busy"].includes(m.text));
 
         const unreadCount = channel.countUnread();
         const isUser = lastMessage?.user?.id === userId;
         const prefix = isUser ? "You: " : "";
         let lastMessageText = prefix + truncateText(lastMessage?.text || "No messages yet", 30);
 
-
-        const lastMessageTime = lastMessage?.created_at ?
-            new Date(lastMessage.created_at).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) :
-            "";
-
+        const lastMessageTime = lastMessage?.created_at;
         const chatItem = `
             <a href="/u/messages?channelId=${channel.id}" class="chat-item">
                 <div class="chat-list-section-five">
@@ -210,7 +204,7 @@ require base_path('views/shared/header.php');
                     <div class="chat-list-section-eight">
                         <div class="chat-list-section-nine">
                             <h3>${partner?.name || 'Unknown User'}</h3>
-                            <span>${lastMessageTime}</span>
+                            <span>${formatChatListTime(lastMessageTime)}</span>
                         </div>
                         <p style="font-size: 0.875rem; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${unreadCount > 0 ? 'font-weight: bold; color: #fff;' : ''}">
                             ${lastMessageText}
@@ -220,7 +214,7 @@ require base_path('views/shared/header.php');
             </a>
         `;
 
-        chatListContainer.insertAdjacentHTML('afterbegin', chatItem);
+        chatListContainer.insertAdjacentHTML('beforeend', chatItem);
 
         if (index === 0) {
             renderChatInterface(channel);
@@ -230,6 +224,33 @@ require base_path('views/shared/header.php');
                 chatListContainer.querySelectorAll('a').forEach(a => a.classList.remove('active-chat'));
                 firstChatLink.classList.add('active-chat');
             }
+        }
+    });
+
+    searchChatInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const allChatItems = chatListContainer.querySelectorAll('a.chat-item');
+        let matchesFound = 0;
+
+        allChatItems.forEach(item => {
+            const nameElement = item.querySelector('.chat-list-section-nine h3');
+
+            if (nameElement) {
+                const name = nameElement.textContent.toLowerCase();
+
+                if (name.includes(query)) {
+                    item.style.display = 'block';
+                    matchesFound++;
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        });
+
+        if (matchesFound === 0 && allChatItems.length > 0) {
+            noResultsMessage.style.display = 'block';
+        } else {
+            noResultsMessage.style.display = 'none';
         }
     });
 
@@ -281,7 +302,22 @@ require base_path('views/shared/header.php');
             const isUser = event.user?.id === userId;
             const prefix = isUser ? "You: " : "";
 
-            if (!activeChannel || activeChannel.id !== channelId) return;
+            if (event.message.text === "Call declined - User is busy" && event.message.user.id !== userId) {
+                const popup = document.querySelector('.initiate-call-container');
+                if (popup) {
+                    const statusText = popup.querySelector('#call-status-text');
+                    if (statusText) {
+                        statusText.textContent = "In another call";
+                    }
+
+                    setTimeout(() => {
+                        popup.remove();
+                        if (videoCallBtn) videoCallBtn.disabled = false;
+                        cleanupCall();
+                    }, 2000);
+                }
+                return;
+            }
 
             if (event.message.text === "Call declined" && event.message.user.id !== userId) {
                 const popup = document.querySelector('.initiate-call-container');
@@ -292,11 +328,9 @@ require base_path('views/shared/header.php');
             }
 
             if (event.message.text === "Call accepted" && event.message.user.id !== userId) {
-                console.log("Call accepted by receiver, joining call now...");
                 const popup = document.querySelector('.initiate-call-container');
                 if (popup) popup.remove();
 
-                // FIX: Start as caller (you already created the call)
                 await startVideoCall(event.message.call_id, true);
                 return;
             }
@@ -325,21 +359,18 @@ require base_path('views/shared/header.php');
 
             if (!isUser) renderUnreadBadge(unreadCount);
             else removeUnreadBadge();
+
+            if (!activeChannel || activeChannel.id !== channelId) return;
         }
 
         if (event.type === 'message.updated') {
             const updatedMsg = event.message;
 
-            console.log(event.message);
-
-            // Check if this was a call message and if the call is now inactive
             if (updatedMsg.text === "Video call invitation" && updatedMsg.call_is_active === false) {
                 const popup = document.querySelector('.initiate-call-container, .receive-call-container');
                 if (popup) popup.remove();
 
                 chatClient.off('user.presence.changed');
-
-                console.log("Call ended or cancelled by either user, popup removed.");
             }
         }
 
@@ -379,7 +410,6 @@ require base_path('views/shared/header.php');
         renderChatInterface(selectedChannel);
 
         if (window.matchMedia("(max-width: 48rem)").matches) {
-            const messagesContainer = document.querySelector('.messages-container');
             messagesContainer.classList.add('show-conversation');
         }
 
@@ -387,11 +417,9 @@ require base_path('views/shared/header.php');
 
     if (backBtn) {
         backBtn.addEventListener('click', () => {
-            const messagesContainer = document.querySelector('.messages-container');
             messagesContainer.classList.remove('show-conversation');
         });
     }
-
 
     if (openIntentionalChannel) {
         const selectedChannel = channels.find(ch => ch.id === openIntentionalChannel);
@@ -406,20 +434,23 @@ require base_path('views/shared/header.php');
         renderChatInterface(channels[0]);
     }
 
-    /* 
-        VIDEO CALL FUNCTIONALITY
-    */
-    // In your videoCallBtn click handler
     if (videoCallBtn) {
         videoCallBtn.addEventListener('click', async () => {
             if (!activeChannel) return;
 
             videoCallBtn.disabled = true;
 
+            const members = Object.values(activeChannel.state.members).filter(m => m.user.id !== userId);
+            const partner = members[0]?.user;
+
+            if (!partner) {
+                videoCallBtn.disabled = false;
+                return;
+            }
+
             const callId = `call_${Date.now()}`;
 
             try {
-                // NOW send the invitation message
                 const sentMessage = await activeChannel.sendMessage({
                     text: "Video call invitation",
                     call_id: callId,
@@ -429,14 +460,13 @@ require base_path('views/shared/header.php');
                     call_is_active: true,
                 });
 
-                // Open your own video call UI (as caller)
                 showInitiateCallPopup(sentMessage.message, activeChannel);
+                videoCallBtn.disabled = false;
 
             } catch (error) {
                 console.error("Failed to initiate call:", error);
-                alert("Failed to start call. Please try again.");
-            } finally {
                 videoCallBtn.disabled = false;
+                alert("Failed to start call. Please try again.");
             }
         });
     }
@@ -451,26 +481,26 @@ require base_path('views/shared/header.php');
         const popup = document.createElement('div');
         popup.classList.add('initiate-call-container');
         popup.innerHTML = `
-        <div class="initiate-call-section">
-            <div class="initiate-other-user">
-                <div class="initiate-other-user-avatar">
-                    <img src="${partner.image}" alt="${partner.name}">
-                </div>
-                <h1>${partner.name}</h1>
-                <p id="call-status-text">${partner.online ? 'Ringing...' : 'Calling...'}</p>
+    <div class="initiate-call-section">
+        <div class="initiate-other-user">
+            <div class="initiate-other-user-avatar">
+                <img src="${partner.image}" alt="${partner.name}">
             </div>
-
-            <div class="initiate-other-end-initiate">
-                <button class="receiver-decline-button" id="initiate-end-call">
-                    <svg width="2rem" height="2rem" viewBox="0 0 24 24" stroke="#fff" fill="#fff">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M1.27396 8.94048C3.01237 7.88621 6.8401 6 12 6C17.1599 6 20.9876 7.88621 22.726 8.94048C23.7251 9.54634 24.1355 10.6912 23.9609 11.7514L23.5032 14.5308C23.2353 16.157 21.704 17.2467 20.101 16.9518L17.6354 16.4982C16.5887 16.3056 15.8888 15.2984 16.0637 14.2365L16.2935 12.8413C15.7061 12.4933 14.3714 11.9088 12 11.9088C9.62863 11.9088 8.29388 12.4933 7.70655 12.8413L7.93635 14.2365C8.11123 15.2984 7.41126 16.3056 6.36463 16.4982L3.89895 16.9518C2.29601 17.2467 0.764683 16.157 0.49684 14.5308L0.0390736 11.7514C-0.135542 10.6912 0.274923 9.54635 1.27396 8.94048Z" />
-                    </svg>
-                </button>
-                <p>End Call</p>
-            </div>
+            <h1>${partner.name}</h1>
+            <p id="call-status-text">${partner.online ? 'Ringing...' : 'Calling...'}</p>
         </div>
-    `;
+
+        <div class="initiate-other-end-initiate">
+            <button class="receiver-decline-button" id="initiate-end-call">
+                <svg width="2rem" height="2rem" viewBox="0 0 24 24" stroke="#fff" fill="#fff">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M1.27396 8.94048C3.01237 7.88621 6.8401 6 12 6C17.1599 6 20.9876 7.88621 22.726 8.94048C23.7251 9.54634 24.1355 10.6912 23.9609 11.7514L23.5032 14.5308C23.2353 16.157 21.704 17.2467 20.101 16.9518L17.6354 16.4982C16.5887 16.3056 15.8888 15.2984 16.0637 14.2365L16.2935 12.8413C15.7061 12.4933 14.3714 11.9088 12 11.9088C9.62863 11.9088 8.29388 12.4933 7.70655 12.8413L7.93635 14.2365C8.11123 15.2984 7.41126 16.3056 6.36463 16.4982L3.89895 16.9518C2.29601 17.2467 0.764683 16.157 0.49684 14.5308L0.0390736 11.7514C-0.135542 10.6912 0.274923 9.54635 1.27396 8.94048Z" />
+                </svg>
+            </button>
+            <p>End Call</p>
+        </div>
+    </div>
+`;
 
         document.body.appendChild(popup);
 
@@ -485,90 +515,110 @@ require base_path('views/shared/header.php');
 
         chatClient.on('user.presence.changed', handlePresenceChange);
 
-        popup.querySelector('#initiate-end-call').addEventListener('click', () => {
+        popup.querySelector('#initiate-end-call').addEventListener('click', async () => {
             chatClient.off('user.presence.changed', handlePresenceChange);
-            endInitiateVideoCall(msg.id);
+            await endInitiateVideoCall(msg.id);
+            if (videoCallBtn) videoCallBtn.disabled = false;
+
+            if (window.currentAutoCancelTimer) {
+                clearTimeout(window.currentAutoCancelTimer);
+                window.currentAutoCancelTimer = null;
+            }
+            cleanupCall();
             popup.remove();
         });
 
-        const autoCancelTimer = setTimeout(() => {
+        const autoCancelTimer = setTimeout(async () => {
             const statusText = popup.querySelector('#call-status-text');
             if (statusText) statusText.textContent = "No answer. Call cancelled.";
 
             setTimeout(async () => {
                 await endInitiateVideoCall(msg.id);
+                if (videoCallBtn) videoCallBtn.disabled = false;
+                chatClient.off('user.presence.changed', handlePresenceChange);
                 popup.remove();
             }, 2000);
         }, 60000);
 
         window.currentAutoCancelTimer = autoCancelTimer;
-
-        // Store the message ID for later use
         window.currentCallMessageId = msg.id;
     }
 
     async function showIncomingCallPopup(msg) {
         const callerName = msg.caller_name || "Someone";
+        const callerId = msg.caller_id;
         const callId = msg.call_id;
         const callerImg = msg.caller_img || "/assets/images/default-avatar.png";
+
+        const callChannel = channels.find(ch => {
+            const members = Object.values(ch.state.members);
+            return members.some(m => m.user.id === callerId);
+        });
+
+        if (!callChannel) {
+            console.error("Could not find channel for incoming call");
+            return;
+        }
+
+        if (isCurrentlyInCall) {
+            try {
+                if (!callChannel.initialized) {
+                    await callChannel.watch();
+                }
+
+                await callChannel.sendMessage({
+                    text: "Call declined - User is busy"
+                });
+            } catch (error) {
+                console.error("Error auto-declining call:", error);
+            }
+            return;
+        }
 
         const popup = document.createElement('div');
         popup.classList.add('receive-call-container');
         popup.innerHTML = `
-        <div class="receive-call-section">
-            <div class="receiver-other-user">
-                <div class="initiate-other-user-avatar">
-                    <img src="${callerImg}" alt="${callerName}">
-                </div>
-
-                <h1>${callerName}</h1>
-                <p>Incoming Video Call...</p>
+    <div class="receive-call-section">
+        <div class="receiver-other-user">
+            <div class="initiate-other-user-avatar">
+                <img src="${callerImg}" alt="${callerName}">
             </div>
 
-            <div class="receiver-other-buttons">
-                <div>
-                    <button class="receiver-decline-button">
-                        <svg
-                            width="2rem"
-                            height="2rem"
-                            viewBox="0 0 24 24"
-                            stroke="#fff"
-                            fill="#fff">
-                            <path
-                                fill-rule="evenodd"
-                                clip-rule="evenodd"
-                                d="M1.27396 8.94048C3.01237 7.88621 6.8401 6 12 6C17.1599 6 20.9876 7.88621 22.726 8.94048C23.7251 9.54634 24.1355 10.6912 23.9609 11.7514L23.5032 14.5308C23.2353 16.157 21.704 17.2467 20.101 16.9518L17.6354 16.4982C16.5887 16.3056 15.8888 15.2984 16.0637 14.2365L16.2935 12.8413C15.7061 12.4933 14.3714 11.9088 12 11.9088C9.62863 11.9088 8.29388 12.4933 7.70655 12.8413L7.93635 14.2365C8.11123 15.2984 7.41126 16.3056 6.36463 16.4982L3.89895 16.9518C2.29601 17.2467 0.764683 16.157 0.49684 14.5308L0.0390736 11.7514C-0.135542 10.6912 0.274923 9.54635 1.27396 8.94048ZM12 7.96961C7.30768 7.96961 3.82761 9.68804 2.2745 10.6299C2.04751 10.7676 1.8986 11.061 1.95897 11.4276L2.41674 14.207C2.50602 14.749 3.01646 15.1123 3.55077 15.014L6.01645 14.5603L5.76984 13.063C5.66906 12.4511 5.85834 11.6997 6.51793 11.2691C7.34118 10.7317 9.06148 9.93922 12 9.93922C14.9385 9.93922 16.6588 10.7317 17.4821 11.2691C18.1417 11.6997 18.3309 12.4511 18.2302 13.063L17.9836 14.5603L20.4492 15.014C20.9835 15.1123 21.494 14.749 21.5833 14.207L22.041 11.4276C22.1014 11.061 21.9525 10.7676 21.7255 10.6299C20.1724 9.68804 16.6923 7.96961 12 7.96961Z" />
-                        </svg>
-                    </button>
-                    <p>Decline</p>
-                </div>
+            <h1>${callerName}</h1>
+            <p>Incoming Video Call...</p>
+        </div>
 
-                <div>
-                    <button class="receiver-accept-button">
-                        <svg
-                            width="2rem"
-                            height="2rem"
-                            fill="#ffffff"
-                            stroke="#ffffff"
-                            viewBox="0 0 24 24">
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg></button>
-                    <p>Accept</p>
-                </div>
+        <div class="receiver-other-buttons">
+            <div>
+                <button class="receiver-decline-button">
+                    <svg width="2rem" height="2rem" viewBox="0 0 24 24" stroke="#fff" fill="#fff">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M1.27396 8.94048C3.01237 7.88621 6.8401 6 12 6C17.1599 6 20.9876 7.88621 22.726 8.94048C23.7251 9.54634 24.1355 10.6912 23.9609 11.7514L23.5032 14.5308C23.2353 16.157 21.704 17.2467 20.101 16.9518L17.6354 16.4982C16.5887 16.3056 15.8888 15.2984 16.0637 14.2365L16.2935 12.8413C15.7061 12.4933 14.3714 11.9088 12 11.9088C9.62863 11.9088 8.29388 12.4933 7.70655 12.8413L7.93635 14.2365C8.11123 15.2984 7.41126 16.3056 6.36463 16.4982L3.89895 16.9518C2.29601 17.2467 0.764683 16.157 0.49684 14.5308L0.0390736 11.7514C-0.135542 10.6912 0.274923 9.54635 1.27396 8.94048ZM12 7.96961C7.30768 7.96961 3.82761 9.68804 2.2745 10.6299C2.04751 10.7676 1.8986 11.061 1.95897 11.4276L2.41674 14.207C2.50602 14.749 3.01646 15.1123 3.55077 15.014L6.01645 14.5603L5.76984 13.063C5.66906 12.4511 5.85834 11.6997 6.51793 11.2691C7.34118 10.7317 9.06148 9.93922 12 9.93922C14.9385 9.93922 16.6588 10.7317 17.4821 11.2691C18.1417 11.6997 18.3309 12.4511 18.2302 13.063L17.9836 14.5603L20.4492 15.014C20.9835 15.1123 21.494 14.749 21.5833 14.207L22.041 11.4276C22.1014 11.061 21.9525 10.7676 21.7255 10.6299C20.1724 9.68804 16.6923 7.96961 12 7.96961Z" />
+                    </svg>
+                </button>
+                <p>Decline</p>
+            </div>
+
+            <div>
+                <button class="receiver-accept-button">
+                    <svg width="2rem" height="2rem" fill="#ffffff" stroke="#ffffff" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </button>
+                <p>Accept</p>
             </div>
         </div>
-    `;
+    </div>
+`;
         document.body.appendChild(popup);
 
         popup.querySelector('.receiver-decline-button').addEventListener('click', async () => {
             try {
-                await activeChannel.sendMessage({
+                await callChannel.sendMessage({
                     text: "Call declined"
                 });
+
                 popup.remove();
             } catch (error) {
                 console.error("Error rejecting call:", error);
@@ -578,7 +628,7 @@ require base_path('views/shared/header.php');
         popup.querySelector('.receiver-accept-button').addEventListener('click', async () => {
             popup.remove();
 
-            await activeChannel.sendMessage({
+            await callChannel.sendMessage({
                 text: "Call accepted",
                 call_id: msg.call_id
             });
@@ -589,54 +639,158 @@ require base_path('views/shared/header.php');
 
     async function endInitiateVideoCall(messageId) {
         try {
+
             await chatClient.partialUpdateMessage(messageId, {
                 set: {
                     call_is_active: false
                 }
             });
+
+            isCurrentlyInCall = false;
         } catch (error) {
             console.error("Error ending call:", error);
         }
     }
 
     async function startVideoCall(callId, isCaller) {
-        const messagesContainer = document.querySelector('.messages-container');
-
-        // RESET PREVIOUS CALL STATE
         await cleanupCall()
 
-        try {
-            console.log("🎥 Starting video call:", callId, "| isCaller:", isCaller);
-            messagesContainer.style.display = 'none';
+        isCurrentlyInCall = true;
 
-            // Build UI
+        try {
+            messagesContainer.style.display = 'none';
+            footer.style.display = 'none';
+            navbar.style.display = 'none';
+
             const callView = document.createElement('div');
             callView.classList.add('video-call-container');
             callView.innerHTML = `
-            <video id="remoteVideo" class="remote-video" autoplay playsinline></video>
-            <audio id="remoteAudio" autoplay playsinline></audio>
-            <video id="localVideo" class="local-video" autoplay muted playsinline></video>
-            <div class="controls-bar">
-                <button id="toggleMic" class="control-btn"><i class="fa-solid fa-microphone"></i></button>
-                <button id="toggleCam" class="control-btn"><i class="fa-solid fa-video"></i></button>
-                <button id="endCall" class="end-call control-btn"><i class="fa-solid fa-phone-slash"></i></button>
-            </div>
-        `;
+            <div class="remote-video-container">
+                    <div class="remote-video-modify">
+                        <video id="remoteVideo" class="remote-video" autoplay playsinline></video>
+                    </div>
+
+
+                    <div id="remote-video-overlay" class="video-off-overlay" style="display: none;">
+                        <i class="fa-solid fa-video-slash"></i>
+                    </div>
+                </div>
+
+                <audio id="remoteAudio" autoplay playsinline></audio>
+
+                <div class="local-video-container">
+                    <div class="local-video-modify">
+                        <video id="localVideo" class="local-video" autoplay muted playsinline></video>
+                    </div>
+
+                    <div id="local-video-overlay" class="video-off-overlay" style="display: none;">
+                        <i class="fa-solid fa-video-slash"></i>
+                    </div>
+                </div>
+
+                <div class="controls-bar">
+                    <button id="toggleMic" class="control-btn"><i class="fa-solid fa-microphone"></i></button>
+                    <button id="toggleCam" class="control-btn"><i class="fa-solid fa-video"></i></button>
+                    <button id="endCall" class="end-call control-btn"><i class="fa-solid fa-phone-slash"></i></button>
+                </div>
+            `;
             document.body.appendChild(callView);
+
+            const dragElement = callView.querySelector('.local-video-container');
+
+            let active = false;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            dragElement.addEventListener('mousedown', dragStart);
+            dragElement.addEventListener('touchstart', dragStart, {
+                passive: false
+            });
+
+            window.addEventListener('mouseup', dragEnd);
+            window.addEventListener('touchend', dragEnd);
+
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('touchmove', dragMove, {
+                passive: false
+            });
+
+            function dragStart(e) {
+                active = true;
+                dragElement.style.transition = 'none';
+
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                const rect = dragElement.getBoundingClientRect();
+
+                xOffset = clientX - rect.left;
+                yOffset = clientY - rect.top;
+
+                dragElement.style.right = 'auto';
+                dragElement.style.bottom = 'auto';
+            }
+
+            function dragMove(e) {
+                if (!active) return;
+
+                e.preventDefault();
+
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                let newLeft = clientX - xOffset;
+                let newTop = clientY - yOffset;
+
+                dragElement.style.left = `${newLeft}px`;
+                dragElement.style.top = `${newTop}px`;
+            }
+
+            function dragEnd() {
+                if (!active) return;
+                active = false;
+
+                dragElement.style.transition = 'all 0.3s ease';
+
+                const padding = 20;
+                const rect = dragElement.getBoundingClientRect();
+                const winWidth = window.innerWidth;
+                const winHeight = window.innerHeight;
+
+                if (rect.left + (rect.width / 2) < (winWidth / 2)) {
+                    dragElement.style.left = `${padding}px`;
+                    dragElement.style.right = 'auto';
+                } else {
+                    dragElement.style.left = 'auto';
+                    dragElement.style.right = `${padding}px`;
+                }
+
+                let finalTop = rect.top;
+                if (finalTop < padding) {
+                    finalTop = padding;
+                } else if (finalTop + rect.height > winHeight - padding) {
+                    finalTop = winHeight - rect.height - padding;
+                }
+
+                dragElement.style.top = `${finalTop}px`;
+                dragElement.style.bottom = 'auto';
+            }
+
+            const localVideoOverlay = callView.querySelector('#local-video-overlay');
+            const remoteVideoOverlay = callView.querySelector('#remote-video-overlay');
+            const remoteVideoModify = callView.querySelector('.remote-video-modify');
+            const localVideoModify = callView.querySelector('.local-video-modify');
 
             const StreamVideoClientClass = window.StreamVideoClient?.StreamVideoClient || window.StreamVideoClient;
             if (!StreamVideoClientClass) throw new Error("StreamVideoClient SDK not loaded");
 
-            // Get video token
             const res = await fetch("/u/video/get-video-token", {
                 method: "POST"
             });
             const tokenData = await res.json();
             const videoToken = tokenData.token;
             if (!videoToken) throw new Error("Video token missing from response");
-            console.log("🔑 Video token obtained");
 
-            // Initialize client
             const client = StreamVideoClientClass.getOrCreateInstance({
                 apiKey,
                 user: {
@@ -646,22 +800,17 @@ require base_path('views/shared/header.php');
                 },
                 token: videoToken
             });
-            console.log("⚙️ Client initialized");
 
-            // Create call
             const call = client.call("default", callId);
             const remoteVideo = document.getElementById("remoteVideo");
             const remoteAudio = document.getElementById("remoteAudio");
             const localVideo = document.getElementById("localVideo");
 
-            // Join call
             if (isCaller) {
-                console.log("📞 Creating and joining call as caller...");
                 await call.join({
                     create: true
                 });
             } else {
-                console.log("📞 Joining existing call as receiver...");
                 let joined = false;
                 for (let i = 0; i < 5; i++) {
                     try {
@@ -669,41 +818,29 @@ require base_path('views/shared/header.php');
                         joined = true;
                         break;
                     } catch (e) {
-                        console.log("⏳ Waiting for call to exist...");
                         await new Promise(r => setTimeout(r, 1000));
                     }
                 }
                 if (!joined) throw new Error("Call not found on server.");
                 await call.join();
             }
-            console.log("✅ Joined call");
 
-            // Enable local media AFTER join
-            console.log("📤 Enabling local media...");
             await call.camera.enable({
                 publish: true
             });
             await call.microphone.enable({
                 publish: true
             });
-            console.log("✅ Camera and Microphone enabled");
 
-            // Attach local preview using getUserMedia
             const localStream = await getMediaStream();
             if (localStream) {
                 localVideo.srcObject = localStream;
                 await localVideo.play().catch(e => console.warn("Local preview error:", e));
-                console.log("✅ Local preview attached");
             }
 
-            // Track bound elements to prevent duplicate bindings
             const boundElements = new Set();
-            let processCount = 0;
-            const MAX_PROCESS_COUNT = 10;
 
-            // Helper function to show call ended notification
             function showCallEndedNotification(message) {
-                // Remove existing notification if any
                 const existingNotification = callView.querySelector('.call-ended-notification');
                 if (existingNotification) return;
 
@@ -734,42 +871,28 @@ require base_path('views/shared/header.php');
                 callView.appendChild(notification);
             }
 
-            // Helper function to bind participant video and audio
             function bindParticipant(participant) {
                 const elementKey = `${participant.sessionId}`;
 
-                // Skip if already bound
                 if (boundElements.has(elementKey)) {
-                    console.log("⏭️ Already bound:", elementKey);
                     return;
                 }
 
                 try {
-                    console.log("🔗 Binding participant:", {
-                        sessionId: participant.sessionId,
-                        userId: participant.userId,
-                        publishedTracks: participant.publishedTracks
-                    });
 
-                    // Bind video element using Stream SDK method
                     const unbindVideo = call.bindVideoElement(
                         remoteVideo,
                         participant.sessionId,
                         "videoTrack"
                     );
-                    console.log("✅ Video bound for:", participant.sessionId);
 
-                    // Bind audio element using Stream SDK method
                     const unbindAudio = call.bindAudioElement(
                         remoteAudio,
                         participant.sessionId
                     );
-                    console.log("✅ Audio bound for:", participant.sessionId);
 
-                    // Mark as bound
                     boundElements.add(elementKey);
 
-                    // Store unbind functions for cleanup
                     if (!window.currentCallUnbinders) {
                         window.currentCallUnbinders = [];
                     }
@@ -780,51 +903,75 @@ require base_path('views/shared/header.php');
                 }
             }
 
-            // Subscribe to participant changes
-            console.log("🔄 Setting up participant subscription...");
-            const subscription = call.state.participants$.subscribe((participants) => {
-                if (processCount >= MAX_PROCESS_COUNT) {
-                    console.warn("⚠️ Max process count reached");
-                    return;
+            const initialParticipants = call.state.participants;
+            initialParticipants.forEach((participant) => {
+                if (participant.userId === userId) return;
+
+                if (participant.publishedTracks.length > 0) {
+                    bindParticipant(participant);
                 }
 
-                processCount++;
-                console.log(`🔄 Participants updated (${processCount}/${MAX_PROCESS_COUNT}):`, participants.length);
+                const isRemoteCameraOn = participant.publishedTracks.includes(2);
+                remoteVideoOverlay.style.display = isRemoteCameraOn ? 'none' : 'flex';
+            });
 
-                participants.forEach((participant) => {
-                    // Skip local participant
-                    if (participant.userId === userId) return;
 
-                    // Only bind if they have published tracks
-                    if (participant.publishedTracks && participant.publishedTracks.length > 0) {
-                        bindParticipant(participant);
-                    }
-                });
+            call.on('participantJoined', (event) => {
+                const participant = event.participant;
+                if (participant.userId === userId) return;
+
+                bindParticipant(participant);
+            });
+
+            call.on('trackPublished', (event) => {
+                const participant = event.participant;
+                if (participant && participant.userId !== userId && event.type === 2) {
+                    remoteVideoOverlay.style.display = 'none';
+                    remoteVideoModify.style.display = 'flex';
+
+                    bindParticipant(participant);
+                }
+            });
+
+            call.on('trackUnpublished', (event) => {
+                const participant = event.participant;
+                if (participant && participant.userId !== userId && event.type === 2) {
+                    remoteVideoOverlay.style.display = 'flex';
+                    remoteVideoModify.style.display = 'none';
+                }
             });
 
             call.on("call.session_participant_left", (event) => {
                 if (event.participant?.userId !== userId) {
-                    console.log("👋 Other participant left");
                     showCallEndedNotification("Call ended");
 
-                    // Delay cleanup so notification is visible
                     setTimeout(async () => {
-                        await cleanupCall();
-                    }, 2000); // 2 seconds
+                        window.location.href = '/u/messages'
+                    }, 2000);
                 }
             });
 
             call.on("call.session_ended", () => {
-                console.log("📞 Call session ended");
                 showCallEndedNotification("Call ended");
 
-                // Delay cleanup
                 setTimeout(async () => {
-                    await cleanupCall();
-                }, 2000); // 2 seconds
+                    window.location.href = '/u/messages'
+                }, 2000);
             });
 
-            // Controls
+            call.on("call.session_participant_updated", (event) => {
+                const participant = event.participant;
+                if (!participant || participant.userId === userId) return;
+
+                const remoteVideoOverlay = document.getElementById("remote-video-overlay");
+
+                if (participant.isCameraEnabled) {
+                    remoteVideoOverlay.style.display = "none";
+                } else {
+                    remoteVideoOverlay.style.display = "flex";
+                }
+            });
+
             const micBtn = callView.querySelector("#toggleMic");
             const camBtn = callView.querySelector("#toggleCam");
             const endBtn = callView.querySelector("#endCall");
@@ -842,7 +989,6 @@ require base_path('views/shared/header.php');
                     micBtn.innerHTML = micEnabled ?
                         '<i class="fa-solid fa-microphone"></i>' :
                         '<i class="fa-solid fa-microphone-slash"></i>';
-                    console.log("🎤 Microphone toggled:", micEnabled);
                 } catch (e) {
                     console.error("Mic toggle error:", e);
                 }
@@ -852,14 +998,17 @@ require base_path('views/shared/header.php');
                 try {
                     if (camEnabled) {
                         await call.camera.disable();
+                        localVideoOverlay.style.display = 'flex';
+                        localVideoModify.style.display = 'none';
                     } else {
                         await call.camera.enable();
+                        localVideoOverlay.style.display = 'none';
+                        localVideoModify.style.display = 'flex';
                     }
                     camEnabled = !camEnabled;
                     camBtn.innerHTML = camEnabled ?
                         '<i class="fa-solid fa-video"></i>' :
                         '<i class="fa-solid fa-video-slash"></i>';
-                    console.log("📹 Camera toggled:", camEnabled);
                 } catch (e) {
                     console.error("Camera toggle error:", e);
                 }
@@ -867,17 +1016,9 @@ require base_path('views/shared/header.php');
 
             endBtn.addEventListener("click", async () => {
                 try {
-                    // Unsubscribe from participants
-                    if (subscription) {
-                        subscription.unsubscribe();
-                        console.log("🔌 Unsubscribed from participants");
-                    }
-
-                    // Remove all event listeners
                     call.off("call.session_ended");
                     call.off("call.session_participant_left");
 
-                    // Call unbind functions
                     if (window.currentCallUnbinders) {
                         window.currentCallUnbinders.forEach(unbind => {
                             try {
@@ -889,28 +1030,21 @@ require base_path('views/shared/header.php');
                         delete window.currentCallUnbinders;
                     }
 
-                    // Stop local tracks
                     if (localStream) {
                         localStream.getTracks().forEach(t => {
                             t.stop();
-                            console.log("🛑 Stopped track:", t.kind);
                         });
                     }
 
-                    // Leave the call
                     await call.leave();
-                    console.log("👋 Left the call");
 
-                    // Mark call as inactive in chat
                     if (window.currentCallMessageId) {
                         await endInitiateVideoCall(window.currentCallMessageId);
                         delete window.currentCallMessageId;
                     }
 
-                    // Show "Call ended" notification before cleanup
                     showCallEndedNotification("Call ended");
 
-                    // Delay cleanup by 2 seconds
                     setTimeout(async () => {
                         await cleanupCall();
                     }, 2000);
@@ -923,18 +1057,18 @@ require base_path('views/shared/header.php');
 
             });
 
-            // Save references
             window.currentCall = call;
             window.currentStream = localStream;
-            window.currentCallSubscription = subscription;
 
         } catch (err) {
             console.error("❌ Video call error:", err);
             alert("Failed to start video call: " + (err?.message || err));
             await cleanupCall();
-            const callView = document.querySelector('.video-call-container');
+
             if (callView) callView.remove();
             messagesContainer.style.display = 'flex';
+            footer.style.display = 'flex';
+            navbar.style.display = 'flex';
         }
     }
 
@@ -969,36 +1103,29 @@ require base_path('views/shared/header.php');
     }
 
     async function cleanupCall() {
-        const callView = document.querySelector('.video-call-container');
-        const messagesContainer = document.querySelector('.messages-container');
-
-        // Enable video call button if you have one
-        if (window.videoCallBtn) videoCallBtn.disabled = false;
+        if (videoCallBtn) videoCallBtn.disabled = false;
+        isCurrentlyInCall = false;
 
         try {
-            // Unsubscribe & remove event listeners
             if (window.currentCall) {
+                window.currentCall.off("participantJoined");
+                window.currentCall.off("trackPublished");
+                window.currentCall.off("trackUnpublished");
                 window.currentCall.off("call.session_ended");
                 window.currentCall.off("call.session_participant_left");
 
-                if (window.currentCallSubscription) {
-                    window.currentCallSubscription.unsubscribe();
-                }
 
                 if (window.currentCallUnbinders) {
                     window.currentCallUnbinders.forEach(unbind => unbind());
                     delete window.currentCallUnbinders;
                 }
 
-                // Stop local tracks
                 if (window.currentStream) {
                     window.currentStream.getTracks().forEach(t => t.stop());
                 }
 
-                // Leave call safely
                 await window.currentCall.leave().catch(e => console.warn("Leave error:", e));
 
-                // Mark call as inactive (optional, depends on backend)
                 if (window.currentCallMessageId) {
                     await endInitiateVideoCall(window.currentCallMessageId).catch(e => console.warn(e));
                     delete window.currentCallMessageId;
@@ -1008,20 +1135,18 @@ require base_path('views/shared/header.php');
             console.warn("Cleanup error:", e);
         }
 
-        // Clear timers
         if (window.currentAutoCancelTimer) {
             clearTimeout(window.currentAutoCancelTimer);
             window.currentAutoCancelTimer = null;
         }
 
-        // Remove UI
         if (callView) callView.remove();
         if (messagesContainer) messagesContainer.style.display = 'flex';
+        if (footer) footer.style.display = 'flex';
+        if (navbar) navbar.style.display = 'flex';
 
-        // Clear references
         delete window.currentCall;
         delete window.currentStream;
-        delete window.currentCallSubscription;
         delete window.currentCallId;
     }
 
@@ -1058,7 +1183,10 @@ require base_path('views/shared/header.php');
         <p>${partner?.online ? "Online" : "Last active " + calculateTime(partner?.last_active)}</p>
     `;
 
-        const messages = channel.state.messages;
+        const messages = channel.state.messages.filter(msg =>
+            !["Video call invitation", "Call declined", "Call accepted", "Call declined - User is busy"].includes(msg.text)
+        );
+
         chatContainer.innerHTML = "";
         messages.forEach(msg => renderMessage(msg));
         await channel.markRead();
@@ -1153,7 +1281,7 @@ require base_path('views/shared/header.php');
         if (renderedMessageIds.has(msg.id)) return;
         renderedMessageIds.add(msg.id);
 
-        if (["Video call invitation", "Call declined", "Call accepted"].includes(msg.text)) return;
+        if (["Video call invitation", "Call declined", "Call accepted", "Call declined - User is busy"].includes(msg.text)) return;
 
         const isUser = msg.user.id === userId;
         const time = formatMessageTime(msg.created_at);
@@ -1174,39 +1302,160 @@ require base_path('views/shared/header.php');
     function formatMessageTime(dateString) {
         const now = new Date();
         const past = new Date(dateString);
-        const seconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
-        if (seconds < 86400) {
-            return past.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        const startOfYesterday = new Date(startOfToday.getTime() - 86400000);
+
+        if (past.getTime() >= startOfToday.getTime()) {
+            return past.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
             });
         }
-        if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`;
-        if (seconds < 2592000) return `${Math.floor(seconds / 604800)} w`;
-        if (seconds < 31536000) return ``;
 
-        return ``;
+        if (past.getTime() >= startOfYesterday.getTime()) {
+            return `Yesterday at ${past.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        })}`;
+        }
+
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+        if (past.getTime() >= startOfYear.getTime()) {
+            return past.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        return past.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+
+    function formatChatListTime(dateString) {
+        if (!dateString) {
+            return "";
+        }
+
+        const now = new Date();
+        const past = new Date(dateString);
+
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (past.getTime() >= startOfToday.getTime()) {
+            return past.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        const startOfYesterday = new Date(startOfToday.getTime() - 86400000);
+
+        if (past.getTime() >= startOfYesterday.getTime()) {
+            return "Yesterday";
+        }
+
+        const startOfWeek = new Date(startOfToday.getTime() - (now.getDay() * 86400000));
+
+        if (past.getTime() >= startOfWeek.getTime()) {
+            return past.toLocaleDateString('en-US', {
+                weekday: 'short'
+            });
+        }
+
+        return past.toLocaleDateString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: '2-digit'
+        });
     }
 
     function calculateTime(dateString) {
         const now = new Date();
         const past = new Date(dateString);
+
         const seconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
-        if (seconds < 60) return "Just now";
-        if (seconds < 86400) {
-            return past.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
+        if (seconds < 60) {
+            return "Just now";
+        }
+
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) {
+            return `${minutes}m ago`;
+        }
+
+        const hours = Math.floor(minutes / 60);
+        if (hours < 6) {
+            return `${hours}h ago`;
+        }
+
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (past.getTime() >= startOfToday.getTime()) {
+            return past.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
             });
         }
-        if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-        if (seconds < 2592000) return `${Math.floor(seconds / 604800)} weeks ago`;
-        if (seconds < 31536000) return `${Math.floor(seconds / 2592000)} months ago`;
 
-        return `${Math.floor(seconds / 31536000)} year(s) ago`;
+        const startOfYesterday = new Date(startOfToday.getTime() - 86400000);
+
+        if (past.getTime() >= startOfYesterday.getTime()) {
+            return `Yesterday at ${past.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        })}`;
+        }
+
+        const startOfWeek = new Date(startOfToday.getTime() - (now.getDay() * 86400000));
+
+        if (past.getTime() >= startOfWeek.getTime()) {
+            return past.toLocaleDateString('en-US', {
+                weekday: 'short',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        if (past.getTime() >= startOfYear.getTime()) {
+            return past.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        return past.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
     }
+
 
     function truncateText(text, maxLength = 30) {
         if (!text) return "";
@@ -1216,7 +1465,6 @@ require base_path('views/shared/header.php');
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     window.addEventListener('resize', () => {
-        const messagesContainer = document.querySelector('.messages-container');
         if (window.matchMedia("(min-width: 48.001rem)").matches) {
             messagesContainer.classList.remove('show-conversation');
         }
@@ -1233,19 +1481,14 @@ require base_path('views/shared/header.php');
             chatClient.disconnectUser();
 
             if (window.currentCall) {
-                console.log("Cleaning up video call before unload...");
-
                 cleanupCall();
 
-                // End the Stream call session if exists
                 await window.currentCall.leave();
 
-                // Stop all local media tracks (camera/mic)
                 if (window.currentStream) {
                     window.currentStream.getTracks().forEach(track => track.stop());
                 }
 
-                // Optionally, mark call as inactive in the channel
                 if (window.currentMessageId && chatClient) {
                     await chatClient.partialUpdateMessage(window.currentMessageId, {
                         set: {

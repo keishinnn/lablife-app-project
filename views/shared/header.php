@@ -37,7 +37,7 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css">
     <link rel="stylesheet" href="/assets/css/messages-page/messages-page.css">
-    <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-interface.css">
     <link rel="stylesheet" href="/assets/css/video-call/initiate-call.css">
     <link rel="stylesheet" href="/assets/css/video-call/receive-call.css?v=<?php echo time(); ?>">
@@ -56,7 +56,7 @@ use Core\Auth;
 
 <body>
     <header>
-        <nav class=" navbar">
+        <nav class="navbar">
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->

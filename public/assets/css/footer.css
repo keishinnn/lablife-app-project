@@ -1,5 +1,7 @@
 footer {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 3rem 0;
     border-top: 1px solid rgba(143, 143, 143, 0.1);
     color: #9ca3af;

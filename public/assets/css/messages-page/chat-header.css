@@ -96,6 +96,13 @@
     color: #000000;
 }
 
+#no-results-message {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    color: #9ca3af;
+}
+
 @media (prefers-color-scheme: dark) {
     .chat-header-section {
         background-color: #0f172a;
