@@ -71,7 +71,9 @@ require base_path('views/shared/header.php');
     const navbar = document.querySelector('.navbar-inner');
 
     const searchChatInput = document.getElementById('search-chat-input');
-    const noResultsMessage = document.getElementById('no-results-message')
+    const noResultsMessage = document.getElementById('no-results-message');
+
+    const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     await chatClient.connectUser({
         id: userId,
@@ -1209,7 +1211,7 @@ require base_path('views/shared/header.php');
 
                 if (messagePreview) {
                     messagePreview.style.fontWeight = 'normal';
-                    messagePreview.style.color = '#9ca3af';
+                    messagePreview.style.color = (isDarkMode ? "#9ca3af" : "#3d4149ff");
                 }
             }
 
@@ -1286,16 +1288,33 @@ require base_path('views/shared/header.php');
         const isUser = msg.user.id === userId;
         const time = formatMessageTime(msg.created_at);
 
+        const bubbleBackground = isUser ?
+            "linear-gradient(to right, #ec4899, #ef4444)" :
+            (isDarkMode ? "#374151" : "#f1f0f0");
+
+        const bubbleTextColor = isUser ?
+            "#fff" :
+            (isDarkMode ? "" : "grey");
+
+        const timeTextColor = isUser ?
+            "#f1f0f0" :
+            (isDarkMode ? "#9ca3af" : "#6b7280");
+
         const messageBubble = `
         <div style="display:flex; justify-content:${isUser ? 'end' : 'start'};">
             <div style="max-width: 20rem; padding: 0.5rem 1rem; border-radius: 1rem;
-                background: ${isUser ? "linear-gradient(to right, #ec4899, #ef4444)" : "#374151"};
-                color: #fff; word-wrap: break-word;">
-                <p>${msg.text}</p>
-                <p style="font-size:0.75rem;margin-top:0.25rem;">${time}</p>
+                background: ${bubbleBackground}; 
+                color: ${bubbleTextColor};  
+                word-wrap: break-word;">
+                
+                <p style="margin: 0;">${msg.text}</p> 
+
+                <p style="font-size:0.75rem; margin-top:0.25rem; color: ${timeTextColor};">
+                    ${time}
+                </p>
             </div>
         </div>
-    `;
+        `;
         chatContainer.insertAdjacentHTML('afterbegin', messageBubble);
     }
 
@@ -1352,29 +1371,30 @@ require base_path('views/shared/header.php');
 
         const now = new Date();
         const past = new Date(dateString);
+        const seconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        const weeks = Math.floor(days / 7);
 
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-        if (past.getTime() >= startOfToday.getTime()) {
-            return past.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
+        if (seconds < 60) {
+            return "Just now";
         }
 
-        const startOfYesterday = new Date(startOfToday.getTime() - 86400000);
-
-        if (past.getTime() >= startOfYesterday.getTime()) {
-            return "Yesterday";
+        if (minutes < 60) {
+            return `${minutes}m`;
         }
 
-        const startOfWeek = new Date(startOfToday.getTime() - (now.getDay() * 86400000));
+        if (hours < 24) {
+            return `${hours}h`;
+        }
 
-        if (past.getTime() >= startOfWeek.getTime()) {
-            return past.toLocaleDateString('en-US', {
-                weekday: 'short'
-            });
+        if (days < 7) {
+            return `${days}d`;
+        }
+
+        if (days < 30) {
+            return `${weeks}w`;
         }
 
         return past.toLocaleDateString('en-US', {
@@ -1383,6 +1403,7 @@ require base_path('views/shared/header.php');
             year: '2-digit'
         });
     }
+
 
     function calculateTime(dateString) {
         const now = new Date();
@@ -1456,10 +1477,137 @@ require base_path('views/shared/header.php');
         });
     }
 
-
     function truncateText(text, maxLength = 30) {
         if (!text) return "";
         return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+    }
+
+    const userControlBtn = document.getElementById('user-control-btn');
+    const userControlModal = document.getElementById('user-control-modal');
+    const closeUserControlBtn = document.querySelector('.close-user-control-modal-button');
+    const userControlSelected = document.querySelectorAll('input[type="radio"][name="user-control-type"]');
+    const nextButton = document.querySelector('.select-modal-submit-button');
+    const otherUserInput = document.getElementById('other_user_id');
+
+    const userBlockModal = document.getElementById('user-block-confirmation-modal');
+    const userBlockCancelBtn = document.querySelector('.user-block-confirmation-modal-cancel');
+    const userBlockCloseBtn = document.querySelector('.user-block-confirmation-modal-close');
+    const confirmBlockBtn = document.getElementById('confirm-block-btn');
+    const userBlockForm = document.getElementById('user-block-form-submit');
+
+    const loadingBlockContainer = document.getElementById('pt-loading');
+    const loadingBlockText = loadingBlockContainer.querySelector('.profile-loading-text');
+
+
+    if (userControlBtn) {
+        userControlBtn.addEventListener('click', () => {
+            const members = Object.values(activeChannel.state.members).filter(m => m.user.id !== userId);
+            const partner = members[0]?.user;
+
+            if (partner && otherUserInput) {
+                otherUserInput.value = partner.id;
+            }
+
+            showUserControlModal();
+        })
+    }
+
+    if (closeUserControlBtn) {
+        closeUserControlBtn.addEventListener('click', () => {
+            hideUserControlModal();
+        })
+    }
+
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            const selectedOption = document.querySelector('input[name="user-control-type"]:checked');
+
+            if (!selectedOption) {
+                alert("Please select an option first.");
+                return;
+            }
+
+            if (selectedOption.value === "block-user") {
+                hideUserControlModal();
+                showUserBlockModal();
+            } else if (selectedOption.value === "report-user") {
+                alert("Report feature coming soon!");
+            }
+        });
+    }
+
+    if (userBlockForm) {
+        userBlockForm.addEventListener('submit', async () => {
+            event.preventDefault();
+
+            showBlockLoading();
+
+            const blockedUserId = otherUserInput.value;
+            if (!blockedUserId) {
+                console.warn("No target user found.");
+                return;
+            }
+
+            await handleBlockOtherUser(blockedUserId);
+        });
+    }
+
+    async function handleBlockOtherUser(blockedUserId) {
+        try {
+            // 1️⃣ Call your backend to store block in DB
+            const res = await fetch("/u/block-other-user", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": document.querySelector('input[name="csrf_token"]').value
+                },
+                body: JSON.stringify({
+                    other_user_id: blockedUserId
+                })
+            });
+
+            if (!res.ok) throw new Error("Failed to block user in database");
+            const result = await res.json();
+
+            await chatClient.blockUser(blockedUserId);
+        } catch (err) {
+            console.error("Error blocking user:", err);
+            alert("Failed to block user. Please try again.");
+        } finally {
+            window.location.href = '/u/messages';
+        }
+    }
+
+    function showUserControlModal() {
+        userControlModal.style.display = 'flex';
+    }
+
+    function hideUserControlModal() {
+        userControlModal.style.display = 'none';
+        userControlSelected.forEach(radio => radio.checked = false);
+    }
+
+    function showUserBlockModal() {
+        userBlockModal.style.display = 'flex';
+    }
+
+    function hideUserBlockModal() {
+        userBlockModal.style.display = 'none';
+    }
+
+    function showBlockLoading() {
+        if (!loadingBlockContainer || !loadingBlockText) return;
+
+        loadingBlockContainer.style.display = 'flex';
+        loadingBlockText.textContent = 'Blocking user...';
+    }
+
+    if (userBlockCancelBtn) {
+        userBlockCancelBtn.addEventListener('click', hideUserBlockModal);
+    }
+
+    if (userBlockCloseBtn) {
+        userBlockCloseBtn.addEventListener('click', hideUserBlockModal);
     }
 
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1502,5 +1650,8 @@ require base_path('views/shared/header.php');
         }
     });
 </script>
+
+<?php require base_path('Views\user\messages\modals\user.control.view.php') ?>
+<?php require base_path('Views\user\messages\modals\user.block.confirmation.view.php') ?>
 
 <?php require base_path('views/shared/footer.php') ?>

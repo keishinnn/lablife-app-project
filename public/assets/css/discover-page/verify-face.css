@@ -1,0 +1,87 @@
+.verify-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #000;
+  /* black outside the oval */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Camera feed masked by oval (responsive scaling) */
+#verify-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  /* mirror for selfie */
+  mask: radial-gradient(ellipse 30% 40% at center, black 60%, transparent 61%);
+  -webkit-mask: radial-gradient(ellipse 30% 40% at center, black 60%, transparent 61%);
+}
+
+/* Blue oval outline */
+.oval-border {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30vw;
+  height: 40vh;
+  transform: translate(-50%, -50%);
+  border: 3px solid #38bdf8;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Controls (buttons + status) */
+.verify-controls {
+  position: absolute;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 3;
+}
+
+.verify-controls .btn {
+  background: #38bdf8;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.verify-controls .btn:hover {
+  background: #0ea5e9;
+}
+
+#verify-status {
+  color: white;
+  text-align: center;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* 📱 Mobile Responsive (smooth scaling) */
+@media (max-width: 768px) {
+  #verify-video {
+    mask: radial-gradient(ellipse 35% 45% at center, black 60%, transparent 61%);
+    -webkit-mask: radial-gradient(ellipse 35% 45% at center, black 60%, transparent 61%);
+  }
+
+  .oval-border {
+    width: 60vw;
+    height: 45vh;
+  }
+
+  .verify-controls .btn {
+    padding: 10px 24px;
+    font-size: 15px;
+  }
+}

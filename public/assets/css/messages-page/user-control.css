@@ -1,0 +1,182 @@
+.hidden {
+    display: none !important;
+}
+
+.select-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.select-modal-container {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    padding: 1rem;
+}
+
+.select-modal-content {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.select-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+    padding: 1rem 1.25rem;
+}
+
+.select-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.close-user-control-modal-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    color: #6b7280;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.close-user-control-modal-button:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.select-modal-close-icon {
+    width: 12px;
+    height: 12px;
+}
+
+.select-modal-body {
+    padding: 1.5rem 2rem 2rem 2rem;
+}
+
+.select-modal-body p {
+    color: #111827;
+    margin-bottom: 1rem;
+}
+
+.select-modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+
+.select-modal-list-item {
+    margin-bottom: 1rem;
+}
+
+.select-modal-radio-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.select-modal-radio-label:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
+
+input[type="radio"]:checked+.select-modal-radio-label {
+    border-color: #ec4899;
+    color: #ec4899;
+}
+
+.select-modal-label-text {
+    display: block;
+}
+
+.select-modal-label-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.select-modal-label-subtitle {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.select-modal-label-icon {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+}
+
+.select-modal-submit-button {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+    background: linear-gradient(to right, #ec4899, #ef4444);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.select-modal-submit-button:hover {
+    background: linear-gradient(to right, #db2777, #dc2626);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+    .select-modal-content {
+        background: #0f172a;
+    }
+
+    .select-modal-header h3 {
+        color: rgb(212, 212, 212);
+    }
+
+    .select-modal-body p {
+        color: rgb(212, 212, 212);
+    }
+
+    .select-modal-radio-label {
+        background: #0f172a;
+    }
+
+    .select-modal-radio-label:hover {
+        background: #394052;
+    }
+
+    .select-modal-label-title {
+        color: rgb(212, 212, 212);
+    }
+
+    .close-user-control-modal-button:hover {
+        background: #394052;
+        color: rgb(212, 212, 212);
+    }
+}

@@ -221,6 +221,21 @@ require(base_path("views/shared/header.php"));
                                         d="M9 5l7 7-7 7" />
                                 </svg>
                             </a>
+                            <a href="/u/profile/blocked-users" class="profile-edit-action">
+                                <div class="profile-section-eleven">
+                                    <div class="profile-section-twelve">
+                                        <!-- Icon (same style as Edit Profile or change later if needed) -->
+                                        <svg fill="#ffffff" viewBox="0 0 85.16 85.16">
+                                            <path d="M72.697,12.458c-16.611-16.611-43.63-16.611-60.24,0c-16.604,16.611-16.604,43.636,0,60.243 c16.61,16.611,43.637,16.611,60.24,0C89.309,56.094,89.309,29.066,72.697,12.458z M19.129,19.128 c10.917-10.92,27.617-12.618,40.335-5.096L14.037,59.468C6.506,46.749,8.205,30.048,19.129,19.128z M66.024,66.029 c-10.842,10.842-27.381,12.587-40.065,5.25l45.314-45.316C78.621,38.648,76.873,55.187,66.024,66.029z"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="profile-edit-profile-text">See Blocked Users</span>
+                                </div>
+                                <svg class="profile-arrow-symbol" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
 

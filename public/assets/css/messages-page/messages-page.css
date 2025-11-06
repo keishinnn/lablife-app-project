@@ -52,7 +52,7 @@
 }
 
 .back-to-list-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgb(177, 177, 177);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -64,6 +64,10 @@
 
     .message-backBtn-svg {
         color: #d1d5db;
+    }
+
+    .back-to-list-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
     }
 }
 
