@@ -12,7 +12,7 @@
   <?php require base_path('Views/shared/header.php'); ?>
 
   <main class="bug-report-container">
-    <h1>Found a <span>Bug?</span></h1>
+    <h1><span>Found a Bug?</span></h1>
     <p>Help us improve LabLife by reporting any issues or glitches you encounter.</p>
 
     <form action="/submit-bug" method="POST" class="bug-report-form">

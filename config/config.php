@@ -1,4 +1,4 @@
-f<?php
+<?php
 
 // file path = root/config/config.php
 

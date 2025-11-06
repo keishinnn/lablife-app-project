@@ -93,4 +93,35 @@ $router->get('/terms', 'PagesController@terms');
 $router->get('/bug-report', 'BugReportController@showForm');
 $router->post('/submit-bug', 'BugReportController@submit');
 
+// User Report
+$router->get('/u/report-user', 'User\\UserReportController@showForm');
+$router->post('/u/submit-user-report', 'User\\UserReportController@submit');
+
+
+//admins
+$router->get('/admin/login', 'Admin\AdminLoginController@showLogin');
+$router->post('/admin/login', 'Admin\AdminLoginController@login');
+$router->get('/admin/logout', 'Admin\AdminLoginController@logout');
+
+//admin dashboard
+$router->get('/admin/dashboard', 'Admin\AdminDashboardController@index');
+$router->get('/admin/api/dashboard/matches', 'Admin\AdminDashboardDataController@loadMatchesChart');
+$router->get('/admin/api/dashboard/active-users', 'Admin\AdminDashboardDataController@loadActiveUsers');
+
+//admin dashboard: bug reports
+$router->get('/admin/bug-reports', 'Admin\\AdminBugReportController@index');
+$router->get('/admin/api/bug-reports', 'Admin\\AdminBugReportController@listJson');
+$router->get('/admin/api/bug-report', 'Admin\\AdminBugReportController@detailJson');
+
+//admin dashboard: user reports
+$router->get('/admin/user-reports', 'Admin\AdminUserReportController@index');
+$router->get('/admin/api/user-reports', 'Admin\AdminUserReportController@listJson');
+$router->get('/admin/api/user-report', 'Admin\AdminUserReportController@detailJson');
+
+//Notification
+$router->get('/admin/api/check-new-reports', 'Admin\AdminNotificationController@checkNewReports');
+
+
+
+
 

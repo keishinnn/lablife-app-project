@@ -5,13 +5,25 @@
 
 <footer class="site-footer">
   <p>&copy; <?= date('Y') ?> LabLife. All rights reserved.</p>
+  
   <button id="bugReportBtn" class="report-bug-btn">Report a Bug</button>
+  <button id="userReportBtn" class="report-bug-btn">Report a User</button>
 
   <script>
+    // Redirect to Bug Report page
     const bugBtn = document.getElementById('bugReportBtn');
     if (bugBtn) {
       bugBtn.addEventListener('click', () => {
         window.location.href = '/bug-report';
+      });
+    }
+
+    // Redirect to User Report form
+    const userBtn = document.getElementById('userReportBtn');
+    if (userBtn) {
+      userBtn.addEventListener('click', () => {
+        // Temporary generic access link for now (replace UUID later)
+        window.location.href = '/u/report-user?user_id=replace-this-with-valid-uuid';
       });
     }
   </script>
