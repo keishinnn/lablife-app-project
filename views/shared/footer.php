@@ -2,6 +2,7 @@
 <?php require(base_path('Views/user/matches/loading/matches.loading.view.php')) ?>
 <?php require(base_path('Views/user/profile/loading/profile.loading.view.php')) ?>
 <?php require(base_path('Views/user/loading/global.loading.view.php')) ?>
+<?php require(base_path('Views/user/loading/messages.loading.view.php')) ?>
 
 <footer class="site-footer">
   <p>&copy; <?= date('Y') ?> LabLife. All rights reserved.</p>
@@ -40,12 +41,12 @@
 <script type="module" src="/assets/js/loading-state/edit-preferences-loading.js"></script>
 <script type="module" src="/assets/js/user/set-online-status.js"></script>
 <script type="module" src="/assets/js/loading-state/matches/matches-loading.js"></script>
-<script type="module" src="/assets/js/loading-state/profile/profile-loading.js?v=<?php echo time(); ?>"></script>
-<script type="module" src="/assets/js/loading-state/global-loading.js?v=<?php echo time(); ?>"></script>
+<script type="module" src="/assets/js/loading-state/profile/profile-loading.js"></script>
+<script type="module" src="/assets/js/loading-state/global-loading.js"></script>
+<script type="module" src="/assets/js/loading-state/messages/messages-loading.js?v=<?php echo time(); ?>"></script>
 
 <!-- Cloudflare Turnstile JS -->
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
 
 <!-- Loader inside modal -->
 <div id="pt-loading" class="profile-loading-container">
@@ -62,7 +63,6 @@
         <p class="profile-loading-text">Finding your match...</p>
     </div>
 </div>
-
 
 </body>
 

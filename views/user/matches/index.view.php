@@ -25,7 +25,7 @@ require base_path('views/shared/header.php');
                 <div class="matches-section-four">
                     <!-- loop for every matches -->
                     <?php foreach ($matchedUsers as $matchedUser): ?>
-                        <a href="">
+                        <a class="matched-message-link" data-id="<?= $matchedUser->id ?>" href="/u/messages?channelId=${channel.id}">
                             <div class="matches-section-five">
                                 <div class="matches-section-img">
                                     <img src="<?php echo $matchedUser->avatarUrl ?>" alt="<?php echo htmlspecialchars($matchedUser->fullName) ?>">
@@ -95,6 +95,37 @@ require base_path('views/shared/header.php');
             }
         )
         .subscribe();
+
+    document.querySelectorAll('.matched-message-link').forEach(link => {
+        link.addEventListener('click', async () => {
+            const userId = link.dataset.id;
+            console.log("Clicked matched user:", userId);
+
+            try {
+                const res = await fetch('/u/matches/create-channel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<?= $_SESSION["csrf_token"] ?? "" ?>'
+                    },
+                    body: JSON.stringify({
+                        targetUserId: userId
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    const channelId = data.channel_id;
+                    window.location.href = `/u/messages?channelId=${channelId}`;
+                } else {
+                    console.error('Error:', data.error);
+                }
+            } catch (err) {
+                console.error('Failed to create channel:', err);
+            }
+        });
+    });
 
     window.addEventListener('beforeunload', () => {
         if (isOnlineSub) isOnlineSub.unsubscribe();

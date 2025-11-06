@@ -15,7 +15,6 @@
     color: #4b5563;
 }
 
-
 @media (prefers-color-scheme: dark) {
     .matches-loading-section p {
         color: #9ca3af;

@@ -35,4 +35,9 @@ $container->bind('redis', function () {
     return new RedisClient($config);
 });
 
+$container->bind('Services\StreamService', function () {
+    $config = require base_path('config/stream.php');
+    return new \Services\StreamService($config);
+});
+
 App::setContainer($container);

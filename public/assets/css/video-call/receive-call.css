@@ -1,0 +1,102 @@
+.receive-call-container {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom right,
+            rgba(2, 6, 23, 0.5),
+            rgba(17, 24, 39, 0.5));
+    z-index: 1000;
+
+    /* center content */
+    justify-content: center;
+    align-items: center;
+}
+
+.receive-call-section {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding: 3rem 6rem 3rem 6rem;
+    width: 28rem;
+    height: 38rem;
+    background: linear-gradient(to bottom right,
+            rgba(10, 15, 30, 0.5),
+            rgba(0, 0, 0, 0.6));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 2rem;
+}
+
+.receiver-other-user {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    flex: 1;
+}
+
+.receiver-other-user-avatar {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.receiver-other-user img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.receiver-other-user h1 {
+    margin-top: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.receiver-other-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.receiver-decline-button {
+    border-radius: 50%;
+    padding: 0.5rem;
+    border: none;
+    background: #ef4444;
+    transition: 0.3s all ease;
+    cursor: pointer;
+}
+
+.receiver-other-buttons p {
+    margin-top: 0.5rem;
+}
+
+.receiver-accept-button {
+    border-radius: 50%;
+    padding: 0.5rem;
+    border: none;
+    background: #22c55e;
+    cursor: pointer;
+    transition: 0.3s all ease;
+}
+
+.receiver-decline-button:hover {
+    background: #c43636;
+}
+
+.receiver-accept-button:hover {
+    background: #1a9b49;
+}
+
+@media (max-width: 48rem) {
+    .receive-call-container {
+        padding: 1rem;
+    }
+
+    .receive-call-section {
+        padding: 3rem 4rem 3rem 4rem;
+    }
+}

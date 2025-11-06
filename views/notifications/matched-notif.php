@@ -19,7 +19,7 @@
                 </p>
 
                 <div class="notification-section-four">
-                    <button class="notification-start-chat-button">Start Chat</button>
+                    <button class="notification-start-chat-button" id="start-chat-btn">Start Chat</button>
                     <button class="notification-later-button" id="keep-searching-btn">Keep Searching</button>
                 </div>
             </div>

@@ -1,0 +1,208 @@
+.chat-interface-section {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+}
+
+.chat-interface-section-messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 1rem;
+    padding: 1rem;
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(78, 78, 78, 0.6) transparent;
+}
+
+.chat-interface-section>div:nth-child(1)::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+}
+
+.chat-interface-section>div:nth-child(1)::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-interface-section>div:nth-child(1)::-webkit-scrollbar-thumb {
+    background-color: rgba(78, 78, 78, 0.4);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.2s;
+}
+
+.chat-interface-section>div:nth-child(1)::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(220, 38, 38, 0.8);
+}
+
+.chat-interface-section>div:nth-child(1)::-webkit-scrollbar {
+    opacity: 0;
+}
+
+.chat-interface-section>div:nth-child(1):hover::-webkit-scrollbar {
+    opacity: 1;
+}
+
+
+.chat-interface-section-three {
+    display: none;
+    justify-content: start;
+    padding-left: 1rem;
+    padding-bottom: 1rem;
+}
+
+.chat-interface-section-four {
+    background-color: #e5e7eb;
+    color: #111827;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+}
+
+.chat-interface-section-five {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.chat-interface-section-six {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #9ca3af;
+    border-radius: 9999px;
+    animation: bounce 1s infinite;
+}
+
+
+.chat-interface-section-seven {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #9ca3af;
+    border-radius: 9999px;
+    animation: bounce 1s infinite;
+    animation-delay: 0.1s;
+}
+
+.chat-interface-section-eight {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #9ca3af;
+    border-radius: 9999px;
+    animation: bounce 1s infinite;
+    animation-delay: 0.2s;
+}
+
+.chat-interface-section-nine {
+    display: none;
+    position: absolute;
+    bottom: 5rem;
+    right: 1.5rem;
+    z-index: 10;
+}
+
+.chat-interface-section-nine button {
+    background-color: #ec4899;
+    color: #ffffff;
+    padding: 0.75rem;
+    border-radius: 9999px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.chat-interface-section-nine button:hover {
+    background-color: #db2777;
+    transform: scale(1.1);
+}
+
+
+.chat-interface-section-ten {
+    border-top: 1px solid #e5e7eb;
+    padding: 0 0.5rem;
+}
+
+.chat-interface-section-ten form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-interface-form input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 9999px;
+    outline: none;
+    transition: all 0.2s;
+    height: 2.5rem;
+    background: transparent;
+}
+
+.chat-interface-form input:focus {
+    outline: none;
+    border-color: #ec4899;
+    box-shadow: 0 0 0 1px #ec4899;
+}
+
+.chat-interface-form button {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 9999px;
+    outline: none;
+    transition: all 0.2s ease;
+    margin-bottom: 1.5rem;
+}
+
+.chat-interface-form button svg {
+    display: block;
+}
+
+.chat-interface-form button:hover {
+    background-color: #F9FAFB;
+}
+
+.chat-interface-form button:focus {
+    box-shadow: 0 0 0 2px #ec4899, 0 0 0 4px #fff;
+}
+
+.chat-interface-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: dark) {
+    .chat-interface-section-four {
+        background-color: #374151;
+        color: #ffffff;
+    }
+
+    .chat-interface-section-ten {
+        border-top: 1px solid #374151;
+    }
+
+    .chat-interface-form input {
+        border-color: #4b5563;
+        background-color: #1f2937;
+        color: #fff;
+    }
+
+    .chat-interface-form button:hover {
+        background-color: #374151;
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-25%);
+    }
+}

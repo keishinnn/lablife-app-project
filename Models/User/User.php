@@ -274,4 +274,40 @@ class User
             throw $e;
         }
     }
+
+    public static function getFullNameAndAvatarUrl($userId)
+    {
+        $db = App::resolve('Core\Database');
+
+        try {
+            $stmt = $db->query("SELECT full_name, avatar_url FROM users WHERE id = :id LIMIT 1", ['id' => $userId]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            return $row ?? null;
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public static function getIsVerified(string $id): ?bool
+    {
+        $db = App::resolve('Core\Database');
+
+        try {
+            $stmt = $db->query("SELECT is_verified FROM users WHERE id = :id LIMIT 1", ['id' => $id]);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if ($result === false) {
+                return null;
+            }
+
+            return (bool)$result['is_verified'];
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

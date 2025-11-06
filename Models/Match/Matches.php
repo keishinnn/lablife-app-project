@@ -49,4 +49,38 @@ class Matches
             throw $e;
         }
     }
+
+    public static function checkIfMatched(string $userId, string $otherUserId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+            SELECT *
+            FROM matches
+            WHERE is_active = true
+              AND (
+                  (user1_id = :userId AND user2_id = :otherUserId)
+                  OR (user1_id = :otherUserId AND user2_id = :userId)
+              )
+            LIMIT 1
+        ");
+
+            $stmt->execute([
+                'userId' => $userId,
+                'otherUserId' => $otherUserId
+            ]);
+
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                return null;
+            }
+
+            return new Matches($row);
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        }
+    }
 }

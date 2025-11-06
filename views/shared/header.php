@@ -1,5 +1,5 @@
 <?php
-// root/views/.shared/header.php
+// root/views/shared/header.php
 use Core\Auth;
 
 ?>
@@ -22,7 +22,7 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-null.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
-    <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/hobbies-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/ptypes-modal.css">
     <link rel="stylesheet" href="/assets/css/profile-page/modals-style/interests-modal.css">
@@ -39,13 +39,32 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/user-report/report.css?v=<?php echo time(); ?>">
 
     
+    <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css">
+    <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/messages-page.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-interface.css">
+    <link rel="stylesheet" href="/assets/css/video-call/initiate-call.css">
+    <link rel="stylesheet" href="/assets/css/video-call/receive-call.css">
+    <link rel="stylesheet" href="/assets/css/video-call/video-call.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/user-control.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/user-block-confimation.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/verify-face.css?v=<?php echo time(); ?>">
+
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stream-chat@8/dist/browser.full-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script defer src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+
+    <script src="/assets/js/stream-video-client.js"></script>
 </head>
 
 <body>
     <header>
-        <nav class=" navbar">
+        <nav class="navbar">
             <div class="container">
                 <div class="navbar-inner">
                     <!-- Logo and LabLife text-->
@@ -59,7 +78,7 @@ use Core\Auth;
                         <div class="nav-links">
                             <a href="/u/discover" class="nav-link">Discover</a>
                             <a href="/u/matches" class="nav-link">Matches</a>
-                            <a href="#" class="nav-link">
+                            <a href="/u/messages" class="nav-link">
                                 Messages
                                 <span class="badge"></span>
                             </a>
