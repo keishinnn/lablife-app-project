@@ -251,4 +251,35 @@
       color: rgb(212, 212, 212);
     }
   }
+
+  /* remove native radio look */
+.report-option input[type="radio"] {
+  display: none;
+}
+
+/* arrow icon */
+.report-option::after {
+  content: "›";
+  font-size: 1.2rem;
+  color: #9ca3af;
+  transition: color 0.2s ease;
+}
+
+/* align arrow */
+.report-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* highlight when selected */
+.report-option input[type="radio"]:checked + label {
+  color: #ec4899;
+  font-weight: 600;
+}
+
+.report-option:has(input[type="radio"]:checked)::after {
+  color: #ec4899;
+}
+
   

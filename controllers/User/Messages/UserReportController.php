@@ -3,7 +3,7 @@ namespace Controllers\User\Messages;
 
 use Core\Database;
 use Core\Auth;
-use Models\UserReportModel;
+use Models\User\UserReportModel;
 use Exception;
 
 class UserReportController
@@ -38,8 +38,8 @@ class UserReportController
         $data = json_decode($raw, true);
 
         $other_user_id = $data['other_user_id'] ?? null;
-        $category_id = $data['category_id'] ?? null;
-        $reason_id = $data['reason_id'] ?? null;
+        $category_id   = $data['category_id'] ?? null;
+        $reason_id     = $data['reason_id'] ?? null;
 
         if (!$other_user_id || !$category_id) {
             http_response_code(400);
@@ -66,16 +66,12 @@ class UserReportController
 
             echo json_encode(['success' => true, 'report_id' => $inserted['id'] ?? null]);
         } catch (Exception $e) {
-            // Log error on backend
             error_log('Report submit error: ' . $e->getMessage());
-
-            // Send details to client (for debugging only!)
             http_response_code(500);
             echo json_encode([
                 'success' => false,
                 'message' => 'Internal server error',
                 'error'   => $e->getMessage(),
-                'trace'   => $e->getTraceAsString()
             ]);
             exit;
         }

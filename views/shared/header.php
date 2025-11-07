@@ -36,7 +36,6 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/footer.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="/assets/css/user-report/report.css?v=<?php echo time(); ?>">
 
     
     <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css">
