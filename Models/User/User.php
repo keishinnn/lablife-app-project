@@ -310,4 +310,28 @@ class User
             throw $e;
         }
     }
+
+    public static function setVerified(string $id): bool
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        try {
+            $pdo->beginTransaction();
+
+            $db->query(
+                "UPDATE users SET is_verified = TRUE, updated_at = NOW() WHERE id = :id",
+                ['id' => $id]
+            );
+
+            $pdo->commit();
+            return true;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
 }

@@ -38,7 +38,7 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/footer.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="/assets/css/user-report/report.css?v=<?php echo time(); ?>">
 
-    
+
     <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css">
     <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css">
@@ -51,7 +51,8 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/messages-page/user-control.css">
     <link rel="stylesheet" href="/assets/css/messages-page/user-block-confimation.css">
     <link rel="stylesheet" href="/assets/css/discover-page/verify-face.css?v=<?php echo time(); ?>">
-
+    <link rel="stylesheet" href="/assets/css/discover-page/verify-next.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/discover-page/popup-modal.css?v=<?php echo time(); ?>">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stream-chat@8/dist/browser.full-bundle.min.js"></script>

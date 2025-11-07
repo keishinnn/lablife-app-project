@@ -18,7 +18,7 @@ use Core\Auth;
                     Please click the Get Verified button to start verifying your account.
                 </p>
 
-                <a href="/u/verify" id="start-match-btn" class="btn btn-primary">
+                <a href="/u/verify-next" id="start-verify-btn" class="btn btn-primary">
                     Get Verified →
                 </a>
             </div>

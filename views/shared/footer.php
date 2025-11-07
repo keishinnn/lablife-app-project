@@ -6,7 +6,7 @@
 
 <footer class="site-footer">
   <p>&copy; <?= date('Y') ?> LabLife. All rights reserved.</p>
-  
+
   <button id="bugReportBtn" class="report-bug-btn">Report a Bug</button>
   <button id="userReportBtn" class="report-bug-btn">Report a User</button>
 
@@ -42,7 +42,7 @@
 <script type="module" src="/assets/js/user/set-online-status.js"></script>
 <script type="module" src="/assets/js/loading-state/matches/matches-loading.js"></script>
 <script type="module" src="/assets/js/loading-state/profile/profile-loading.js"></script>
-<script type="module" src="/assets/js/loading-state/global-loading.js"></script>
+<script type="module" src="/assets/js/loading-state/global-loading.js?v=<?php echo time(); ?>"></script>
 <script type="module" src="/assets/js/loading-state/messages/messages-loading.js?v=<?php echo time(); ?>"></script>
 
 <!-- Cloudflare Turnstile JS -->
@@ -50,18 +50,18 @@
 
 <!-- Loader inside modal -->
 <div id="pt-loading" class="profile-loading-container">
-    <div class="profile-loading-section">
-        <div class="profile-loading-icon"></div>
-        <p class="profile-loading-text">Saving...</p>
-    </div>
+  <div class="profile-loading-section">
+    <div class="profile-loading-icon"></div>
+    <p class="profile-loading-text">Saving...</p>
+  </div>
 </div>
 
 <!-- Finding Match Loading -->
 <div id="search-loading" class="profile-loading-container">
-    <div class="profile-loading-section">
-        <div class="profile-loading-icon"></div>
-        <p class="profile-loading-text">Finding your match...</p>
-    </div>
+  <div class="profile-loading-section">
+    <div class="profile-loading-icon"></div>
+    <p class="profile-loading-text">Finding your match...</p>
+  </div>
 </div>
 
 </body>

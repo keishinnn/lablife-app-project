@@ -1498,7 +1498,6 @@ require base_path('views/shared/header.php');
     const loadingBlockContainer = document.getElementById('pt-loading');
     const loadingBlockText = loadingBlockContainer.querySelector('.profile-loading-text');
 
-
     if (userControlBtn) {
         userControlBtn.addEventListener('click', () => {
             const members = Object.values(activeChannel.state.members).filter(m => m.user.id !== userId);
@@ -1554,7 +1553,6 @@ require base_path('views/shared/header.php');
 
     async function handleBlockOtherUser(blockedUserId) {
         try {
-            // 1️⃣ Call your backend to store block in DB
             const res = await fetch("/u/block-other-user", {
                 method: "POST",
                 headers: {

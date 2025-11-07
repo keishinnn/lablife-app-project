@@ -121,10 +121,6 @@ $router->get('/admin/api/user-report', 'Admin\AdminUserReportController@detailJs
 //Notification
 $router->get('/admin/api/check-new-reports', 'Admin\AdminNotificationController@checkNewReports');
 
-
-
-
-
 // Show Messages Page
 $router->get('/u/messages', 'User\\Messages\\MessagesController@View');
 
@@ -142,6 +138,10 @@ $router->post('/u/block-other-user', 'User\\Messages\\BlockController@blockOther
 $router->post('/u/unblock-other-user', 'User\\Messages\\BlockController@unblockOtherUser');
 $router->get('/u/profile/blocked-users', 'User\\Messages\\BlockController@View');
 
-
 // Verify
-$router->get('/u/verify', 'User\\Discover\\VerifyController@View');
+$router->get('/u/verify-next', 'User\\Discover\\VerifyController@View');
+$router->get('/u/verify', 'User\\Discover\\VerifyController@VerifyView');
+$router->post('/u/account/set-verified', 'User\\Discover\\VerifyController@handleSetVerified');
+
+$router->post('/u/account/increment-fail', 'User\\Discover\\VerifyController@handleIncrementFail');
+$router->get('/u/account/fail-status', 'User\\Discover\\VerifyController@getFailStatus');
