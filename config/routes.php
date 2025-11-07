@@ -93,11 +93,6 @@ $router->get('/terms', 'PagesController@terms');
 $router->get('/bug-report', 'BugReportController@showForm');
 $router->post('/submit-bug', 'BugReportController@submit');
 
-// User Report
-$router->get('/u/report-user', 'User\\UserReportController@showForm');
-$router->post('/u/submit-user-report', 'User\\UserReportController@submit');
-
-
 //admins
 $router->get('/admin/login', 'Admin\AdminLoginController@showLogin');
 $router->post('/admin/login', 'Admin\AdminLoginController@login');
@@ -141,6 +136,10 @@ $router->post('/u/video/end-video-call', 'User\\Messages\\VideoCallController@ha
 $router->post('/u/block-other-user', 'User\\Messages\\BlockController@blockOtherUser');
 $router->post('/u/unblock-other-user', 'User\\Messages\\BlockController@unblockOtherUser');
 $router->get('/u/profile/blocked-users', 'User\\Messages\\BlockController@View');
+
+// Report User
+$router->get('/u/report/fetch-options', 'User\\Messages\\UserReportController@fetchOptions');
+$router->post('/u/report/submit', 'User\\Messages\\UserReportController@submit');
 
 
 // Verify

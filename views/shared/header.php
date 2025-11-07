@@ -51,6 +51,8 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/messages-page/user-control.css">
     <link rel="stylesheet" href="/assets/css/messages-page/user-block-confimation.css">
     <link rel="stylesheet" href="/assets/css/discover-page/verify-face.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/messages-page/user-report.css?v=<?php echo time(); ?>">
+
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>

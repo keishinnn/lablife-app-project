@@ -1,0 +1,254 @@
+/* user-report.css — styled to match user-control.css */
+
+.hidden {
+    display: none !important;
+  }
+  
+  /* modal base */
+  #user-report-modal.select-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+  }
+  
+  .select-modal-container {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    padding: 1rem;
+  }
+  
+  .select-modal-content {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+  }
+  
+  /* header */
+  .select-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+    padding: 1rem 1.25rem;
+  }
+  
+  .select-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .close-user-report-modal-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    color: #6b7280;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  
+  .close-user-report-modal-button:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+  }
+  
+  .select-modal-close-icon {
+    width: 12px;
+    height: 12px;
+  }
+  
+  /* body + steps */
+  .select-modal-body {
+    padding: 1.5rem 2rem 2rem 2rem;
+  }
+  
+  .report-step-title {
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  
+  .report-options-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+  }
+  
+  .report-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .report-option:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+  }
+  
+  .report-option input[type="radio"]:checked + label,
+  .report-option input[type="radio"]:checked {
+    border-color: #ec4899;
+    color: #ec4899;
+  }
+  
+  .report-option label {
+    flex: 1;
+    font-size: 0.95rem;
+    color: #111827;
+    cursor: pointer;
+  }
+  
+  /* textarea */
+  #report-description {
+    width: 100%;
+    resize: vertical;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    color: #111827;
+  }
+  
+  #report-description:focus {
+    outline: none;
+    border-color: #ec4899;
+  }
+  
+  /* step actions */
+  .report-step-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .report-next-button,
+  .report-back-button,
+  .report-submit-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  /* pink-red gradient like user-control */
+  .report-next-button,
+  .report-submit-button {
+    background: linear-gradient(to right, #ec4899, #ef4444);
+    color: #fff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .report-next-button:hover,
+  .report-submit-button:hover {
+    background: linear-gradient(to right, #db2777, #dc2626);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .report-back-button {
+    background: transparent;
+    border: 1px solid #d1d5db;
+    color: #6b7280;
+  }
+  
+  .report-back-button:hover {
+    background-color: #f3f4f6;
+  }
+  
+  /* summary */
+  .summary-row {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #111827;
+  }
+  
+  .summary-desc {
+    background-color: #f9fafb;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    white-space: pre-line;
+    color: #111827;
+  }
+  
+  /* text states */
+  .loading-text,
+  .error-text,
+  .info-text {
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+  
+  /* dark mode */
+  @media (prefers-color-scheme: dark) {
+    .select-modal-content {
+      background: #0f172a;
+    }
+  
+    .select-modal-header h3,
+    .report-step-title,
+    .summary-row,
+    .summary-desc,
+    .report-option label {
+      color: rgb(212, 212, 212);
+    }
+  
+    .report-option {
+      background: #0f172a;
+      border-color: #374151;
+    }
+  
+    .report-option:hover {
+      background: #394052;
+    }
+  
+    #report-description {
+      background: #0f172a;
+      color: rgb(212, 212, 212);
+      border-color: #374151;
+    }
+  
+    #report-description:focus {
+      border-color: #ec4899;
+    }
+  
+    .report-back-button {
+      border-color: #4b5563;
+      color: #9ca3af;
+    }
+  
+    .report-back-button:hover {
+      background: #394052;
+    }
+  
+    .close-user-report-modal-button:hover {
+      background: #394052;
+      color: rgb(212, 212, 212);
+    }
+  }
+  
