@@ -1529,9 +1529,7 @@ require base_path('views/shared/header.php');
             if (selectedOption.value === "block-user") {
                 hideUserControlModal();
                 showUserBlockModal();
-            } else if (selectedOption.value === "report-user") {
-                alert("Report feature coming soon!");
-            }
+            } 
         });
     }
 
@@ -1649,7 +1647,10 @@ require base_path('views/shared/header.php');
     });
 </script>
 
+<script src="/assets/js/messages/user-report.js?v=<?php echo time(); ?>"></script>
+
 <?php require base_path('Views\user\messages\modals\user.control.view.php') ?>
 <?php require base_path('Views\user\messages\modals\user.block.confirmation.view.php') ?>
+<?php require base_path('views/user/messages/modals/user.report.view.php'); ?>
 
 <?php require base_path('views/shared/footer.php') ?>

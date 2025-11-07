@@ -40,9 +40,9 @@ require(base_path("views/shared/header.php"));
             <div class="policy-consent">
                 <label class="checkbox-container">
                     <input type="checkbox" name="agree_privacy" required>
-                    I have read and agree to the
+                    I have read and agree to the 
                     <a href="/privacy-policy">Privacy Policy</a>
-                    and
+                    and 
                     <a href="/terms">Terms of Service</a>.
                 </label>
             </div>
