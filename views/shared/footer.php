@@ -47,6 +47,13 @@
   </div>
 </div>
 
+<div id="setup-preferences-loading" class="profile-loading-container">
+  <div class="profile-loading-section">
+    <div class="profile-loading-icon"></div>
+    <p class="profile-loading-text">Saving...</p>
+  </div>
+</div>
+
 <!-- Finding Match Loading -->
 <div id="search-loading" class="profile-loading-container">
   <div class="profile-loading-section">

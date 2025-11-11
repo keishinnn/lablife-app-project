@@ -34,12 +34,15 @@ class RegisterController
         $supabase = App::resolve(\Services\SupabaseService::class);
         $turnstile = App::resolve(\Services\TurnstileService::class);
 
+        $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
+
         try {
 
             // Check if user agreed to privacy policy and terms
             if (empty($_POST['agree_privacy'])) {
                 $error = "You must agree to our Privacy Policy and Terms of Service before creating an account.";
-                $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
+                view("auth/register.view.php", compact('error', 'email', 'siteKey'));
+                return;
             }
 
             if (!$turnstile->validate($turnstileResponse, $_SERVER['REMOTE_ADDR'])) {

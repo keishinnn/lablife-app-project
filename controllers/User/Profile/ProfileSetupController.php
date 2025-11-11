@@ -72,8 +72,7 @@ class ProfileSetupController
         $_SESSION['step_one_completed'] = true;
 
         // Redirect to step two
-        header('Location: /u/setup-profile-preferences');
-        exit;
+        view('user/profile-setup/setup.pref.view.php');
     }
 
     public function handleFinishSetup()
@@ -140,7 +139,6 @@ class ProfileSetupController
             $_SESSION['avatar_temp']
         );
 
-        header('Location: /u');
-        exit;
+        view("index.view.php");
     }
 }

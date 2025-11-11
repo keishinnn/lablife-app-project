@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="/assets/images/logo.png">
   <title>Admin Login | LabLife</title>
   <link rel="stylesheet" href="/assets/css/global.css">
-  <link rel="stylesheet" href="/assets/css/admin/admin-login.css">
+  <link rel="stylesheet" href="/assets/css/admin/admin-login.css?v=<?php echo time(); ?>">
 </head>
 
 <body>
