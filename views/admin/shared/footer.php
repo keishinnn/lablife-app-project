@@ -13,11 +13,13 @@
 
 <script src="/assets/js/admin/admin-notifications.js?v=1" defer></script>
 <script src="/assets/js/admin/dashboard-charts.js?v=1" defer></script>
-<script src="/assets/js/admin/bug-reports.js" defer></script>
 <script src="/assets/js/admin/nav-link-active.js" defer></script>
 <script src="/assets/js/admin/user-reports.js?v=2" defer></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="/assets/js/admin/modals/awaiting-delete-modal.js"></script>
+<script src="/assets/js/admin/modals/set-resolved-modal.js"></script>
 
 </body>
 

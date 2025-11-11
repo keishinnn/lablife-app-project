@@ -39,6 +39,6 @@
       </svg>Bug Reports</a>
   </nav>
   <div class="sidebar-footer">
-    <form method="post" action="/admin/login"><button class="signout">Sign Out</button></form>
+    <form method="post" action="/admin/logout"><button class="signout">Sign Out</button></form>
   </div>
 </aside>

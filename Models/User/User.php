@@ -334,4 +334,20 @@ class User
             throw $e;
         }
     }
+
+    public static function getAllActiveUsersCount(): int
+    {
+        $db = App::resolve('Core\Database');
+
+        try {
+            $stmt = $db->query("SELECT COUNT(*) AS active_count FROM users WHERE is_online = TRUE");
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            return (int)($result['active_count'] ?? 0);
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

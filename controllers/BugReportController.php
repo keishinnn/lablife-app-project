@@ -43,17 +43,17 @@ class BugReportController
             }
 
             // Insert the new report
-            $insertQuery = "INSERT INTO bug_reports (user_id, title, description, created_at) 
-                            VALUES (:user_id, :title, :description, NOW())";
+            $insertQuery = "INSERT INTO bug_reports (user_id, title, description, created_at, status_id) 
+                            VALUES (:user_id, :title, :description, NOW(), :status_id)";
             $db->query($insertQuery, [
                 ':user_id' => $user_id,
                 ':title' => $title,
-                ':description' => $description
+                ':description' => $description,
+                ':status_id' => 'b46a33a6-f4b5-49d0-8307-bf83a1d6e0de'
             ]);
 
             // Show success view
             require base_path('Views/bugreport/success.view.php');
-
         } catch (\Exception $e) {
             echo "Error submitting bug report: " . $e->getMessage();
         }

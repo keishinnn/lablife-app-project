@@ -1,4 +1,6 @@
-<?php require base_path('Views/admin/shared/header.php') ?>
+<?php
+require base_path('Views/admin/shared/header.php');
+?>
 
 <?php require base_path('Views/admin/shared/sidebar.php') ?>
 
@@ -11,19 +13,19 @@
   <section class="cards">
     <div class="card pink">
       <h3>Total Reports</h3>
-      <p><?= (int)$data['total_reports'] ?></p>
+      <p><?= $allReportsCount ?></p>
     </div>
     <div class="card red">
       <h3>User Reports</h3>
-      <p><?= (int)$data['user_reports'] ?></p>
+      <p><?= $userReportsCount ?></p>
     </div>
     <div class="card orange">
       <h3>Bug Reports</h3>
-      <p><?= (int)$data['bug_reports'] ?></p>
+      <p><?= $bugReportsCount ?></p>
     </div>
     <div class="card green">
       <h3>Resolved</h3>
-      <p><?= (int)$data['finished_reports'] ?></p>
+      <p><?= 0 ?></p>
     </div>
   </section>
 
@@ -32,14 +34,14 @@
     <div class="inbox">
       <h2>User Reports</h2>
       <div class="inbox-list">
-        <?php foreach ($data['recent_user_reports'] as $r): ?>
+        <?php foreach ($recentUserReports as $recentUserReport): ?>
           <div class="inbox-item">
             <div>
               <strong>Reason:</strong>
-              <?= htmlspecialchars($r['reason'] ?? 'No reason provided') ?><br>
-              <span>Reported ID: <?= htmlspecialchars($r['reported_id'] ?? 'N/A') ?></span>
+              <?= htmlspecialchars($recentUserReport->reasonText ?? 'No reason provided') ?><br>
+              <span>Reported ID: <?= htmlspecialchars($recentUserReport->reportedUserId ?? 'N/A') ?></span>
             </div>
-            <small><?= date('M j, Y', strtotime($r['created_at'] ?? 'now')) ?></small>
+            <small><?= date('M j, Y', strtotime($recentUserReport->createdAt ?? 'now')) ?></small>
           </div>
         <?php endforeach; ?>
       </div>
@@ -50,13 +52,13 @@
     <div class="inbox">
       <h2>Bug Reports</h2>
       <div class="inbox-list">
-        <?php foreach ($data['recent_bug_reports'] as $r): ?>
+        <?php foreach ($recentBugReports as $recentBugReport): ?>
           <div class="inbox-item" onclick="openBugModal('<?= htmlspecialchars($r['id']) ?>')">
             <div>
-              <strong><?= htmlspecialchars($r['title'] ?? 'Untitled Bug') ?></strong><br>
-              <span><?= mb_strimwidth(htmlspecialchars($r['description'] ?? ''), 0, 40, '…') ?></span>
+              <strong><?= htmlspecialchars($recentBugReport->title ?? 'Untitled Bug') ?></strong><br>
+              <span><?= mb_strimwidth(htmlspecialchars($recentBugReport->description ?? ''), 0, 40, '…') ?></span>
             </div>
-            <small><?= date('M j, Y', strtotime($r['created_at'] ?? 'now')) ?></small>
+            <small><?= date('M j, Y', strtotime($recentBugReport->createdAt ?? 'now')) ?></small>
           </div>
         <?php endforeach; ?>
       </div>
@@ -73,12 +75,12 @@
   <section class="charts">
     <div class="chart-box">
       <h2>New Matches (Last 7 Days)</h2>
-      <canvas id="matchesChart"></canvas>
+      <canvas id="matchesChart">1</canvas>
     </div>
 
     <div class="chart-box">
       <h2>Active Users</h2>
-      <div class="active-count" id="activeUsersCount">0</div>
+      <div class="active-count"><?= $activeUsersCount ?></div>
       <p class="active-sub">Currently online users</p>
     </div>
   </section>

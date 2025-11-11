@@ -9,7 +9,7 @@ class AdminLoginController
 {
     public function showLogin()
     {
-        require base_path(path: 'views/admin/login.view.php');
+        view('admin/login.view.php');
     }
 
     public function login()
@@ -21,7 +21,7 @@ class AdminLoginController
 
         $config = require base_path('config/config.php');
         $db = new Database($config['database']);
-        
+
         $email = trim($_POST['email'] ?? '');
         $password = trim($_POST['password'] ?? '');
 

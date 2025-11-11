@@ -84,7 +84,7 @@ class VerifyController
 
         $_SESSION['verify_fail_count']++;
 
-        if ($_SESSION['verify_fail_count'] >= 5) {
+        if ($_SESSION['verify_fail_count'] >= 10) {
             $_SESSION['verify_lock_until'] = time() + (5 * 60);
             $_SESSION['verify_fail_count'] = 0;
             echo json_encode([

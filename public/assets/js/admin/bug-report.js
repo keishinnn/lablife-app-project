@@ -4,8 +4,7 @@ const list = document.getElementById("bug-report-list");
 const loader = document.getElementById("loader");
 
 async function fetchReports() {
-  if (loading) return;
-  loading = true;
+  if (loading) return;  loading = true;
   loader.style.display = "block";
   loader.textContent = "Loading...";
 

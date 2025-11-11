@@ -104,14 +104,14 @@ $router->get('/admin/api/dashboard/matches', 'Admin\AdminDashboardDataController
 $router->get('/admin/api/dashboard/active-users', 'Admin\AdminDashboardDataController@loadActiveUsers');
 
 //admin dashboard: bug reports
-$router->get('/admin/bug-reports', 'Admin\\AdminBugReportController@index');
-$router->get('/admin/api/bug-reports', 'Admin\\AdminBugReportController@listJson');
-$router->get('/admin/api/bug-report', 'Admin\\AdminBugReportController@detailJson');
+$router->get('/admin/bug-reports', 'Admin\\AdminBugReportController@View');
+$router->post('/admin/delete-awaiting-bug-report', 'Admin\\AdminBugReportController@handleDeleteAwaitingBugReport');
+$router->post('/admin/set-resolved-bug-report', 'Admin\\AdminBugReportController@handleSetResolvedBugReport');
 
 //admin dashboard: user reports
-$router->get('/admin/user-reports', 'Admin\AdminUserReportController@index');
-$router->get('/admin/api/user-reports', 'Admin\AdminUserReportController@listJson');
-$router->get('/admin/api/user-report', 'Admin\AdminUserReportController@detailJson');
+$router->get('/admin/user-reports', 'Admin\AdminUserReportController@View');
+$router->post('/admin/ban-user', 'Admin\AdminUserReportController@handleDeleteUser');
+$router->post('/admin/set-resolved-user-report', 'Admin\AdminUserReportController@handleSetResolvedUserReport'); 
 
 //Notification
 $router->get('/admin/api/check-new-reports', 'Admin\AdminNotificationController@checkNewReports');
@@ -136,7 +136,6 @@ $router->get('/u/profile/blocked-users', 'User\\Messages\\BlockController@View')
 // Report User
 $router->get('/u/report/fetch-options', 'User\\Messages\\UserReportController@fetchOptions');
 $router->post('/u/report/submit', 'User\\Messages\\UserReportController@submit');
-
 
 // Verify
 $router->get('/u/verify-next', 'User\\Discover\\VerifyController@View');

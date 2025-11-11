@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\User\Messages;
 
 use Core\Database;
@@ -28,52 +29,75 @@ class UserReportController
         exit;
     }
 
-    // POST /u/report/submit
     public function submit()
     {
-        \Core\Middleware::auth();
-        header('Content-Type: application/json');
+        $config = require base_path('config/config.php');
+        $db = new Database($config['database']);
 
-        $raw = file_get_contents('php://input');
-        $data = json_decode($raw, true);
+        $reporterId = $_SESSION['user_id'] ?? null;
 
-        $other_user_id = $data['other_user_id'] ?? null;
-        $category_id   = $data['category_id'] ?? null;
-        $reason_id     = $data['reason_id'] ?? null;
+        $input = json_decode(file_get_contents('php://input'), true);
 
-        if (!$other_user_id || !$category_id) {
-            http_response_code(400);
+        $reportedUserId = trim($input['other_user_id'] ?? '');
+        $categoryId = trim($input['category_id'] ?? '');
+        $reasonId = trim($input['reason_id'] ?? '');
+
+        $contextMessages = $input['context_messages'] ?? []; 
+        $contextJson = null;
+
+        if (!empty($contextMessages)) {
+            $contextJson = json_encode($contextMessages, JSON_UNESCAPED_UNICODE);
+        }
+
+        if (!$reporterId) {
+            echo json_encode(['success' => false, 'message' => 'You must be logged in to report a user.']);
+            exit;
+        }
+
+        if (empty($reportedUserId) || empty($categoryId)) {
             echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
             exit;
         }
 
-        // CSRF check
-        $headers = getallheaders();
-        $csrfHeader = $headers['X-CSRF-Token'] ?? $headers['x-csrf-token'] ?? null;
-        if (!$csrfHeader || $csrfHeader !== ($_SESSION['csrf_token'] ?? null)) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
+        if ($reporterId === $reportedUserId) {
+            echo json_encode(['success' => false, 'message' => 'You cannot report yourself.']);
             exit;
         }
 
-        $reporter_id = Auth::user();
-        $config = require base_path('config/config.php');
-        $db = new Database($config['database']);
-        $model = new UserReportModel($db);
-
         try {
-            $inserted = $model->insertReport($reporter_id, $other_user_id, $category_id, $reason_id);
+            $checkQuery = "SELECT COUNT(*) AS report_count 
+                       FROM user_reports 
+                       WHERE reporter_id = :reporter_id
+                         AND reported_user_id = :reported_user_id
+                         AND created_at::date = CURRENT_DATE";
+            $result = $db->query($checkQuery, [
+                ':reporter_id' => $reporterId,
+                ':reported_user_id' => $reportedUserId
+            ])->fetch(\PDO::FETCH_ASSOC);
 
-            echo json_encode(['success' => true, 'report_id' => $inserted['id'] ?? null]);
-        } catch (Exception $e) {
-            error_log('Report submit error: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode([
-                'success' => false,
-                'message' => 'Internal server error',
-                'error'   => $e->getMessage(),
-            ]);
-            exit;
+            if ($result && $result['report_count'] >= 1) {
+                echo json_encode(['success' => false, 'message' => 'You have already reported this user today.']);
+                exit;
+            }
+
+            $stmt = $db->prepare("
+            INSERT INTO user_reports 
+                (id, reporter_id, reported_user_id, category_id, reason_id, status_id, context, created_at)
+            VALUES 
+                (gen_random_uuid(), :reporter_id, :reported_user_id, :category_id, :reason_id, :status_id, :context::jsonb, NOW())
+        ");
+
+            $stmt->bindValue(':reporter_id', $reporterId);
+            $stmt->bindValue(':reported_user_id', $reportedUserId);
+            $stmt->bindValue(':category_id', $categoryId);
+            $stmt->bindValue(':reason_id', $reasonId ?: null);
+            $stmt->bindValue(':status_id', 'b46a33a6-f4b5-49d0-8307-bf83a1d6e0de');
+            $stmt->bindValue(':context', $contextJson, \PDO::PARAM_STR);
+            $stmt->execute();
+
+            echo json_encode(['success' => true, 'message' => 'Report submitted successfully.']);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error submitting report: ' . $e->getMessage()]);
         }
     }
 }
