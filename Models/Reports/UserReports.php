@@ -257,4 +257,31 @@ class UserReports
             throw $e;
         }
     }
+
+    public static function getAllResolvedReportsCount(): int
+    {
+        $db = App::resolve('Core\Database');
+
+        $resolvedStatusId = 'a51a611a-975e-45e6-b085-8a537d80513e';
+
+        try {
+            $stmt = $db->prepare("
+            SELECT 
+                (SELECT COUNT(*) FROM user_reports WHERE status_id = :resolvedStatusId) AS resolved_user_reports,
+                (SELECT COUNT(*) FROM bug_reports  WHERE status_id = :resolvedStatusId) AS resolved_bug_reports
+        ");
+
+            $stmt->execute(['resolvedStatusId' => $resolvedStatusId]);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            $userReportsCount = (int)($result['resolved_user_reports'] ?? 0);
+            $bugReportsCount  = (int)($result['resolved_bug_reports'] ?? 0);
+
+            return $userReportsCount + $bugReportsCount;
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

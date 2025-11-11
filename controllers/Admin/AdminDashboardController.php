@@ -6,6 +6,7 @@ use Core\Database;
 use Models\User\User;
 use Models\Reports\UserReports;
 use Models\Reports\BugReports;
+use Models\Match\Matches;
 
 class AdminDashboardController
 {
@@ -29,6 +30,9 @@ class AdminDashboardController
         $recentBugReports = BugReports::getRecentBugReports();
         $recentUserReports = UserReports::getRecentUserReports();
 
-        view('admin/dashboard.view.php', compact('activeUsersCount', 'userReportsCount', 'bugReportsCount', 'allReportsCount', 'recentBugReports', 'recentUserReports'));
+        $allResolvedReportsCount = UserReports::getAllResolvedReportsCount();
+        $allMatchesCount = Matches::getAllMatchesCount();
+
+        view('admin/dashboard.view.php', compact('activeUsersCount', 'userReportsCount', 'bugReportsCount', 'allReportsCount', 'recentBugReports', 'recentUserReports', 'allResolvedReportsCount', 'allMatchesCount'));
     }
 }

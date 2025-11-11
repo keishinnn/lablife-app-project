@@ -198,24 +198,16 @@ class BugReports
         $db = App::resolve('Core\Database');
         $pdo = $db->getConnection();
 
-        $resolvedStatusId = 'a51a611a-975e-45e6-b085-8a537d80513e';
-
         $pdo->beginTransaction();
 
         try {
             $stmt = $pdo->prepare("
-            UPDATE bug_reports
-            SET status_id = :resolvedStatusId
+            DELETE FROM bug_reports
             WHERE id = :id
-              AND status_id IN (
-                  '9a5a2d9a-8dc0-4a4b-aa62-80a961149357'
-              )
+              AND status_id = 'b46a33a6-f4b5-49d0-8307-bf83a1d6e0de' -- Awaiting status
         ");
 
-            $stmt->execute([
-                'id' => $id,
-                'resolvedStatusId' => $resolvedStatusId
-            ]);
+            $stmt->execute(['id' => $id]);
 
             $pdo->commit();
         } catch (PDOException $e) {
@@ -226,4 +218,6 @@ class BugReports
             throw $e;
         }
     }
+
+    
 }

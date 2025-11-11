@@ -25,7 +25,7 @@ require base_path('Views/admin/shared/header.php');
     </div>
     <div class="card green">
       <h3>Resolved</h3>
-      <p><?= 0 ?></p>
+      <p><?= $allResolvedReportsCount ?></p>
     </div>
   </section>
 
@@ -75,7 +75,7 @@ require base_path('Views/admin/shared/header.php');
   <section class="charts">
     <div class="chart-box">
       <h2>New Matches (Last 7 Days)</h2>
-      <canvas id="matchesChart">1</canvas>
+      <div class="active-count"><?= $allMatchesCount ?></div>
     </div>
 
     <div class="chart-box">
