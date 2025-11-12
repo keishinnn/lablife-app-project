@@ -109,7 +109,7 @@
 
                         <div class="setup-field">
                             <label for="user_avatar">Profile Picture *</label>
-                            <input class="setup-upload" id="user_avatar" type="file" accept="image/*" name="avatar_input">
+                            <input class="setup-upload" id="user_avatar" type="file" accept="image/*" name="avatar_input" required>
 
                             <?php if (!empty($_SESSION['avatar_temp'])): ?>
                                 <p class="setup-help" id="user_avatar_help">Last uploaded: <?= htmlspecialchars($_SESSION['avatar_temp']) ?></p>
