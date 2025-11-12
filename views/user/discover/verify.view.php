@@ -36,8 +36,7 @@ require base_path('views/shared/header.php');
 
     let isCapturing = false;
 
-    // --- Liveness State Machine Variables ---
-    let livenessState = 'CENTER'; // 'CENTER', 'BLINK', 'TURN_LEFT', 'TURN_RIGHT', 'CAPTURE'
+    let livenessState = 'CENTER';
     let earBuffer = [];
     const EAR_BUFFER_MAX = 10;
     const YAW_THRESHOLD_LEFT = 0.38;
@@ -62,7 +61,6 @@ require base_path('views/shared/header.php');
         }
     }
 
-    // (This function is unchanged)
     async function startFaceRecognitionAPI() {
         try {
             const response = await fetch('/u/start-face-recognition-api', {
@@ -80,7 +78,6 @@ require base_path('views/shared/header.php');
         }
     }
 
-    // (This function is unchanged)
     async function getMediaStream() {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
@@ -111,7 +108,6 @@ require base_path('views/shared/header.php');
         }
     }
 
-    // (This function is unchanged)
     function computeEAR(eye) {
         const p = (i) => eye[i];
         const A = Math.hypot(p(1)[0] - p(5)[0], p(1)[1] - p(5)[1]);
@@ -121,13 +117,12 @@ require base_path('views/shared/header.php');
         return (A + B) / (2.0 * C);
     }
 
-    // (This function is unchanged)
     function calculateYaw(landmarks) {
         try {
             const jaw = landmarks.getJawOutline();
-            const leftJaw = jaw[0]; // Point 0
-            const rightJaw = jaw[16]; // Point 16
-            const noseTip = landmarks.getNose()[6]; // Point 33 (tip of nose)
+            const leftJaw = jaw[0];
+            const rightJaw = jaw[16];
+            const noseTip = landmarks.getNose()[6];
 
             if (!leftJaw || !rightJaw || !noseTip) return 0.5;
             const jawWidth = rightJaw.x - leftJaw.x;
@@ -141,7 +136,6 @@ require base_path('views/shared/header.php');
         }
     }
 
-    // (This function is unchanged)
     function resetLiveness(showMsg = true) {
         if (showMsg && status.textContent !== 'Capturing frames...') {
             status.textContent = 'Move to center';
@@ -150,11 +144,10 @@ require base_path('views/shared/header.php');
         earBuffer = [];
         lastActionTime = Date.now();
         if (oval) {
-            oval.style.borderColor = '#f97316'; // Orange
+            oval.style.borderColor = '#f97316';
         }
     }
 
-    // (This function is unchanged)
     function isBoxCenterInOval(box) {
         const vRect = video.getBoundingClientRect();
         const oRect = oval.getBoundingClientRect();
@@ -172,7 +165,6 @@ require base_path('views/shared/header.php');
         return val <= 1.0;
     }
 
-    // (This function is unchanged)
     function getOverlayRect() {
         const ov = oval.getBoundingClientRect();
         const v = video.getBoundingClientRect();
@@ -196,7 +188,6 @@ require base_path('views/shared/header.php');
         };
     }
 
-    // --- UPDATED postFrames function ---
     async function postFrames(framesDataUrls) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 20000);
@@ -217,39 +208,29 @@ require base_path('views/shared/header.php');
             });
             clearTimeout(timeout);
 
-            // --- NEW: Handle HTTP errors by reading the JSON body ---
             if (!resp.ok) {
                 let errorJson = null;
                 try {
-                    // Try to get the specific error message from the API
                     errorJson = await resp.json();
                 } catch (e) {
-                    // Ignore if response is not JSON
-                }
 
-                // Throw an error that includes the status and the JSON payload
+                }
                 const err = new Error(`HTTP ${resp.status}`);
-                err.response = resp; // Attach the full response
-                err.json = errorJson; // Attach the parsed JSON
+                err.response = resp;
+                err.json = errorJson;
                 throw err;
             }
-            // --- END NEW LOGIC ---
-
             return await resp.json();
 
         } catch (err) {
             clearTimeout(timeout);
-            // Re-throw if it's our custom error, or create a new one
             if (err.response) {
-                throw err; // It's our custom error, pass it on
+                throw err;
             }
-            // This catches network errors or aborts
             throw new Error("Network or API timeout: " + err.message);
         }
     }
-    // --- END UPDATED postFrames ---
 
-    // (This function is unchanged)
     function dataURLtoBlob(dataurl) {
         const arr = dataurl.split(','),
             mime = arr[0].match(/:(.*?);/)[1];
@@ -264,7 +245,6 @@ require base_path('views/shared/header.php');
         });
     }
 
-    // (This function is unchanged)
     async function loadModels() {
         const MODEL_URL = '/assets/models';
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
@@ -289,7 +269,7 @@ require base_path('views/shared/header.php');
             const now = Date.now();
 
             if (!result) {
-                oval.style.borderColor = '#f80000ff'; // Red
+                oval.style.borderColor = '#f80000ff';
                 resetLiveness();
                 setTimeout(runDetection, 200);
                 return;
@@ -308,23 +288,22 @@ require base_path('views/shared/header.php');
             const inOval = isBoxCenterInOval(pageBox);
 
             if (!inOval) {
-                oval.style.borderColor = '#f97316'; // Orange
+                oval.style.borderColor = '#f97316';
                 resetLiveness();
                 setTimeout(runDetection, 200);
                 return;
             }
 
-            oval.style.borderColor = '#22c55e'; // Green
+            oval.style.borderColor = '#22c55e';
             const lm = result.landmarks;
 
             if (now - lastActionTime > ACTION_TIMEOUT_MS && livenessState !== 'CAPTURE') {
                 console.log(`[DEBUG] Liveness step '${livenessState}' timed out.`);
-                resetLiveness(true); // Reset with message
+                resetLiveness(true);
                 setTimeout(runDetection, 200);
                 return;
             }
 
-            // --- LIVENESS STATE MACHINE ---
             switch (livenessState) {
                 case 'CENTER':
                     status.textContent = 'Great! Now please blink';
@@ -381,30 +360,23 @@ require base_path('views/shared/header.php');
                     status.textContent = 'Perfect! Hold still, look at the camera';
                     const yawCenter = calculateYaw(lm);
 
-                    // Wait for user to re-center their face
                     if (yawCenter > YAW_THRESHOLD_LEFT + 0.05 && yawCenter < YAW_THRESHOLD_RIGHT - 0.05) {
-                        isCapturing = true; // <-- Set to true
-                        oval.style.borderColor = '#0ea5e9'; // Blue for capture
+                        isCapturing = true;
+                        oval.style.borderColor = '#0ea5e9';
                         console.log('[DEBUG] Re-centered. Triggering capture...');
 
-                        // --- CAPTURE LOGIC ---
                         const rect = getOverlayRect();
                         const frames = [];
                         const ctx = canvas.getContext('2d');
 
-                        // --- *** THE FIX (Part 2) *** ---
-                        // Capture 5 frames for a more robust median
                         for (let i = 0; i < 5; i++) {
                             canvas.width = rect.sw;
                             canvas.height = rect.sh;
                             ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, rect.sw, rect.sh);
                             frames.push(canvas.toDataURL('image/jpeg', 0.9));
-                            // Update debug log
                             console.log(`[DEBUG] Captured frame ${i + 1}/5`);
-                            await new Promise(r => setTimeout(r, 650)); // Wait between frames
+                            await new Promise(r => setTimeout(r, 650));
                         }
-                        // --- *** END FIX (Part 2) *** ---
-
 
                         status.textContent = 'Do not move';
                         console.log('[DEBUG] Sending frames to backend API...');
@@ -426,7 +398,6 @@ require base_path('views/shared/header.php');
                                 });
                                 setTimeout(() => window.location.reload(), 900);
                             } else {
-                                // --- Handle verification failure (e.g., distance > 0.5) ---
                                 status.textContent = result.message || '❌ Face and Profile picture did not matched!';
                                 oval.style.borderColor = '#f80000ff';
 
@@ -438,13 +409,12 @@ require base_path('views/shared/header.php');
                                         if (data.status === 'locked') {
                                             const mins = Math.ceil(data.remaining_seconds / 60);
                                             status.textContent = `⛔ Too many failed attempts. Try again in ${mins} minute(s).`;
-                                            isCapturing = true; // Lock the screen
+                                            isCapturing = true;
                                             showTooManyAttempts(mins);
                                             return;
                                         }
                                         console.log('Failed attempts:', data.fail_count);
 
-                                        // Wait 5 seconds BEFORE resetting
                                         setTimeout(() => {
                                             isCapturing = false;
                                             resetLiveness(true);
@@ -465,45 +435,32 @@ require base_path('views/shared/header.php');
                                     });
                             }
                         } catch (err) {
-                            // --- Handle 429 and other network errors ---
                             console.error('[DEBUG] Error posting frames:', err);
                             oval.style.borderColor = '#f80000ff';
 
-                            // Check if this is a 429 (Rate Limit) error
                             if (err.response && err.response.status === 429) {
-                                // Get the message from the server's JSON response
                                 const msg = err.json ? err.json.message : "Too many attempts. Please try again later.";
                                 status.textContent = `⛔ ${msg}`;
-                                isCapturing = true; // Lock the screen
-
-                                // Try to parse the minutes from the message
+                                isCapturing = true;
                                 const minsMatch = msg.match(/(\d+)\s+minute/);
                                 const waitMins = minsMatch ? parseInt(minsMatch[1], 10) : 10;
 
                                 showTooManyAttempts(waitMins);
-
-                                // IMPORTANT: DO NOT restart the loop. Just return.
                                 return;
                             }
 
-                            // Handle other generic errors (500, network down, etc.)
                             status.textContent = 'Server error. Try again.';
                             setTimeout(() => {
                                 isCapturing = false;
                                 resetLiveness(true);
                                 runDetection();
-                            }, 2000); // Wait 2s
+                            }, 2000);
                         }
-                        // --- END CAPTURE LOGIC ---
-
-                        // We MUST return here to let the timers in try/catch take control
                         return;
                     }
                     break;
             }
 
-            // This is the main loop. It only runs if isCapturing is false
-            // (because the CAPTURE case returns before reaching this)
             if (!isCapturing) {
                 setTimeout(runDetection, 200);
             }
@@ -511,8 +468,6 @@ require base_path('views/shared/header.php');
 
         runDetection();
     }
-
-    // (All popup/init functions below are unchanged)
 
     function showTooManyAttempts(time) {
         reusablePopup(`Too many attempts. Please try again in ${time} minute${ time > 1 ? "s" : ""}.`, 'Try again', 'Exit');

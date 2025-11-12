@@ -10,18 +10,14 @@ import statistics
 app = Flask(__name__)
 CORS(app)
 
-# --- Rate Limiting Store ---
 VERIFY_ATTEMPTS = {}
 MAX_ATTEMPTS = 5
-ATTEMPT_WINDOW = 600 # 10 minutes (in seconds)
+ATTEMPT_WINDOW = 600 
 
-
-# --- STABILITY FIX: Added image resizing and validation ---
 def load_image_from_file_storage(file_storage):
     data = file_storage.read()
     arr = np.frombuffer(data, np.uint8)
-    
-    # --- FIX 1: Corrected cv.IMREAD_COLOR to cv2.IMREAD_COLOR ---
+
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR) 
     
     if img is None:
@@ -37,17 +33,14 @@ def load_image_from_file_storage(file_storage):
     
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-# --- STABILITY FIX: Added image resizing and validation ---
 def load_image_from_url(url):
-    
-    # --- FIX 2: Increased timeout from 5 to 10 seconds ---
+
     resp = requests.get(url, timeout=10) 
     resp.raise_for_status()
     
     data = resp.content
     arr = np.frombuffer(data, np.uint8)
-    
-    # --- FIX 1: Corrected cv.IMREAD_COLOR to cv2.IMREAD_COLOR ---
+
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR) 
     
     if img is None:
@@ -83,14 +76,13 @@ def verify():
     profile_url = request.form.get('profile_url')
     frames_files = request.files.getlist('frames')
 
-    # --- Rate Limiting Check ---
     current_time = time.time()
     if user_id in VERIFY_ATTEMPTS:
         user_data = VERIFY_ATTEMPTS[user_id]
         time_since = current_time - user_data["timestamp"]
         
         if time_since > ATTEMPT_WINDOW:
-            user_data["count"] = 0 # Reset window
+            user_data["count"] = 0 
         
         if user_data["count"] >= MAX_ATTEMPTS:
             return jsonify({
@@ -99,12 +91,10 @@ def verify():
             }), 429
     else:
         VERIFY_ATTEMPTS[user_id] = {"count": 0, "timestamp": current_time}
-    # --- End Rate Limiting ---
 
     if not profile_url or not frames_files:
         return jsonify({"is_verified": False, "message":"missing data"}), 400
 
-    # --- NEW: More specific error handling ---
     try:
         profile_img = load_image_from_url(profile_url)
         if profile_img is None:
@@ -121,18 +111,13 @@ def verify():
         return jsonify({"is_verified": False, "message":f"Cannot load profile image: HTTP {err.response.status_code}"}), 400
         
     except requests.exceptions.RequestException as e:
-        # Catch any other requests-related error (DNS, connection, etc.)
         print(f"Error loading profile image: Network error {e}")
         return jsonify({"is_verified": False, "message":"Cannot load profile image: Network error"}), 400
         
     except Exception as e:
-        # Catch any other unexpected error
         print(f"An unexpected error occurred while loading profile image: {e}")
         return jsonify({"is_verified": False, "message":"Cannot load profile image: Unknown server error"}), 400
-    # --- END NEW ERROR HANDLING ---
 
-
-    # --- NEW: Use num_jitters=10 for a more stable profile encoding ---
     profile_encs = face_recognition.face_encodings(profile_img, num_jitters=10)
     
     if not profile_encs:
@@ -142,7 +127,6 @@ def verify():
     ears = []
     face_present_count = 0
     
-    # --- SECURITY REFINEMENT 1: Store all distances ---
     distances = [] 
 
     for fs in frames_files:
@@ -150,7 +134,7 @@ def verify():
             img = load_image_from_file_storage(fs)
             if img is None:
                 print("Skipping a corrupt frame.")
-                continue # Skip corrupt frame
+                continue 
         except Exception as e:
             print(f"Error loading frame: {e}")
             continue
@@ -162,15 +146,11 @@ def verify():
         first_face_location = [face_locations[0]]
         face_present_count += 1
 
-        # --- NEW: Use num_jitters=2 for more stable frame encoding ---
         encs = face_recognition.face_encodings(img, known_face_locations=first_face_location, num_jitters=2)
         if encs:
-            # --- SECURITY REFINEMENT 2: Add distance to list ---
             d = face_recognition.face_distance([profile_enc], encs[0])[0]
             distances.append(d)
 
-        # Note: Liveness (blink) is now handled on the client,
-        # but we can leave this as a backup check.
         landmarks_list = face_recognition.face_landmarks(img, face_locations=first_face_location)
         if landmarks_list:
             lm = landmarks_list[0]
@@ -179,8 +159,7 @@ def verify():
             if left_eye and right_eye:
                 ears.append((compute_ear(left_eye) + compute_ear(right_eye)) / 2.0)
 
-    # --- FIX: Check if enough frames were processed ---
-    if face_present_count < 3: # Need at least 3 good frames
+    if face_present_count < 3: 
         return jsonify({"is_verified": False, "message":"no face detected in live capture"}), 200
 
     blink_detected = False
@@ -191,32 +170,23 @@ def verify():
     if not distances:
         return jsonify({"is_verified": False, "message":"could not get face encoding from capture"}), 200
 
-    # --- NEW: SECURITY REFINEMENT 3: Use median distance ---
-    # Median is more robust to outlier frames (e.g., blurry, mid-blink)
-    # than the average.
     median_distance = statistics.median(distances)
 
-    # --- *** THE FIX *** ---
-    # --- SECURITY REFINEMENT 4: Use a very strict threshold ---
-    # 0.50 was too lenient and let your brother pass.
-    # 0.45 is very strict and should block family members.
     match_threshold = 0.45
 
     is_match = median_distance <= match_threshold
-    
-    # --- Update Rate Limiter on result ---
+
     if is_match:
         if user_id in VERIFY_ATTEMPTS:
-            VERIFY_ATTEMPTS.pop(user_id, None) # Clear attempts on success
+            VERIFY_ATTEMPTS.pop(user_id, None) 
     else:
         VERIFY_ATTEMPTS[user_id]["count"] += 1
         VERIFY_ATTEMPTS[user_id]["timestamp"] = current_time
-    # --- End Rate Limiter Update ---
 
     return jsonify({
         "is_verified": bool(is_match),
-        "distance": float(median_distance), # Return the median distance
-        "blink_detected": bool(blink_detected), # This is now a backup, client does primary
+        "distance": float(median_distance), 
+        "blink_detected": bool(blink_detected), 
         "face_present_count": face_present_count,
         "message": "ok" if is_match else "Face and Profile picture did not matched!"
     })
