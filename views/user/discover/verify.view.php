@@ -32,8 +32,6 @@ require base_path('views/shared/header.php');
     const CURRENT_USER_ID = "<?= $user->id ?>";
     const PROFILE_PHOTO_URL = "<?= $user->avatarUrl ?>";
 
-    console.log(PROFILE_PHOTO_URL);
-
     let isCapturing = false;
 
     let livenessState = 'CENTER';
