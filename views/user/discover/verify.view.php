@@ -337,7 +337,7 @@ require base_path('views/shared/header.php');
                     break;
 
                 case 'TURN_LEFT':
-                    status.textContent = 'Now turn your head left';
+                    status.textContent = 'Now turn your head right';
                     const yawLeft = calculateYaw(lm);
                     if (yawLeft < YAW_THRESHOLD_LEFT) {
                         console.log("[DEBUG] Left turn detected!");
@@ -347,7 +347,7 @@ require base_path('views/shared/header.php');
                     break;
 
                 case 'TURN_RIGHT':
-                    status.textContent = 'Now turn your head right';
+                    status.textContent = 'Now turn your head left';
                     const yawRight = calculateYaw(lm);
                     if (yawRight > YAW_THRESHOLD_RIGHT) {
                         console.log("[DEBUG] Right turn detected!");
@@ -369,13 +369,13 @@ require base_path('views/shared/header.php');
                         const frames = [];
                         const ctx = canvas.getContext('2d');
 
-                        for (let i = 0; i < 5; i++) {
+                        for (let i = 0; i < 2; i++) {
                             canvas.width = rect.sw;
                             canvas.height = rect.sh;
                             ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, rect.sw, rect.sh);
                             frames.push(canvas.toDataURL('image/jpeg', 0.9));
                             console.log(`[DEBUG] Captured frame ${i + 1}/5`);
-                            await new Promise(r => setTimeout(r, 650));
+                            await new Promise(r => setTimeout(r, 300));
                         }
 
                         status.textContent = 'Do not move';

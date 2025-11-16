@@ -1,195 +1,272 @@
+# face_verification_api.py
+import os
+import io
+import time
+import math
+import statistics
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import lru_cache
+
+import numpy as np
+import cv2
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import face_recognition, cv2, numpy as np
-import requests
-from io import BytesIO
-import math
-import time
-import statistics 
+
+import face_recognition
+
+try:
+    import redis
+except Exception:
+    redis = None
+
+from dotenv import load_dotenv
+load_dotenv()
+
+APP_PORT = int(os.environ.get("FV_API_PORT", 5002))
+MAX_FRAMES = int(os.environ.get("FV_MAX_FRAMES", 2))  
+FRAME_MAX_PIXELS = int(os.environ.get("FV_FRAME_MAX_PIXELS", 800*800))
+PROFILE_CACHE_TTL = int(os.environ.get("FV_PROFILE_TTL", 60 * 60 * 6)) 
+REQUEST_TIMEOUT = int(os.environ.get("FV_REQUEST_TIMEOUT", 10)) 
+
+MAX_ATTEMPTS = int(os.environ.get("FV_MAX_ATTEMPTS", 5))
+ATTEMPT_WINDOW = int(os.environ.get("FV_ATTEMPT_WINDOW", 10 * 60))
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("face-verif")
 
 app = Flask(__name__)
 CORS(app)
 
 VERIFY_ATTEMPTS = {}
-MAX_ATTEMPTS = 5
-ATTEMPT_WINDOW = 600 
+_PROFILE_CACHE = {}  
+
+REDIS_URL = os.environ.get("REDIS_URL")
+redis_client = None
+if REDIS_URL and redis:
+    try:
+        redis_client = redis.from_url(REDIS_URL, decode_responses=False)
+        logger.info("Using Redis for caching and rate-limiting")
+    except Exception as e:
+        logger.warning("Failed to connect to Redis: %s", e)
+        redis_client = None
+
+def resize_if_needed(img_rgb):
+    h, w = img_rgb.shape[:2]
+    if h * w <= FRAME_MAX_PIXELS:
+        return img_rgb
+    scale = math.sqrt(FRAME_MAX_PIXELS / float(h * w))
+    new_w, new_h = int(w * scale), int(h * scale)
+    img_small = cv2.resize(img_rgb, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    return img_small
 
 def load_image_from_file_storage(file_storage):
     data = file_storage.read()
-    arr = np.frombuffer(data, np.uint8)
-
-    img = cv2.imdecode(arr, cv2.IMREAD_COLOR) 
-    
-    if img is None:
-        print("Error: Failed to decode image from file storage.")
+    if not data:
         return None
-
-    max_size = 800
-    h, w = img.shape[:2]
-    if h > max_size or w > max_size:
-        scale = max_size / max(h, w)
-        new_w, new_h = int(w * scale), int(h * scale)
-        img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
-    
-    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    arr = np.frombuffer(data, np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if img is None:
+        return None
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return resize_if_needed(img_rgb)
 
 def load_image_from_url(url):
-
-    resp = requests.get(url, timeout=10) 
-    resp.raise_for_status()
-    
-    data = resp.content
+    try:
+        with requests.get(url, timeout=REQUEST_TIMEOUT, stream=True) as resp:
+            resp.raise_for_status()
+            data = resp.content
+    except Exception as e:
+        logger.exception("Failed to fetch profile image: %s", e)
+        return None
     arr = np.frombuffer(data, np.uint8)
-
-    img = cv2.imdecode(arr, cv2.IMREAD_COLOR) 
-    
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     if img is None:
-        print("Error: Failed to decode image from URL.")
+        logger.warning("cv2 failed to decode profile image.")
+        return None
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return resize_if_needed(img_rgb)
+
+def _cache_set_profile_encoding(user_id, encoding_vec):
+    now = time.time()
+    if redis_client:
+        buf = io.BytesIO()
+        np.save(buf, encoding_vec, allow_pickle=False)
+        buf.seek(0)
+        redis_client.setex(f"fv_profile_enc:{user_id}", PROFILE_CACHE_TTL, buf.read())
+    else:
+        _PROFILE_CACHE[user_id] = {"encoding": encoding_vec, "ts": now}
+
+def _cache_get_profile_encoding(user_id):
+    if redis_client:
+        data = redis_client.get(f"fv_profile_enc:{user_id}")
+        if not data:
+            return None
+        buf = io.BytesIO(data)
+        buf.seek(0)
+        try:
+            arr = np.load(buf, allow_pickle=False)
+            return arr
+        except Exception:
+            return None
+    else:
+        entry = _PROFILE_CACHE.get(user_id)
+        if not entry:
+            return None
+        if time.time() - entry["ts"] > PROFILE_CACHE_TTL:
+            _PROFILE_CACHE.pop(user_id, None)
+            return None
+        return entry["encoding"]
+
+def get_or_build_profile_encoding(user_id, profile_url):
+    """Return cached encoding or compute and cache it. This is the single slow step."""
+    enc = _cache_get_profile_encoding(user_id)
+    if enc is not None:
+        return enc
+
+    img = load_image_from_url(profile_url)
+    if img is None:
         return None
 
-    max_size = 800
-    h, w = img.shape[:2]
-    if h > max_size or w > max_size:
-        scale = max_size / max(h, w)
-        new_w, new_h = int(w * scale), int(h * scale)
-        img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    encs = face_recognition.face_encodings(img, num_jitters=0)
+    if not encs:
+        return None
+    enc = encs[0]
+    _cache_set_profile_encoding(user_id, enc)
+    return enc
 
-    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+def incr_attempt(user_id):
+    now = time.time()
+    if redis_client:
+        key = f"fv_attempts:{user_id}"
+        new = redis_client.incr(key)
+        if new == 1:
+            redis_client.expire(key, ATTEMPT_WINDOW)
+        return int(new)
+    else:
+        entry = VERIFY_ATTEMPTS.get(user_id)
+        if not entry:
+            VERIFY_ATTEMPTS[user_id] = {"count": 1, "ts": now}
+            return 1
+        if now - entry["ts"] > ATTEMPT_WINDOW:
+            VERIFY_ATTEMPTS[user_id] = {"count": 1, "ts": now}
+            return 1
+        entry["count"] += 1
+        entry["ts"] = now
+        return entry["count"]
 
+def get_attempt_count(user_id):
+    if redis_client:
+        key = f"fv_attempts:{user_id}"
+        val = redis_client.get(key)
+        if not val:
+            return 0
+        return int(val)
+    else:
+        entry = VERIFY_ATTEMPTS.get(user_id)
+        if not entry:
+            return 0
+        if time.time() - entry["ts"] > ATTEMPT_WINDOW:
+            return 0
+        return entry["count"]
 
-def compute_ear(eye):
-    A = np.linalg.norm(np.array(eye[1]) - np.array(eye[5]))
-    B = np.linalg.norm(np.array(eye[2]) - np.array(eye[4]))
-    C = np.linalg.norm(np.array(eye[0]) - np.array(eye[3]))
-    if C == 0:
-        return 0.0
-    ear = (A + B) / (2.0 * C)
-    return ear
+def reset_attempts(user_id):
+    if redis_client:
+        redis_client.delete(f"fv_attempts:{user_id}")
+    else:
+        VERIFY_ATTEMPTS.pop(user_id, None)
 
-@app.route('/health', methods=['GET'])
+def process_frame_for_distance(frame_rgb, profile_enc):
+    """
+    Return distance or None if no face/encoding found.
+    We keep this function CPU bound but run in ThreadPool to utilize multiple cores.
+    """
+    try:
+        locations = face_recognition.face_locations(frame_rgb, model='hog')
+        if not locations:
+            return None
+        encs = face_recognition.face_encodings(frame_rgb, known_face_locations=[locations[0]], num_jitters=0)
+        if not encs:
+            return None
+        d = float(np.linalg.norm(profile_enc - encs[0]))
+        return d
+    except Exception as e:
+        logger.exception("Error processing frame: %s", e)
+        return None
+
+@app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"}), 200
 
-@app.route('/verify-user', methods=['POST'])
-def verify():
-    user_id = request.form.get('user_id')
-    profile_url = request.form.get('profile_url')
-    frames_files = request.files.getlist('frames')
+@app.route("/verify-user", methods=["POST"])
+def verify_user():
+    start_ts = time.time()
 
-    current_time = time.time()
-    if user_id in VERIFY_ATTEMPTS:
-        user_data = VERIFY_ATTEMPTS[user_id]
-        time_since = current_time - user_data["timestamp"]
-        
-        if time_since > ATTEMPT_WINDOW:
-            user_data["count"] = 0 
-        
-        if user_data["count"] >= MAX_ATTEMPTS:
-            return jsonify({
-                "is_verified": False, 
-                "message": "Too many attempts. Please try again in 10 minutes."
-            }), 429
-    else:
-        VERIFY_ATTEMPTS[user_id] = {"count": 0, "timestamp": current_time}
+    user_id = request.form.get("user_id")
+    profile_url = request.form.get("profile_url")
+    frames_files = request.files.getlist("frames")
 
-    if not profile_url or not frames_files:
-        return jsonify({"is_verified": False, "message":"missing data"}), 400
+    if not user_id or not profile_url or not frames_files:
+        return jsonify({"is_verified": False, "message": "missing data"}), 400
 
-    try:
-        profile_img = load_image_from_url(profile_url)
-        if profile_img is None:
-             # This means cv2.imdecode failed
-             print("Error loading profile image: cv2.imdecode returned None. Image might be corrupt.")
-             return jsonify({"is_verified": False, "message":"Profile image is corrupt or invalid."}), 400
-             
-    except requests.exceptions.Timeout:
-        print(f"Error loading profile image: Timeout connecting to {profile_url}")
-        return jsonify({"is_verified": False, "message":"Cannot load profile image: Timeout"}), 400
-        
-    except requests.exceptions.HTTPError as err:
-        print(f"Error loading profile image: HTTP Error {err.response.status_code} for {profile_url}")
-        return jsonify({"is_verified": False, "message":f"Cannot load profile image: HTTP {err.response.status_code}"}), 400
-        
-    except requests.exceptions.RequestException as e:
-        print(f"Error loading profile image: Network error {e}")
-        return jsonify({"is_verified": False, "message":"Cannot load profile image: Network error"}), 400
-        
-    except Exception as e:
-        print(f"An unexpected error occurred while loading profile image: {e}")
-        return jsonify({"is_verified": False, "message":"Cannot load profile image: Unknown server error"}), 400
+    attempts = get_attempt_count(user_id)
+    if attempts >= MAX_ATTEMPTS:
+        return jsonify({"is_verified": False, "message": f"Too many attempts. Try again later."}), 429
 
-    profile_encs = face_recognition.face_encodings(profile_img, num_jitters=10)
-    
-    if not profile_encs:
-        return jsonify({"is_verified": False, "message":"no face in profile image"}), 200
-    profile_enc = profile_encs[0]
+    if len(frames_files) > MAX_FRAMES:
+        frames_files = frames_files[:MAX_FRAMES]
 
-    ears = []
-    face_present_count = 0
-    
-    distances = [] 
+    profile_enc = get_or_build_profile_encoding(user_id, profile_url)
+    if profile_enc is None:
+        return jsonify({"is_verified": False, "message": "Cannot load or encode profile image"}), 400
 
+    frames_rgb = []
     for fs in frames_files:
-        try:
-            img = load_image_from_file_storage(fs)
-            if img is None:
-                print("Skipping a corrupt frame.")
-                continue 
-        except Exception as e:
-            print(f"Error loading frame: {e}")
-            continue
+        img = load_image_from_file_storage(fs)
+        if img is not None:
+            frames_rgb.append(img)
+    if not frames_rgb:
+        return jsonify({"is_verified": False, "message": "no valid frames uploaded"}), 200
 
-        face_locations = face_recognition.face_locations(img)
-        if not face_locations:
-            continue
-
-        first_face_location = [face_locations[0]]
-        face_present_count += 1
-
-        encs = face_recognition.face_encodings(img, known_face_locations=first_face_location, num_jitters=2)
-        if encs:
-            d = face_recognition.face_distance([profile_enc], encs[0])[0]
-            distances.append(d)
-
-        landmarks_list = face_recognition.face_landmarks(img, face_locations=first_face_location)
-        if landmarks_list:
-            lm = landmarks_list[0]
-            left_eye = lm.get('left_eye')
-            right_eye = lm.get('right_eye')
-            if left_eye and right_eye:
-                ears.append((compute_ear(left_eye) + compute_ear(right_eye)) / 2.0)
-
-    if face_present_count < 3: 
-        return jsonify({"is_verified": False, "message":"no face detected in live capture"}), 200
-
-    blink_detected = False
-    if len(ears) >= 2:
-        if (max(ears) - min(ears)) > 0.08: 
-            blink_detected = True
+    distances = []
+    with ThreadPoolExecutor(max_workers=min(len(frames_rgb), 4)) as ex:
+        futures = [ex.submit(process_frame_for_distance, fr, profile_enc) for fr in frames_rgb]
+        for fut in as_completed(futures):
+            try:
+                res = fut.result()
+                if res is not None:
+                    distances.append(res)
+            except Exception as e:
+                logger.exception("Frame worker error: %s", e)
 
     if not distances:
-        return jsonify({"is_verified": False, "message":"could not get face encoding from capture"}), 200
+        incr_attempt(user_id)
+        elapsed = time.time() - start_ts
+        logger.info("verify_user finished: no distances computed (%.3fs)", elapsed)
+        return jsonify({"is_verified": False, "message": "no face detected in capture"}), 200
 
-    median_distance = statistics.median(distances)
+    median_distance = float(statistics.median(distances))
+    MATCH_THRESHOLD = float(os.environ.get("FV_MATCH_THRESHOLD", 0.45))
 
-    match_threshold = 0.45
-
-    is_match = median_distance <= match_threshold
+    is_match = median_distance <= MATCH_THRESHOLD
 
     if is_match:
-        if user_id in VERIFY_ATTEMPTS:
-            VERIFY_ATTEMPTS.pop(user_id, None) 
+        reset_attempts(user_id)
     else:
-        VERIFY_ATTEMPTS[user_id]["count"] += 1
-        VERIFY_ATTEMPTS[user_id]["timestamp"] = current_time
+        incr_attempt(user_id)
+
+    elapsed = time.time() - start_ts
+    logger.info("verify_user finished (user=%s) match=%s median=%.4f frames=%d elapsed=%.3fs",
+                user_id, is_match, median_distance, len(distances), elapsed)
 
     return jsonify({
         "is_verified": bool(is_match),
-        "distance": float(median_distance), 
-        "blink_detected": bool(blink_detected), 
-        "face_present_count": face_present_count,
+        "distance": median_distance,
+        "frames_checked": len(distances),
+        "elapsed_seconds": elapsed,
         "message": "ok" if is_match else "Face and Profile picture did not matched!"
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=APP_PORT, debug=False)
