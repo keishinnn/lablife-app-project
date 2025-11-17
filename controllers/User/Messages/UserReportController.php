@@ -65,21 +65,6 @@ class UserReportController
         }
 
         try {
-            $checkQuery = "SELECT COUNT(*) AS report_count 
-                       FROM user_reports 
-                       WHERE reporter_id = :reporter_id
-                         AND reported_user_id = :reported_user_id
-                         AND created_at::date = CURRENT_DATE";
-            $result = $db->query($checkQuery, [
-                ':reporter_id' => $reporterId,
-                ':reported_user_id' => $reportedUserId
-            ])->fetch(\PDO::FETCH_ASSOC);
-
-            if ($result && $result['report_count'] >= 1) {
-                echo json_encode(['success' => false, 'message' => 'You have already reported this user today.']);
-                exit;
-            }
-
             $stmt = $db->prepare("
             INSERT INTO user_reports 
                 (id, reporter_id, reported_user_id, category_id, reason_id, status_id, context, created_at)

@@ -30,9 +30,41 @@ class AdminUserReportController
             exit;
         }
 
-        $inProgressUserReportId = $_POST['in_progress_user_report_id'];
+        $inProgressUserReportId = $_POST['user_report_id'];
 
         UserReports::setResolvedUserReport($inProgressUserReportId);
+
+        header('Location: /admin/user-reports');
+        exit;
+    }
+
+    public function handleSetInProgressUserReport()
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['admin_id'])) {
+            header('Location: /admin/login');
+            exit;
+        }
+
+        $awaitingUserReportId = $_POST['user_report_id'];
+
+        UserReports::setInProgressUserReport($awaitingUserReportId);
+
+        header('Location: /admin/user-reports');
+        exit;
+    }
+
+    public function handleDeleteUserReport()
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['admin_id'])) {
+            header('Location: /admin/login');
+            exit;
+        }
+
+        $userReportId = $_POST['user_report_id'];
+
+        UserReports::deleteUserReport($userReportId);
 
         header('Location: /admin/user-reports');
         exit;
@@ -47,7 +79,7 @@ class AdminUserReportController
         }
 
         $reportedUserId = $_POST['reported_user_id'];
-        $inProgressUserReportId = $_POST['in_progress_user_report_id'];
+        $inProgressUserReportId = $_POST['user_report_id'];
 
         UserReports::deleteUser($reportedUserId);
         UserReports::setResolvedUserReport($inProgressUserReportId);

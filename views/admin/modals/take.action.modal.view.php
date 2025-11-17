@@ -33,13 +33,13 @@
 
             <!-- Hidden forms -->
             <form id="ban-user-form" action="/admin/ban-user" method="post" style="display:none;">
-                <input type="hidden" name="in_progress_user_report_id" id="ban-report-id">
+                <input type="hidden" name="user_report_id" id="ban-report-id">
                 <input type="hidden" name="reported_user_id" id="ban-reported-user-id">
             </form>
 
 
             <form id="set-resolved-form" action="/admin/set-resolved-user-report" method="post" style="display:none;">
-                <input type="hidden" name="in_progress_user_report_id" id="resolved-report-id">
+                <input type="hidden" name="user_report_id" id="resolved-report-id">
             </form>
         </div>
     </div>

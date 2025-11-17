@@ -105,13 +105,16 @@ $router->get('/admin/api/dashboard/active-users', 'Admin\AdminDashboardDataContr
 
 //admin dashboard: bug reports
 $router->get('/admin/bug-reports', 'Admin\\AdminBugReportController@View');
-$router->post('/admin/delete-awaiting-bug-report', 'Admin\\AdminBugReportController@handleDeleteAwaitingBugReport');
+$router->post('/admin/delete-bug-report', 'Admin\\AdminBugReportController@handleDeleteBugReport');
 $router->post('/admin/set-resolved-bug-report', 'Admin\\AdminBugReportController@handleSetResolvedBugReport');
+$router->post('/admin/set-in-progress-bug-report', 'Admin\\AdminBugReportController@handleSetInProgressBugReport');
 
 //admin dashboard: user reports
 $router->get('/admin/user-reports', 'Admin\AdminUserReportController@View');
 $router->post('/admin/ban-user', 'Admin\AdminUserReportController@handleDeleteUser');
-$router->post('/admin/set-resolved-user-report', 'Admin\AdminUserReportController@handleSetResolvedUserReport'); 
+$router->post('/admin/set-resolved-user-report', 'Admin\AdminUserReportController@handleSetResolvedUserReport');
+$router->post('/admin/set-in-progress-user-report', 'Admin\AdminUserReportController@handleSetInProgressUserReport');
+$router->post('/admin/delete-user-report', 'Admin\AdminUserReportController@handleDeleteUserReport');
 
 //Notification
 $router->get('/admin/api/check-new-reports', 'Admin\AdminNotificationController@checkNewReports');
