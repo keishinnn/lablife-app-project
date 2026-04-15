@@ -17,6 +17,14 @@ class UserHobbies
         $this->name = $data['name'] ?? null;
     }
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+        ];
+    }
+
     public static function getCurrentUserHobbies(string $userId)
     {
         $db = App::resolve('Core\Database');
@@ -74,6 +82,7 @@ class UserHobbies
             }
 
             $pdo->commit();
+            User::refreshProfileBundleCache($userId);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());

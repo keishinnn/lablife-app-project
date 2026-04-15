@@ -86,6 +86,7 @@ use Core\Auth;
     const statusMsg = document.getElementById('status-msg');
     const discoverLoading = document.getElementById('discover-loading-indicator');
     const matchSearchText = document.getElementById("match-search-text");
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
     let matchSessionSub = null;
     let activeSearchSub = null;
@@ -177,7 +178,10 @@ use Core\Auth;
                     });
 
                 const res = await fetch('/u/discover/start-search', {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    }
                 });
                 if (!res.ok) throw new Error('Failed to start search');
                 searchStarted = true;
@@ -227,6 +231,9 @@ use Core\Auth;
 
             await fetch('/u/discover/set-search-expired', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                },
                 keepalive: true
             });
         } catch (err) {
@@ -250,6 +257,9 @@ use Core\Auth;
 
             await fetch('/u/discover/set-search-in-match', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                },
                 keepalive: true
             });
         } catch (err) {

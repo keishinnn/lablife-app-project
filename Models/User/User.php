@@ -8,6 +8,8 @@ use PDOException;
 
 class User
 {
+    private const PROFILE_CACHE_KEY_PREFIX = 'profile:bundle:';
+
     public string $id;
     public string $fullName;
     public string $username;
@@ -41,6 +43,140 @@ class User
         $this->isOnline = $data['is_online'];
         $this->createdAt = $data['created_at'];
         $this->updatedAt = $data['updated_at'];
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'full_name' => $this->fullName,
+            'username' => $this->username,
+            'email' => $this->email,
+            'gender' => $this->gender,
+            'birthdate' => $this->birthdate,
+            'bio' => $this->bio,
+            'avatar_url' => $this->avatarUrl,
+            'location_lat' => $this->locationLat,
+            'location_lng' => $this->locationLng,
+            'last_active' => $this->lastActive,
+            'is_verified' => $this->isVerified,
+            'is_online' => $this->isOnline,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
+        ];
+    }
+
+    public static function getProfileBundle(string $userId): array
+    {
+        $cached = self::getCachedProfileBundle($userId);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        return self::refreshProfileBundleCache($userId);
+    }
+
+    public static function refreshProfileBundleCache(string $userId): array
+    {
+        $bundle = self::buildProfileBundle($userId);
+        self::storeProfileBundle($userId, $bundle);
+
+        return $bundle;
+    }
+
+    public static function forgetProfileBundleCache(string $userId): void
+    {
+        try {
+            App::resolve('redis')->del([self::profileCacheKey($userId)]);
+        } catch (\Throwable $e) {
+            app_log_exception($e, 'Failed to forget profile cache');
+        }
+    }
+
+    private static function buildProfileBundle(string $userId): array
+    {
+        $user = self::getCurrentUserProfile($userId);
+
+        return [
+            'user' => $user,
+            'preferences' => UserPreferences::getCurrentUserPreferences($userId) ?? null,
+            'personalityType' => UserPersonality::getCurrentUserPersonality($userId) ?? null,
+            'userHobbies' => UserHobbies::getCurrentUserHobbies($userId) ?? null,
+            'userInterests' => UserInterests::getCurrentUserInterests($userId) ?? null,
+        ];
+    }
+
+    private static function getCachedProfileBundle(string $userId): ?array
+    {
+        try {
+            $payload = App::resolve('redis')->get(self::profileCacheKey($userId));
+        } catch (\Throwable $e) {
+            app_log_exception($e, 'Failed to read profile cache');
+            return null;
+        }
+
+        if (!is_string($payload) || $payload === '') {
+            return null;
+        }
+
+        $decoded = json_decode($payload, true);
+        if (!is_array($decoded) || empty($decoded['user'])) {
+            return null;
+        }
+
+        return [
+            'user' => new self($decoded['user']),
+            'preferences' => !empty($decoded['preferences']) ? $decoded['preferences'] : null,
+            'personalityType' => !empty($decoded['personalityType']) ? new UserPersonality($decoded['personalityType']) : null,
+            'userHobbies' => !empty($decoded['userHobbies'])
+                ? array_map(fn(array $hobby) => new UserHobbies($hobby), $decoded['userHobbies'])
+                : null,
+            'userInterests' => !empty($decoded['userInterests'])
+                ? array_map(fn(array $interest) => new UserInterests($interest), $decoded['userInterests'])
+                : null,
+        ];
+    }
+
+    private static function storeProfileBundle(string $userId, array $bundle): void
+    {
+        $user = $bundle['user'] ?? null;
+        if (!$user instanceof self) {
+            return;
+        }
+
+        $payload = [
+            'user' => $user->toArray(),
+            'preferences' => $bundle['preferences'] ?? null,
+            'personalityType' => ($bundle['personalityType'] instanceof UserPersonality)
+                ? $bundle['personalityType']->toArray()
+                : null,
+            'userHobbies' => !empty($bundle['userHobbies'])
+                ? array_map(fn(UserHobbies $hobby) => $hobby->toArray(), $bundle['userHobbies'])
+                : null,
+            'userInterests' => !empty($bundle['userInterests'])
+                ? array_map(fn(UserInterests $interest) => $interest->toArray(), $bundle['userInterests'])
+                : null,
+        ];
+
+        try {
+            App::resolve('redis')->setex(
+                self::profileCacheKey($userId),
+                self::profileCacheTtl(),
+                json_encode($payload)
+            );
+        } catch (\Throwable $e) {
+            app_log_exception($e, 'Failed to store profile cache');
+        }
+    }
+
+    private static function profileCacheKey(string $userId): string
+    {
+        return self::PROFILE_CACHE_KEY_PREFIX . $userId;
+    }
+
+    private static function profileCacheTtl(): int
+    {
+        return max(60, (int) ($_ENV['PROFILE_CACHE_TTL'] ?? 300));
     }
 
     public static function getCurrentUserProfile(string $id): ?User
@@ -117,6 +253,7 @@ class User
             );
 
             $pdo->commit();
+            self::refreshProfileBundleCache($id);
 
             return $avatarUrl;
         } catch (PDOException $e) {
@@ -155,6 +292,7 @@ class User
             );
 
             $pdo->commit();
+            self::refreshProfileBundleCache($id);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());
@@ -226,6 +364,8 @@ class User
                     "id" => $id
                 ]
             );
+
+            self::refreshProfileBundleCache($id);
         }
 
         return $avatarUrl;
@@ -245,6 +385,7 @@ class User
             ]);
 
             $pdo->commit();
+            self::refreshProfileBundleCache($id);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());
@@ -266,6 +407,7 @@ class User
             ]);
 
             $pdo->commit();
+            self::refreshProfileBundleCache($id);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());

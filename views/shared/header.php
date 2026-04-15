@@ -10,6 +10,7 @@ use Core\Auth;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
     <title>Lablife</title>
     <link rel="icon" type="image/png" href="/assets/images/logo.png">
     <link rel="stylesheet" href="/assets/css/global.css">
@@ -83,6 +84,7 @@ use Core\Auth;
                     <!-- Show the Sign Out button if a user is authenticated, otherwise show Sign In button -->
                     <?php if (Auth::check()): ?>
                         <form action="/logout" method="post">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                             <button class="btn btn-signout" type="submit">
                                 <!--                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

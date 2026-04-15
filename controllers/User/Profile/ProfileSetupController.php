@@ -14,7 +14,8 @@ class ProfileSetupController
         $user = User::getCurrentUserProfile($userId);
         \Core\Middleware::checkIfUserExist($user);
 
-        $error = '';
+        $error = $_SESSION['setup_error'] ?? '';
+        unset($_SESSION['setup_error']);
 
         view('user/profile-setup/setup.view.php', compact('error'));
     }
@@ -35,8 +36,7 @@ class ProfileSetupController
         \Core\Middleware::verifyCSRFToken();
         // If step one is already completed, just redirect (don’t overwrite)
         if (!empty($_SESSION['step_one_completed']) && $_SESSION['step_one_completed'] === true) {
-            header('Location: /u/setup-profile-preferences');
-            exit;
+            redirect('/u/setup-profile-preferences');
         }
 
         // Save text values
@@ -47,15 +47,33 @@ class ProfileSetupController
 
         // Handle avatar upload (temporary storage)
         if (!empty($_FILES['avatar_input']) && $_FILES['avatar_input']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../../public/uploads/tmp/';
+            $file = $_FILES['avatar_input'];
+            $uploadDir = base_path('public/uploads/tmp/');
             if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
+                mkdir($uploadDir, 0755, true);
             }
 
-            $fileName   = uniqid() . '_' . basename($_FILES['avatar_input']['name']);
+            if (($file['size'] ?? 0) > 5 * 1024 * 1024) {
+                $_SESSION['setup_error'] = 'Avatar must be less than 5MB.';
+                redirect('/u/setup-profile');
+            }
+
+            $mimeType = mime_content_type($file['tmp_name']);
+            $allowedMimeTypes = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+            ];
+
+            if (!isset($allowedMimeTypes[$mimeType])) {
+                $_SESSION['setup_error'] = 'Invalid file type. Only JPG, PNG, and WEBP are allowed.';
+                redirect('/u/setup-profile');
+            }
+
+            $fileName = bin2hex(random_bytes(16)) . '.' . $allowedMimeTypes[$mimeType];
             $targetFile = $uploadDir . $fileName;
 
-            if (move_uploaded_file($_FILES['avatar_input']['tmp_name'], $targetFile)) {
+            if (move_uploaded_file($file['tmp_name'], $targetFile)) {
                 // If user had a previous temp file, optionally delete it
                 if (!empty($_SESSION['avatar_temp'])) {
                     $oldFile = $uploadDir . $_SESSION['avatar_temp'];
@@ -72,8 +90,7 @@ class ProfileSetupController
         $_SESSION['step_one_completed'] = true;
 
         // Redirect to step two
-        header('Location: /u/setup-profile-preferences');
-        exit;
+        redirect('/u/setup-profile-preferences');
     }
 
     public function handleFinishSetup()
@@ -84,8 +101,7 @@ class ProfileSetupController
 
         // Make sure step one was completed
         if (empty($_SESSION['step_one_completed'])) {
-            header('Location: /u/setup-profile');
-            exit;
+            redirect('/u/setup-profile');
         }
 
         // Save preferences
@@ -102,7 +118,7 @@ class ProfileSetupController
         // Prepare avatar file from tmp if available
         $avatarFile = null;
         if (!empty($_SESSION['avatar_temp'])) {
-            $tmpPath = __DIR__ . '/../../public/uploads/tmp/' . $_SESSION['avatar_temp'];
+            $tmpPath = base_path('public/uploads/tmp/' . $_SESSION['avatar_temp']);
 
             if (file_exists($tmpPath)) {
                 $avatarFile = [
@@ -140,7 +156,6 @@ class ProfileSetupController
             $_SESSION['avatar_temp']
         );
 
-        header('Location: /u');
-        exit;
+        redirect('/u');
     }
 }

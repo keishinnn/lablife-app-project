@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/u/submit-edit-avatar', {
             method: 'POST',
             headers: {
-                'X-CSRF-Token': "<?= $_SESSION['csrf_token'] ?>"
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content ?? ''
             },
             body: formData
         })

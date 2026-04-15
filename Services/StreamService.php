@@ -18,35 +18,25 @@ class StreamService
     public function getStreamToken($userId, $userName, $userImage = null)
     {
         if (!$userId) {
-            http_response_code(401);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => 'Unauthorized']);
-            exit;
+            throw new \RuntimeException('Unauthorized.');
         }
 
-        try {
-            $serverClient = $this->getClientConnection();
+        $serverClient = $this->getClientConnection();
 
-            $streamToken = $serverClient->createToken($userId);
+        $streamToken = $serverClient->createToken($userId);
 
-            $serverClient->upsertUser([
-                'id' => $userId,
-                'name' => $userName,
-                'image' => $userImage
-            ]);
+        $serverClient->upsertUser([
+            'id' => $userId,
+            'name' => $userName,
+            'image' => $userImage
+        ]);
 
-            return [
-                'token' => $streamToken,
-                'userId' => $userId,
-                'userName' => $userName,
-                'userImage' => $userImage
-            ];
-        } catch (\Throwable $e) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => $e->getMessage()]);
-            exit;
-        }
+        return [
+            'token' => $streamToken,
+            'userId' => $userId,
+            'userName' => $userName,
+            'userImage' => $userImage
+        ];
     }
 
     /**
@@ -56,38 +46,28 @@ class StreamService
     public function getStreamVideoToken($userId, $userName, $userImage = null)
     {
         if (!$userId) {
-            http_response_code(401);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => 'Unauthorized']);
-            exit;
+            throw new \RuntimeException('Unauthorized.');
         }
 
-        try {
-            $payload = [
-                'user_id' => $userId,
-                'iat' => time() - 10,
-                'exp' => time() + 3600,
-                'type' => 'video',
-                'permissions' => [
-                    'can_publish' => true,
-                    'can_subscribe' => true
-                ]
-            ];
+        $payload = [
+            'user_id' => $userId,
+            'iat' => time() - 10,
+            'exp' => time() + 3600,
+            'type' => 'video',
+            'permissions' => [
+                'can_publish' => true,
+                'can_subscribe' => true
+            ]
+        ];
 
-            $token = $this->generateJWT($payload, $this->streamApiSecret);
+        $token = $this->generateJWT($payload, $this->streamApiSecret);
 
-            return [
-                'token' => $token,
-                'userId' => $userId,
-                'userName' => $userName,
-                'userImage' => $userImage
-            ];
-        } catch (\Throwable $e) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => $e->getMessage()]);
-            exit;
-        }
+        return [
+            'token' => $token,
+            'userId' => $userId,
+            'userName' => $userName,
+            'userImage' => $userImage
+        ];
     }
 
     /**
@@ -119,40 +99,25 @@ class StreamService
 
     public function getClientConnection()
     {
-        try {
-            $serverClient = new StreamChatClient($this->streamApiKey, $this->streamApiSecret);
-
-            return $serverClient;
-        } catch (\Throwable $e) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => $e->getMessage()]);
-            exit;
+        if ($this->streamApiKey === '' || $this->streamApiSecret === '') {
+            throw new \RuntimeException('Stream configuration is incomplete.');
         }
+
+        return new StreamChatClient($this->streamApiKey, $this->streamApiSecret);
     }
 
     public function upsertUser($userId, $userName, $userImage)
     {
         if (!$userId) {
-            http_response_code(401);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => 'Unauthorized']);
-            exit;
+            throw new \RuntimeException('Unauthorized.');
         }
 
-        try {
-            $serverClient = $this->getClientConnection();
+        $serverClient = $this->getClientConnection();
 
-            $serverClient->upsertUser([
-                'id' => $userId,
-                'name' => $userName,
-                'image' => $userImage ?? null
-            ]);
-        } catch (\Throwable $e) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode(['error' => $e->getMessage()]);
-            exit;
-        }
+        $serverClient->upsertUser([
+            'id' => $userId,
+            'name' => $userName,
+            'image' => $userImage ?? null
+        ]);
     }
 }

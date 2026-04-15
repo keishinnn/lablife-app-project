@@ -74,6 +74,26 @@ require base_path('views/shared/header.php');
     const noResultsMessage = document.getElementById('no-results-message');
 
     const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function safeImageUrl(value) {
+        const url = String(value ?? '');
+
+        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/')) {
+            return url;
+        }
+
+        return '/assets/images/default-avatar.png';
+    }
 
     await chatClient.connectUser({
         id: userId,
@@ -170,7 +190,7 @@ require base_path('views/shared/header.php');
                 <div class="chat-list-section-five">
                     <div class="chat-list-section-six">
                         <div class="chat-list-section-seven">
-                            <img src="${partner?.image || '/assets/default-avatar.png'}" alt="">
+                            <img src="${safeImageUrl(partner?.image || '/assets/images/default-avatar.png')}" alt="">
                             <div style="
                                 position: absolute;
                                 bottom: -0.25rem;
@@ -205,11 +225,11 @@ require base_path('views/shared/header.php');
                     </div>
                     <div class="chat-list-section-eight">
                         <div class="chat-list-section-nine">
-                            <h3>${partner?.name || 'Unknown User'}</h3>
+                            <h3>${escapeHtml(partner?.name || 'Unknown User')}</h3>
                             <span>${formatChatListTime(lastMessageTime)}</span>
                         </div>
                         <p style="font-size: 0.875rem; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; ${unreadCount > 0 ? 'font-weight: bold; color: #fff;' : ''}">
-                            ${lastMessageText}
+                            ${escapeHtml(lastMessageText)}
                         </p>
                     </div>
                 </div>
@@ -787,7 +807,10 @@ require base_path('views/shared/header.php');
             if (!StreamVideoClientClass) throw new Error("StreamVideoClient SDK not loaded");
 
             const res = await fetch("/u/video/get-video-token", {
-                method: "POST"
+                method: "POST",
+                headers: {
+                    "X-CSRF-Token": csrfToken
+                }
             });
             const tokenData = await res.json();
             const videoToken = tokenData.token;
@@ -1174,14 +1197,14 @@ require base_path('views/shared/header.php');
         };
 
         chatHeaderImgContainer.innerHTML = `
-        <img src="${partner.image}" alt="${partner.name}">
+        <img src="${safeImageUrl(partner.image)}" alt="${escapeHtml(partner.name)}">
         <div style="position: absolute; bottom: -0.25rem; right: -0.25rem;
             width: 0.75rem; height: 0.75rem; border: 2px solid white;
             border-radius: 9999px; background-color: ${partner?.online ? '#22c55e' : '#6b7280'}"></div>
     `;
 
         chatHeaderNameContainer.innerHTML = `
-        <h2>${partner.name}</h2>
+        <h2>${escapeHtml(partner.name)}</h2>
         <p>${partner?.online ? "Online" : "Last active " + calculateTime(partner?.last_active)}</p>
     `;
 
@@ -1307,7 +1330,7 @@ require base_path('views/shared/header.php');
                 color: ${bubbleTextColor};  
                 word-wrap: break-word;">
                 
-                <p style="margin: 0;">${msg.text}</p> 
+                <p style="margin: 0;">${escapeHtml(msg.text)}</p> 
 
                 <p style="font-size:0.75rem; margin-top:0.25rem; color: ${timeTextColor};">
                     ${time}
@@ -1559,7 +1582,7 @@ require base_path('views/shared/header.php');
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-Token": document.querySelector('input[name="csrf_token"]').value
+                    "X-CSRF-Token": csrfToken
                 },
                 body: JSON.stringify({
                     other_user_id: blockedUserId

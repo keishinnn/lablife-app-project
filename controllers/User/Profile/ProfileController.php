@@ -27,23 +27,22 @@ class ProfileController
     {
         \Core\Middleware::auth();
         $userId = \Core\Auth::user();
-        $user = User::getCurrentUserProfile($userId);
+        $bundle = User::getProfileBundle($userId);
+        $user = $bundle['user'];
         \Core\Middleware::checkIfUserExist($user);
         \Core\Middleware::checkNotSetProfile($user);
 
         $isLoading = true;
         $error = '';
 
-        $user = User::getCurrentUserProfile($userId);
-
         $ptypes = UserPersonality::getAllPersonalityTypes();
         $hobbies =  UserHobbies::getAllHobbies();
         $interests =  UserInterests::getAllInterests();
 
-        $userPreferences = UserPreferences::getCurrentUserPreferences($userId) ?? null;
-        $personalityType = UserPersonality::getCurrentUserPersonality($userId) ?? null;
-        $userHobbies = UserHobbies::getCurrentUserHobbies($userId) ?? null;
-        $userInterests = UserInterests::getCurrentUserInterests($userId) ?? null;
+        $userPreferences = $bundle['preferences'] ?? null;
+        $personalityType = $bundle['personalityType'] ?? null;
+        $userHobbies = $bundle['userHobbies'] ?? null;
+        $userInterests = $bundle['userInterests'] ?? null;
 
         $_SESSION['user_id'] = $user->id;
         $isLoading = false;
@@ -57,9 +56,7 @@ class ProfileController
 
         $ptypes = UserPersonality::getAllPersonalityTypes();
 
-        header('Content-Type: application/json');
-        echo json_encode($ptypes);
-        exit;
+        json_response($ptypes);
     }
 
     public function handleSetPersonalityType()
@@ -72,8 +69,7 @@ class ProfileController
 
         UserPersonality::setUserPersonality($userId, $ptId);
 
-        header('Location: /u/profile');
-        exit;
+        redirect('/u/profile');
     }
 
     public function handleSetHobbies()
@@ -89,7 +85,8 @@ class ProfileController
         try {
             \Models\User\UserHobbies::syncUserHobbies($userId, $hobbyIds);
         } catch (\Exception $e) {
-            $error = $e->getMessage();
+            app_log_exception($e, 'Update hobbies failed');
+            $error = generic_error_message();
         }
 
         if ($error) {
@@ -116,8 +113,7 @@ class ProfileController
             return;
         }
 
-        header('Location: /u/profile');
-        exit;
+        redirect('/u/profile');
     }
 
     public function handleSetInterests()
@@ -133,7 +129,8 @@ class ProfileController
         try {
             \Models\User\UserInterests::syncUserInterests($userId, $interestIds);
         } catch (\Exception $e) {
-            $error = $e->getMessage();
+            app_log_exception($e, 'Update interests failed');
+            $error = generic_error_message();
         }
 
         if ($error) {
@@ -160,23 +157,26 @@ class ProfileController
             return;
         }
 
-        header('Location: /u/profile');
-        exit;
+        redirect('/u/profile');
     }
 
     public function handleSetOffline()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
         User::updateIsOffline($userId);
+        json_response(['success' => true]);
     }
 
     public function handleSetOnline()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
         User::updateIsOnline($userId);
+        json_response(['success' => true]);
     }
 }

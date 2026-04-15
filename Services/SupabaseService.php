@@ -4,8 +4,6 @@
 
 namespace Services;
 
-use Core\App;
-
 class SupabaseService
 {
     protected $url;
@@ -24,6 +22,8 @@ class SupabaseService
     {
         $ch = curl_init("{$this->url}/auth/v1/{$endpoint}");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "apikey: {$this->anonKey}",
             "Authorization: Bearer {$this->anonKey}",
@@ -34,9 +34,25 @@ class SupabaseService
 
         $response = curl_exec($ch);
         if (!$response) {
-            throw new \Exception("Supabase request failed: " . curl_error($ch));
+            $message = curl_error($ch);
+            curl_close($ch);
+            throw new \Exception("Supabase request failed: {$message}");
         }
-        return json_decode($response, true);
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        if ($httpCode >= 400) {
+            return [
+                'error' => [
+                    'message' => $data['msg'] ?? $data['error_description'] ?? $data['error'] ?? 'Supabase request failed.',
+                ],
+            ];
+        }
+
+        return is_array($data) ? $data : [];
     }
 
     public function userExists($email)
@@ -45,6 +61,8 @@ class SupabaseService
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "apikey: {$this->service_role}",
             "Authorization: Bearer {$this->service_role}",
@@ -54,11 +72,18 @@ class SupabaseService
 
         $response = curl_exec($ch);
         if ($response === false) {
-            throw new \Exception(curl_error($ch));
+            $message = curl_error($ch);
+            curl_close($ch);
+            throw new \Exception($message);
         }
 
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
         $data = json_decode($response, true);
-        error_log("userExists response: " . print_r($data, true));
+
+        if ($httpCode >= 400) {
+            throw new \Exception('Unable to query authentication users.');
+        }
 
         if (empty($data['users'])) {
             return false;
@@ -79,6 +104,8 @@ class SupabaseService
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "apikey: {$this->service_role}",
             "Authorization: Bearer {$this->service_role}",
@@ -89,12 +116,15 @@ class SupabaseService
 
         $response = curl_exec($ch);
         if ($response === false) {
-            throw new \Exception("Upload failed: " . curl_error($ch));
+            $message = curl_error($ch);
+            curl_close($ch);
+            throw new \Exception("Upload failed: {$message}");
         }
 
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
         if ($httpCode >= 400) {
-            throw new \Exception("Supabase Storage error: {$response}");
+            throw new \Exception("Supabase Storage error");
         }
 
         return [
@@ -126,12 +156,28 @@ class SupabaseService
     {
         $ch = curl_init("{$this->url}/auth/v1/user");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "apikey: {$this->anonKey}",
             "Authorization: Bearer {$accessToken}",
         ]);
         $response = curl_exec($ch);
-        return json_decode($response, true);
+        if ($response === false) {
+            $message = curl_error($ch);
+            curl_close($ch);
+            throw new \Exception("Failed to fetch current user: {$message}");
+        }
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $data = json_decode($response, true);
+
+        if ($httpCode >= 400) {
+            throw new \Exception('Failed to fetch current user.');
+        }
+
+        return is_array($data) ? $data : [];
     }
 
     public function deleteFile($bucket, $filePath)
@@ -140,6 +186,8 @@ class SupabaseService
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "apikey: {$this->service_role}",
             "Authorization: Bearer {$this->service_role}"
@@ -148,12 +196,15 @@ class SupabaseService
 
         $response = curl_exec($ch);
         if ($response === false) {
-            throw new \Exception("Delete failed: " . curl_error($ch));
+            $message = curl_error($ch);
+            curl_close($ch);
+            throw new \Exception("Delete failed: {$message}");
         }
 
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
         if ($httpCode >= 400) {
-            throw new \Exception("Supabase Storage delete error: {$response}");
+            throw new \Exception("Supabase Storage delete error");
         }
 
         return true;

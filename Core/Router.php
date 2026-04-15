@@ -68,10 +68,10 @@ class Router
     }
 
 
-    function abort()
+    public function abort()
     {
         http_response_code(404);
-        require base_path('views/404.php');
+        require base_path('Views/404.php');
         exit;
     }
 }

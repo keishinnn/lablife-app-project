@@ -160,7 +160,10 @@
                 // ✅ Initialize Stream client
                 const StreamVideoClient = window.StreamVideoClient;
                 const res = await fetch("/u/video/get-video-token", {
-                    method: "POST"
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content ?? ""
+                    }
                 });
                 const {
                     token
@@ -299,7 +302,10 @@
 
             try {
                 const res = await fetch("/u/video/get-video-token", {
-                    method: "POST"
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content ?? ""
+                    }
                 });
                 const data = await res.json();
 
