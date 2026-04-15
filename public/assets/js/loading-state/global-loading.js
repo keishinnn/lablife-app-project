@@ -3,7 +3,10 @@ document.addEventListener("DOMContentLoaded", function () {
         '#index-nav-discover, ' +
         '#nav-logo-btn, ' +
         'a.nav-link[href="/u/discover"], ' +
-        '#nav-start-swiping-btn'
+        '#nav-start-swiping-btn, ' +
+        '#start-verify-btn, ' +
+        '#blocked-users-nav-btn, ' +
+        '#verify-next-btn'
     );
 
     const globalLoading = document.getElementById("global-loading");

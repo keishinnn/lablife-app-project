@@ -2,7 +2,7 @@
 
 // file path - root/views/auth/register.view.php
 
-require (base_path("views/shared/header.php"));
+require(base_path("views/shared/header.php"));
 ?>
 
 <div class="login-page">
@@ -38,6 +38,15 @@ require (base_path("views/shared/header.php"));
             <div class="login-error" id="form-error" style="<?= !empty($error) ? '' : 'display:none;' ?>">
                 <?= htmlspecialchars($error ?? '') ?>
             </div>
+            <div class="policy-consent">
+                <label class="checkbox-container">
+                    <input type="checkbox" name="agree_privacy" required>
+                    I have read and agree to the 
+                    <a href="/privacy-policy">Privacy Policy</a>
+                    and 
+                    <a href="/terms">Terms of Service</a>.
+                </label>
+            </div>
 
             <button type="submit" id="sign-up-btn">
                 Sign Up
@@ -50,4 +59,4 @@ require (base_path("views/shared/header.php"));
     </div>
 </div>
 
-<?php require (base_path("views/shared/footer.php")) ?>
+<?php require(base_path("views/shared/footer.php")) ?>

@@ -34,6 +34,11 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css">
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notif-recon-loading.css">
     <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css">
+    <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/footer.css?v=<?php echo time(); ?>">
+
+
     <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css">
     <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css">
@@ -46,6 +51,9 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/messages-page/user-control.css">
     <link rel="stylesheet" href="/assets/css/messages-page/user-block-confimation.css">
     <link rel="stylesheet" href="/assets/css/discover-page/verify-face.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/discover-page/verify-next.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/discover-page/popup-modal.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/messages-page/user-report.css?v=<?php echo time(); ?>">
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>

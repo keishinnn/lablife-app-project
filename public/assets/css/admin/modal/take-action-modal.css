@@ -1,0 +1,111 @@
+.take-action-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    height: 100%;
+}
+
+.take-action-modal-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+}
+
+.take-action-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    animation: fadeIn 0.2s ease-in-out;
+    position: relative;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.take-action-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.take-action-modal-close:hover {
+    color: #555;
+}
+
+.take-action-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.take-action-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.take-action-modal-description {
+    font-size: 14px;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.take-action-modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.take-action-modal-ban {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.take-action-modal-ban:hover {
+    background-color: #c82333;
+}
+
+.take-action-modal-resolve {
+    background-color: rgb(80, 139, 218);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.take-action-modal-resolve:hover {
+    background-color: rgb(57, 102, 161);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

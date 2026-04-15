@@ -83,4 +83,25 @@ class Matches
             throw new \Exception("Database error: " . $e->getMessage());
         }
     }
+
+    public static function getAllMatchesCount(): int
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        try {
+            $stmt = $pdo->query("
+            SELECT COUNT(*) AS total_matches
+            FROM matches
+            WHERE is_active = true
+        ");
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int)($result['total_matches'] ?? 0);
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

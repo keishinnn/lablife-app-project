@@ -7,140 +7,149 @@ require base_path('views/shared/header.php');
 <div class="verify-container">
     <video id="verify-video" autoplay playsinline muted></video>
 
-    <!-- Blue border overlay -->
     <div class="oval-border"></div>
 
     <div class="verify-controls">
-        <button id="capture-start" class="btn">Start</button>
-        <button id="capture-verify" class="btn" style="display:none">Verify</button>
-        <p id="verify-status"></p>
+        <h2 id="verify-status"></h2>
     </div>
-
     <canvas id="capture-canvas" width="640" height="480" style="display:none"></canvas>
 </div>
 
+<?php require base_path('Views/user/discover/modals/popup.view.php') ?>
+
 <script type="module">
-    /*
-  Realtime client script:
-  - loads face-api models
-  - detects face & landmarks in video
-  - checks if face bounding-box center is inside oval
-  - computes EAR (eye aspect ratio) to detect blink
-  - when criteria met -> capture 3 frames -> POST to Flask /verify-user
-*/
+    const popupModal = document.getElementById('popup-modal-id');
+    const popupModalTitle = document.getElementById('popup-modal-title');
+    const popupModalBtnOne = document.getElementById('popup-modal-btn-one');
+    const popupModalBtnTwo = document.getElementById('popup-modal-btn-two');
 
     const video = document.getElementById('verify-video');
     const canvas = document.getElementById('capture-canvas');
-    const startBtn = document.getElementById('capture-start');
-    const verifyBtn = document.getElementById('capture-verify');
     const status = document.getElementById('verify-status');
     const oval = document.querySelector('.oval-border');
 
-    const API_VERIFY = "http://127.0.0.1:5001/verify-user"; // your Flask URL
-    const CURRENT_USER_ID = "<?= $user->id ?>";
-    const PROFILE_PHOTO_URL = "<?= $user->avatarUrl ?>";
+    const API_VERIFY = 'http://127.0.0.1:5002/verify-user';
+    const CURRENT_USER_ID = <?= json_encode($user->id) ?>;
+    const PROFILE_PHOTO_URL = <?= json_encode($user->avatarUrl) ?>;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-    let detectionInterval = null;
-    let detectionsBuffer = []; // keep last N detections for blink/motion
-    const MAX_BUFFER = 8;
+    let isCapturing = false;
+    let livenessState = 'CENTER';
+    let earBuffer = [];
 
-    // ----- helper: start camera -----
+    const EAR_BUFFER_MAX = 10;
+    const YAW_THRESHOLD_LEFT = 0.38;
+    const YAW_THRESHOLD_RIGHT = 0.62;
+    const EAR_BLINK_DIFF = 0.025;
+    const ACTION_TIMEOUT_MS = 4000;
+
+    let lastActionTime = Date.now();
+
     async function startCameraAuto() {
-        const stream = await getMediaStream();
-        if (!stream) {
-            status.textContent = "No camera detected.";
-            return;
-        }
-        video.srcObject = stream;
-        await video.play();
-    }
+        try {
+            const stream = await getMediaStream();
+            if (!stream) {
+                noCameraDetectedPopup();
+                return false;
+            }
 
-    startBtn.addEventListener('click', async () => {
-        startBtn.disabled = true;
-        status.textContent = "Initializing camera...";
-        await startCameraAuto();
-        status.textContent = "Align your face inside the oval.";
-        await new Promise(r => setTimeout(r, 800));
-        verifyBtn.style.display = 'inline-block';
-    });
+            video.srcObject = stream;
+            await video.play();
+            return true;
+        } catch (err) {
+            noCameraDetectedPopup();
+            return false;
+        }
+    }
 
     async function getMediaStream() {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
-            const webcams = devices.filter(d => d.kind === "videoinput");
+            const webcams = devices.filter(d => d.kind === 'videoinput');
 
-            if (webcams.length > 0)
+            if (webcams.length > 0) {
                 return await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        deviceId: webcams[0].deviceId
-                    },
-                    audio: false
+                    video: { deviceId: webcams[0].deviceId },
+                    audio: false,
                 });
+            }
 
-            const obsCamera = devices.find(d => d.label.includes("OBS Virtual Camera"));
-            if (obsCamera)
+            const obsCamera = devices.find(d => d.label.includes('OBS Virtual Camera'));
+            if (obsCamera) {
                 return await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        deviceId: obsCamera.deviceId
-                    },
-                    audio: false
+                    video: { deviceId: obsCamera.deviceId },
+                    audio: false,
                 });
+            }
 
-            alert("No camera found. Please connect one or enable OBS Virtual Camera.");
             return null;
         } catch (err) {
-            console.error("Camera error:", err);
+            console.error('Camera error:', err);
             return null;
         }
     }
 
-    // ----- compute EAR for one eye (landmarks are arrays of points [x,y]) -----
     function computeEAR(eye) {
-        // eye: array of 6 points (x,y)
-        const p = (i) => eye[i];
-        const A = Math.hypot(p(1)[0] - p(5)[0], p(1)[1] - p(5)[1]);
-        const B = Math.hypot(p(2)[0] - p(4)[0], p(2)[1] - p(4)[1]);
-        const C = Math.hypot(p(0)[0] - p(3)[0], p(0)[1] - p(3)[1]);
-        if (C === 0) return 0;
-        return (A + B) / (2.0 * C);
+        const p = i => eye[i];
+        const a = Math.hypot(p(1)[0] - p(5)[0], p(1)[1] - p(5)[1]);
+        const b = Math.hypot(p(2)[0] - p(4)[0], p(2)[1] - p(4)[1]);
+        const c = Math.hypot(p(0)[0] - p(3)[0], p(0)[1] - p(3)[1]);
+
+        if (c === 0) return 0;
+        return (a + b) / (2 * c);
     }
 
-    // ----- is center of detected box inside oval area? -----
-    function isBoxCenterInOval(box) {
-        // box: {x, y, width, height} in page (CSS) coordinates
-        const vRect = video.getBoundingClientRect();
-        const oRect = oval.getBoundingClientRect();
+    function calculateYaw(landmarks) {
+        try {
+            const jaw = landmarks.getJawOutline();
+            const leftJaw = jaw[0];
+            const rightJaw = jaw[16];
+            const noseTip = landmarks.getNose()[6];
 
-        // scale detector box (which is relative to video internal resolution)
-        // We'll use face-api's detection box in video display coordinates if we draw to overlay canvas.
+            if (!leftJaw || !rightJaw || !noseTip) return 0.5;
+
+            const jawWidth = rightJaw.x - leftJaw.x;
+            const noseToLeft = noseTip.x - leftJaw.x;
+
+            if (jawWidth === 0) return 0.5;
+            return Math.max(0, Math.min(1, noseToLeft / jawWidth));
+        } catch (e) {
+            console.error('Error calculating yaw:', e);
+            return 0.5;
+        }
+    }
+
+    function resetLiveness(showMsg = true) {
+        if (showMsg && status.textContent !== 'Capturing frames...') {
+            status.textContent = 'Move to center';
+        }
+
+        livenessState = 'CENTER';
+        earBuffer = [];
+        lastActionTime = Date.now();
+
+        if (oval) {
+            oval.style.borderColor = '#f97316';
+        }
+    }
+
+    function isBoxCenterInOval(box) {
+        const oRect = oval.getBoundingClientRect();
         const cx = box.x + box.width / 2;
         const cy = box.y + box.height / 2;
 
-        // check inside oval's bounding rect first
-        if (cx < oRect.left || cx > oRect.right || cy < oRect.top || cy > oRect.bottom) return false;
+        if (cx < oRect.left || cx > oRect.right || cy < oRect.top || cy > oRect.bottom) {
+            return false;
+        }
 
-        // treat oval as ellipse; compute normalized coords
         const rx = oRect.width / 2;
         const ry = oRect.height / 2;
         const dx = cx - (oRect.left + rx);
         const dy = cy - (oRect.top + ry);
 
-        // ellipse equation x^2/rx^2 + y^2/ry^2 <= 1
-        const val = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
-        return val <= 1.0;
+        return ((dx * dx) / (rx * rx)) + ((dy * dy) / (ry * ry)) <= 1;
     }
 
-    // ----- capture cropped image from video given overlay rect in video pixel coordinates -----
-    function captureCropped(rect) {
-        // rect.sx, sy, sw, sh in video pixels (as your getOverlayRect computed)
-        const ctx = canvas.getContext('2d');
-        canvas.width = rect.sw;
-        canvas.height = rect.sh;
-        ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, rect.sw, rect.sh);
-        return canvas.toDataURL('image/jpeg', 0.9);
-    }
-
-    // ----- helper: compute overlay rect in video pixel coordinates (like your getOverlayRect) -----
     function getOverlayRect() {
         const ov = oval.getBoundingClientRect();
         const v = video.getBoundingClientRect();
@@ -148,90 +157,131 @@ require base_path('views/shared/header.php');
         const offsetY = ov.top - v.top;
         const scaleX = video.videoWidth / v.width;
         const scaleY = video.videoHeight / v.height;
-        const sx = Math.round(offsetX * scaleX);
-        const sy = Math.round(offsetY * scaleY);
-        const sw = Math.round(ov.width * scaleX);
-        const sh = Math.round(ov.height * scaleY);
+
         return {
-            sx,
-            sy,
-            sw,
-            sh,
-            left: ov.left,
-            top: ov.top,
-            width: ov.width,
-            height: ov.height
+            sx: Math.round(offsetX * scaleX),
+            sy: Math.round(offsetY * scaleY),
+            sw: Math.round(ov.width * scaleX),
+            sh: Math.round(ov.height * scaleY),
         };
     }
 
-    // ----- send frames to Flask -----
     async function postFrames(framesDataUrls) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+
         const form = new FormData();
         form.append('user_id', CURRENT_USER_ID);
         form.append('profile_url', PROFILE_PHOTO_URL);
-        framesDataUrls.forEach((durl, i) => {
-            // convert dataURL to Blob
-            const blob = dataURLtoBlob(durl);
-            form.append('frames', blob, `frame${i}.jpg`);
+
+        framesDataUrls.forEach((dataUrl, index) => {
+            const blob = dataURLtoBlob(dataUrl);
+            form.append('frames', blob, `frame${index}.jpg`);
         });
 
-        // put an API secret if you want e.g. headers: {'X-API-KEY': 'supersecret'}
-        const resp = await fetch(API_VERIFY, {
-            method: 'POST',
-            body: form
-        });
-        return resp.json();
-    }
+        try {
+            const response = await fetch(API_VERIFY, {
+                method: 'POST',
+                body: form,
+                signal: controller.signal,
+            });
 
-    function dataURLtoBlob(dataurl) {
-        const arr = dataurl.split(','),
-            mime = arr[0].match(/:(.*?);/)[1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+                let errorJson = null;
+                try {
+                    errorJson = await response.json();
+                } catch (e) {
+                    errorJson = null;
+                }
+
+                const err = new Error(`HTTP ${response.status}`);
+                err.response = response;
+                err.json = errorJson;
+                throw err;
+            }
+
+            return await response.json();
+        } catch (err) {
+            clearTimeout(timeout);
+            if (err.response) throw err;
+            throw new Error(`Network or API timeout: ${err.message}`);
         }
-        return new Blob([u8arr], {
-            type: mime
-        });
     }
 
-    // ----- load face-api models (use local /models or hosted) -----
+    function dataURLtoBlob(dataUrl) {
+        const parts = dataUrl.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        const bytes = atob(parts[1]);
+        const arr = new Uint8Array(bytes.length);
+
+        for (let i = 0; i < bytes.length; i += 1) {
+            arr[i] = bytes.charCodeAt(i);
+        }
+
+        return new Blob([arr], { type: mime });
+    }
+
     async function loadModels() {
-        // Example: host models at /assets/models (download them there)
-        const MODEL_URL = '/assets/models';
-        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
-        // optional: face recognition on client if desired
-        console.log('face-api models loaded');
+        const modelUrl = '/assets/models';
+        await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+        await faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl);
     }
 
-    // ----- main detection loop -----
+    async function markVerified() {
+        const response = await fetch('/u/account/set-verified', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
+            },
+            body: JSON.stringify({ user_id: CURRENT_USER_ID }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update verification state.');
+        }
+    }
+
+    async function incrementFailCount() {
+        const response = await fetch('/u/account/increment-fail', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': csrfToken,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update verification attempts.');
+        }
+
+        return response.json();
+    }
+
     async function startDetectionLoop() {
         const options = new faceapi.TinyFaceDetectorOptions({
             inputSize: 224,
-            scoreThreshold: 0.5
+            scoreThreshold: 0.5,
         });
 
-        // run detection at about 5 fps to balance CPU
-        detectionInterval = setInterval(async () => {
-            if (video.paused || video.readyState < 2) return;
-
-            // detect single face with landmarks
-            const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks(true);
-            if (!result) {
-                oval.style.borderColor = '#38bdf8'; // blue
-                status.textContent = 'No face detected';
-                detectionsBuffer.push(null);
-                if (detectionsBuffer.length > MAX_BUFFER) detectionsBuffer.shift();
+        async function runDetection() {
+            if (video.paused || video.readyState < 2) {
+                setTimeout(runDetection, 200);
                 return;
             }
 
-            // convert result box to page coords
+            const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks(true);
+            const now = Date.now();
+
+            if (!result) {
+                oval.style.borderColor = '#f80000';
+                resetLiveness();
+                setTimeout(runDetection, 200);
+                return;
+            }
+
             const box = result.detection.box;
-            // face-api's box is in video internal pixels but offset relative to video element => map to page coords
-            // compute box in page coordinates (left, top, width, height)
             const vRect = video.getBoundingClientRect();
             const scaleX = vRect.width / video.videoWidth;
             const scaleY = vRect.height / video.videoHeight;
@@ -239,133 +289,237 @@ require base_path('views/shared/header.php');
                 x: vRect.left + box.x * scaleX,
                 y: vRect.top + box.y * scaleY,
                 width: box.width * scaleX,
-                height: box.height * scaleY
+                height: box.height * scaleY,
             };
 
-            // check if face center inside oval
-            if (isBoxCenterInOval(pageBox)) {
-                oval.style.borderColor = '#22c55e'; // green
-                status.textContent = 'Face aligned — please blink or move slightly';
-            } else {
-                oval.style.borderColor = '#f97316'; // orange if not centered
-                status.textContent = 'Move to center';
+            const inOval = isBoxCenterInOval(pageBox);
+            if (!inOval) {
+                oval.style.borderColor = '#f97316';
+                resetLiveness();
+                setTimeout(runDetection, 200);
+                return;
             }
 
-            // compute EAR from landmarks (we have 68point landmarks)
+            oval.style.borderColor = '#22c55e';
             const lm = result.landmarks;
-            const leftEye = lm.getLeftEye().map(p => [p.x, p.y]);
-            const rightEye = lm.getRightEye().map(p => [p.x, p.y]);
-            const ear = (computeEAR(leftEye) + computeEAR(rightEye)) / 2.0;
 
-            // store a compact detection for buffer: {ear, centerY, box}
-            const center = {
-                x: pageBox.x + pageBox.width / 2,
-                y: pageBox.y + pageBox.height / 2
-            };
-            detectionsBuffer.push({
-                ear,
-                center,
-                pageBox,
-                timestamp: Date.now(),
-                landmarks: lm
-            });
-            if (detectionsBuffer.length > MAX_BUFFER) detectionsBuffer.shift();
+            if (now - lastActionTime > ACTION_TIMEOUT_MS && livenessState !== 'CAPTURE') {
+                resetLiveness(true);
+                setTimeout(runDetection, 200);
+                return;
+            }
 
-            // Evaluate liveness heuristics:
-            // 1) require face to be centered for at least 2 consecutive detections
-            // 2) require EAR variation across buffer to indicate blink
-            const lastTwo = detectionsBuffer.slice(-3); // last few
-            const centeredCount = lastTwo.filter(d => d && isBoxCenterInOval(d.pageBox)).length;
+            switch (livenessState) {
+                case 'CENTER':
+                    status.textContent = 'Great! Now please blink';
+                    livenessState = 'BLINK';
+                    lastActionTime = now;
+                    break;
 
-            // compute EAR min/max over buffer where detection exists
-            const earValues = detectionsBuffer.filter(Boolean).map(d => d.ear);
-            const earMin = Math.min(...earValues);
-            const earMax = Math.max(...earValues);
-            const earDiff = earMax - earMin;
+                case 'BLINK': {
+                    status.textContent = 'Please blink';
+                    const leftEye = lm.getLeftEye().map(p => [p.x, p.y]);
+                    const rightEye = lm.getRightEye().map(p => [p.x, p.y]);
+                    const ear = (computeEAR(leftEye) + computeEAR(rightEye)) / 2;
 
-            // motion check: compute vertical movement of center y across buffer
-            const centers = detectionsBuffer.filter(Boolean).map(d => d.center.y);
-            const motion = centers.length >= 2 ? Math.abs(centers[centers.length - 1] - centers[0]) : 0;
+                    earBuffer.push(ear);
+                    if (earBuffer.length > EAR_BUFFER_MAX) earBuffer.shift();
 
-            const BLINK_EAR_DIFF_THRESHOLD = 0.015; // small threshold to detect change (tweak)
-            const MOTION_THRESHOLD_PX = 4; // require at least small motion
+                    if (earBuffer.length === EAR_BUFFER_MAX) {
+                        const earMin = Math.min(...earBuffer);
+                        const earMax = Math.max(...earBuffer);
 
-            const blinkDetected = earDiff > BLINK_EAR_DIFF_THRESHOLD;
-            const centeredEnough = centeredCount >= 2;
-            const smallMotion = motion > MOTION_THRESHOLD_PX;
-
-            // if face centered + (blink OR motion) -> capture frames and submit
-            if (centeredEnough && (blinkDetected || smallMotion)) {
-                // stop detection to avoid double submits
-                clearInterval(detectionInterval);
-
-                oval.style.borderColor = '#0ea5e9';
-                status.textContent = 'Capturing frames...';
-
-                // compute overlay rect in video pixels then capture frames (3)
-                const rect = getOverlayRect();
-                const frames = [];
-                const ctx = canvas.getContext('2d');
-
-                for (let i = 0; i < 3; i++) {
-                    // draw and capture
-                    canvas.width = rect.sw;
-                    canvas.height = rect.sh;
-                    ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, rect.sw, rect.sh);
-                    frames.push(canvas.toDataURL('image/jpeg', 0.9));
-                    await new Promise(r => setTimeout(r, 650));
+                        if ((earMax - earMin) > EAR_BLINK_DIFF) {
+                            livenessState = 'TURN_LEFT';
+                            lastActionTime = now;
+                            earBuffer = [];
+                        }
+                    }
+                    break;
                 }
 
-                status.textContent = 'Sending to server...';
-                try {
-                    const result = await postFrames(frames);
-                    console.log('verify result:', result);
-                    if (result.is_verified) {
-                        status.textContent = '✅ Verified';
-                        // tell PHP backend to update is_verified
-                        await fetch('/u/account/set-verified', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                user_id: CURRENT_USER_ID
-                            })
-                        });
-                        setTimeout(() => window.location.reload(), 900);
-                    } else {
-                        status.textContent = '❌ Verification failed: ' + (result.message || 'no match');
-                        // restart detection
-                        detectionsBuffer = [];
-                        startDetectionLoop();
+                case 'TURN_LEFT': {
+                    status.textContent = 'Now turn your head right';
+                    const yawLeft = calculateYaw(lm);
+                    if (yawLeft < YAW_THRESHOLD_LEFT) {
+                        livenessState = 'TURN_RIGHT';
+                        lastActionTime = now;
                     }
-                } catch (err) {
-                    console.error('Error posting frames', err);
-                    status.textContent = 'Server error. Try again.';
-                    detectionsBuffer = [];
-                    startDetectionLoop();
+                    break;
+                }
+
+                case 'TURN_RIGHT': {
+                    status.textContent = 'Now turn your head left';
+                    const yawRight = calculateYaw(lm);
+                    if (yawRight > YAW_THRESHOLD_RIGHT) {
+                        livenessState = 'CAPTURE';
+                        lastActionTime = now;
+                    }
+                    break;
+                }
+
+                case 'CAPTURE': {
+                    status.textContent = 'Perfect! Hold still, look at the camera';
+                    const yawCenter = calculateYaw(lm);
+
+                    if (yawCenter > YAW_THRESHOLD_LEFT + 0.05 && yawCenter < YAW_THRESHOLD_RIGHT - 0.05) {
+                        isCapturing = true;
+                        oval.style.borderColor = '#0ea5e9';
+
+                        const rect = getOverlayRect();
+                        const frames = [];
+                        const ctx = canvas.getContext('2d');
+
+                        for (let i = 0; i < 2; i += 1) {
+                            canvas.width = rect.sw;
+                            canvas.height = rect.sh;
+                            ctx.drawImage(video, rect.sx, rect.sy, rect.sw, rect.sh, 0, 0, rect.sw, rect.sh);
+                            frames.push(canvas.toDataURL('image/jpeg', 0.9));
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                        }
+
+                        status.textContent = 'Do not move';
+
+                        try {
+                            const resultPayload = await postFrames(frames);
+
+                            if (resultPayload.is_verified) {
+                                status.textContent = 'Verified';
+                                await markVerified();
+                                setTimeout(() => window.location.reload(), 900);
+                            } else {
+                                status.textContent = resultPayload.message || 'Face and profile picture did not match.';
+                                oval.style.borderColor = '#f80000';
+
+                                try {
+                                    const failData = await incrementFailCount();
+                                    if (failData.status === 'locked') {
+                                        const mins = Math.ceil(failData.remaining_seconds / 60);
+                                        status.textContent = `Too many failed attempts. Try again in ${mins} minute(s).`;
+                                        isCapturing = true;
+                                        showTooManyAttempts(mins);
+                                        return;
+                                    }
+                                } catch (err) {
+                                    console.error('Failed to record verification attempt:', err);
+                                }
+
+                                setTimeout(() => {
+                                    isCapturing = false;
+                                    resetLiveness(true);
+                                    runDetection();
+                                }, 2000);
+                            }
+                        } catch (err) {
+                            console.error('Verification error:', err);
+                            oval.style.borderColor = '#f80000';
+
+                            if (err.response && err.response.status === 429) {
+                                const msg = err.json ? err.json.message : 'Too many attempts. Please try again later.';
+                                const minsMatch = msg.match(/(\d+)\s+minute/);
+                                const waitMins = minsMatch ? parseInt(minsMatch[1], 10) : 10;
+                                status.textContent = msg;
+                                isCapturing = true;
+                                showTooManyAttempts(waitMins);
+                                return;
+                            }
+
+                            status.textContent = 'Server error. Try again.';
+                            setTimeout(() => {
+                                isCapturing = false;
+                                resetLiveness(true);
+                                runDetection();
+                            }, 2000);
+                        }
+
+                        return;
+                    }
+                    break;
                 }
             }
 
-        }, 200); // 200 ms => ~5 fps
+            if (!isCapturing) {
+                setTimeout(runDetection, 200);
+            }
+        }
+
+        runDetection();
     }
 
-    // ----- bind UI and start --------
-    (async function init() {
-        status.textContent = 'Loading face models...';
-        await loadModels();
+    function showTooManyAttempts(time) {
+        reusablePopup(`Too many attempts. Please try again in ${time} minute${time > 1 ? 's' : ''}.`, 'Try again', 'Exit');
+    }
 
-        const ok = await startCameraAuto();
-        if (!ok) {
-            status.textContent = 'Camera not available.';
-            return;
+    function noCameraDetectedPopup() {
+        reusablePopup('No camera detected or permission denied.', 'Try again', 'Exit');
+    }
+
+    function showServiceUnavailable() {
+        reusablePopup('Verification service unavailable. Please try again.', 'Try again', 'Exit');
+    }
+
+    function reusablePopup(title, btnOneText, btnTwoText) {
+        popupModal.style.display = 'flex';
+        popupModalTitle.textContent = title;
+        popupModalBtnOne.textContent = btnOneText;
+        popupModalBtnTwo.textContent = btnTwoText;
+    }
+
+    if (popupModalBtnOne) {
+        popupModalBtnOne.addEventListener('click', () => {
+            window.location.href = '/u/verify';
+        });
+    }
+
+    if (popupModalBtnTwo) {
+        popupModalBtnTwo.addEventListener('click', () => {
+            window.location.href = '/u/verify-next';
+        });
+    }
+
+    async function checkAPIHealth() {
+        try {
+            const res = await fetch('http://127.0.0.1:5002/health');
+            return res.ok;
+        } catch {
+            return false;
         }
-        status.textContent = 'Camera ready — position face inside oval';
-        // small delay to ensure video videoWidth/Height available
-        await new Promise(r => setTimeout(r, 300));
-        startDetectionLoop();
+    }
+
+    (async function init() {
+        try {
+            const failRes = await fetch('/u/account/fail-status');
+            const data = await failRes.json();
+            const mins = Math.ceil(data.remaining_seconds / 60);
+
+            if (data.remaining_seconds > 0) {
+                showTooManyAttempts(mins);
+                return;
+            }
+
+            const isAlive = await checkAPIHealth();
+            if (!isAlive) {
+                showServiceUnavailable();
+                return;
+            }
+
+            status.textContent = 'Loading face models...';
+            await loadModels();
+
+            const ok = await startCameraAuto();
+            if (!ok) {
+                status.textContent = 'Camera not available.';
+                return;
+            }
+
+            status.textContent = 'Camera ready - position face inside oval';
+            await new Promise(resolve => setTimeout(resolve, 300));
+            startDetectionLoop();
+        } catch (err) {
+            console.error('Init error:', err);
+            showServiceUnavailable();
+        }
     })();
 </script>
-
 
 <?php require base_path('views/shared/footer.php') ?>

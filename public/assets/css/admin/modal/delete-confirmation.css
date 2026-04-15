@@ -1,0 +1,19 @@
+.delete-block-confirmation-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.delete-confirmation-modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}

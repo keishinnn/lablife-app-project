@@ -1,6 +1,9 @@
 <?php
-
 require(base_path("views/shared/header.php"));
+
+$avatarUrl = (isset($user->avatarUrl) && is_valid_image_url($user->avatarUrl))
+    ? $user->avatarUrl
+    : '/assets/images/default-avatar.png';
 
 ?>
 
@@ -25,7 +28,8 @@ require(base_path("views/shared/header.php"));
                     <div class="profile-edit-page-section-four">
                         <div class="profile-edit-page-section-five">
                             <div class="profile-edit-page-section-six">
-                                <img src="<?php echo $user->avatarUrl ?? "/assets/images/default-avatar.png" ?>" alt="Profile" id="pp-img">
+                                <img src="<?php echo htmlspecialchars($avatarUrl); ?>"
+                                    alt="<?php echo htmlspecialchars($user->fullName); ?>" id="pp-img">
                             </div>
 
                             <!-- Camera button -->

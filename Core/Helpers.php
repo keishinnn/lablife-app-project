@@ -123,3 +123,9 @@ function calculateAge(string $birthdate): int
 
     return $age;
 }
+
+function is_valid_image_url($url) {
+    if (empty($url)) return false;
+    $headers = @get_headers($url, 1);
+    return $headers && strpos($headers[0], '200') !== false;
+}
