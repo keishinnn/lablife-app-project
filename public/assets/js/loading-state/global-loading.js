@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const NAVIGATION_LOADING_FLAG = "__lablifeNavigationLoading";
+
     const globalLoadingLinks = document.querySelectorAll(
         '#index-nav-discover, ' +
         '#nav-logo-btn, ' +
@@ -14,14 +16,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!globalLoading || !pageContent) return;
 
+    function showSingleLoader(activeLoader) {
+        if (window[NAVIGATION_LOADING_FLAG]) {
+            return false;
+        }
+
+        window[NAVIGATION_LOADING_FLAG] = true;
+
+        document.querySelectorAll(
+            "#global-loading, #pf-loading, #messages-loading, #matches-loading"
+        ).forEach(loader => {
+            if (loader) {
+                loader.style.display = "none";
+            }
+        });
+
+        pageContent.style.pointerEvents = "none";
+        pageContent.style.display = "none";
+        activeLoader.style.display = "flex";
+
+        return true;
+    }
+
     globalLoadingLinks.forEach(link => {
         link.addEventListener("click", function (e) {
             const href = link.getAttribute("href");
             if (!href || href.startsWith("#") || href.startsWith("http")) return;
 
-            pageContent.style.pointerEvents = "none";
-            pageContent.style.display = "none";
-            globalLoading.style.display = "flex";
+            showSingleLoader(globalLoading);
         });
     });
 });
