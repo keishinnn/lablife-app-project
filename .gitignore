@@ -12,3 +12,6 @@
 Thumbs.db
 
 .vscode
+
+# Ignore Python virtual environment
+/python/face_verification/venv/

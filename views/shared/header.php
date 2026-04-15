@@ -37,21 +37,23 @@ use Core\Auth;
     <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-list-page.css">
     <link rel="stylesheet" href="/assets/css/messages-page/messages-page.css">
-    <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/messages-page/chat-header.css">
     <link rel="stylesheet" href="/assets/css/messages-page/chat-interface.css">
     <link rel="stylesheet" href="/assets/css/video-call/initiate-call.css">
-    <link rel="stylesheet" href="/assets/css/video-call/receive-call.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="/assets/css/video-call/video-call.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/assets/css/video-call/receive-call.css">
+    <link rel="stylesheet" href="/assets/css/video-call/video-call.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/user-control.css">
+    <link rel="stylesheet" href="/assets/css/messages-page/user-block-confimation.css">
+    <link rel="stylesheet" href="/assets/css/discover-page/verify-face.css?v=<?php echo time(); ?>">
+
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stream-chat@8/dist/browser.full-bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script defer src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 
-    <!-- path = public\assets\js\stream-video-client.js -->
     <script src="/assets/js/stream-video-client.js"></script>
-    <!-- <script src="/assets/js/test/test-video.js"></script> -->
-
 </head>
 
 <body>

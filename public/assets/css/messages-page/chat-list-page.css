@@ -12,7 +12,7 @@
 }
 
 .active-chat .chat-list-section-five {
-    background-color: #374151;
+    background-color: rgba(158, 158, 158, 0.4);
     border-radius: 0.5rem;
     transition: background-color 0.2s ease;
 }
@@ -301,4 +301,9 @@
         color: #ffffff;
     }
 
+    .active-chat .chat-list-section-five {
+        background-color: #374151;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease;
+    }
 }

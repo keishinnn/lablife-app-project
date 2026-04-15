@@ -1,0 +1,125 @@
+.user-block-confirmation-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.user-block-confirmation-modal-container {
+    position: relative;
+    padding: 1rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.user-block-confirmation-modal-content {
+    position: relative;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    padding: 2rem 1.5rem;
+}
+
+.user-block-confirmation-modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.375rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.user-block-confirmation-modal-close:hover {
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+.user-block-confirmation-modal-body {
+    text-align: center;
+}
+
+.user-block-confirmation-modal-icon {
+    width: 3rem;
+    height: 3rem;
+    color: #9ca3af;
+    margin: 0 auto 1rem;
+}
+
+.user-block-confirmation-modal-title {
+    font-size: 1.125rem;
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.user-block-confirmation-modal-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.user-block-confirmation-modal-confirm {
+    background-color: #dc2626;
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.user-block-confirmation-modal-confirm:hover {
+    background-color: #b91c1c;
+}
+
+.user-block-confirmation-modal-cancel {
+    background-color: #fff;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-block-confirmation-modal-cancel:hover {
+    background-color: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+    .user-block-confirmation-modal-content {
+        background: #0f172a;
+    }
+
+    .user-block-confirmation-modal-title {
+        color: rgb(212, 212, 212);
+    }
+
+    .user-block-confirmation-modal-close:hover {
+        color: rgb(212, 212, 212);
+        background: none;
+    }
+
+    .user-block-confirmation-modal-cancel:hover {
+        background: #9ca3af;
+    }
+}

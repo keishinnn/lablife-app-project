@@ -97,5 +97,11 @@ $router->post('/u/video/get-video-token', 'User\\Messages\\VideoCallController@h
 $router->post('/u/video/receive-call', 'User\\Messages\\VideoCallController@handleReceiveVideoCall');
 $router->post('/u/video/end-video-call', 'User\\Messages\\VideoCallController@handleEndVideoCall');
 
-// test video call
-$router->get('/u/test-video-call', 'User\\Messages\\VideoCallController@View');
+// Block Other User 
+$router->post('/u/block-other-user', 'User\\Messages\\BlockController@blockOtherUser');
+$router->post('/u/unblock-other-user', 'User\\Messages\\BlockController@unblockOtherUser');
+$router->get('/u/profile/blocked-users', 'User\\Messages\\BlockController@View');
+
+
+// Verify
+$router->get('/u/verify', 'User\\Discover\\VerifyController@View');

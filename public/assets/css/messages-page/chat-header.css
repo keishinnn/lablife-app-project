@@ -84,7 +84,7 @@
 }
 
 .chat-header-section-seven button:nth-child(2):hover {
-    background-color: #4b5563;
+    background-color: #cecbcb;
 }
 
 .chat-header-three-dots {
@@ -93,7 +93,7 @@
 }
 
 .svg-report-block-button {
-    color: #000000;
+    fill: #000000;
 }
 
 #no-results-message {
@@ -126,6 +126,10 @@
     }
 
     .svg-report-block-button {
-        color: #ffffff;
+        fill: #ffffff;
+    }
+
+    .chat-header-section-seven button:nth-child(2):hover {
+        background-color: #4b5563;
     }
 }

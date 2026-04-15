@@ -2,14 +2,10 @@
 
 namespace Controllers\User\Discover;
 
-use Core\App;
-use Core\Auth;
 use Models\User\User;
 use Models\Match\MatchCandidate;
 use Models\Match\MatchSearch;
 use Models\Match\MatchSession;
-use Exception;
-use PDO;
 
 class DiscoverController
 {
@@ -21,7 +17,9 @@ class DiscoverController
         $user = User::getCurrentUserProfile($userId);
         \Core\Middleware::checkIfUserExist($user);
 
-        view('user/discover/index.view.php');
+        $isVerified = User::getIsVerified($userId);
+
+        view('user/discover/index.view.php', compact('isVerified'));
     }
 
     public function MatchedUserView()
