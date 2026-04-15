@@ -25,7 +25,9 @@ class RegisterController
 
     public function handleRegister()
     {
-        $email = $_POST['email'] ?? '';
+        \Core\Middleware::verifyCSRFToken();
+
+        $email = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
 
         $turnstileConfig = require base_path('config/turnstile.php');
@@ -59,9 +61,6 @@ class RegisterController
 
             $response = $supabase->signUp($email, $password);
 
-            // DEBUG: log full response
-            error_log("Supabase signUp response: " . print_r($response, true));
-
             if (isset($response['error'])) {
                 // Existing user or other error
                 $error = $response['error']['message'] ?? "Something went wrong.";
@@ -77,10 +76,10 @@ class RegisterController
             }
 
             $_SESSION['email'] = $email;
-            header("Location: /register");
-            exit;
+            redirect('/register');
         } catch (\Exception $e) {
-            $error = "Exception: " . $e->getMessage();
+            app_log_exception($e, 'Registration failed');
+            $error = generic_error_message();
             view("auth/register.view.php", compact('error', 'email', 'siteKey'));
         }
     }

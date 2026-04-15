@@ -43,10 +43,10 @@ class ProfilePreferencesController
             $preferences->savePreferences($userId);
             $_SESSION['flash_message'] = "Preferences successfully updated.";
         } catch (\Exception $e) {
-            $_SESSION['flash_error'] = "Failed to update preferences: " . $e->getMessage();
+            app_log_exception($e, 'Update preferences failed');
+            $_SESSION['flash_error'] = generic_error_message();
         }
 
-        header("Location: /u/profile");
-        exit;
+        redirect('/u/profile');
     }
 }

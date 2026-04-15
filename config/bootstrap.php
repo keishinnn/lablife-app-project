@@ -6,8 +6,6 @@ use Core\App;
 use Core\Container;
 use Core\Database;
 
-use Predis\Client as RedisClient;
-
 require base_path('vendor/autoload.php');
 
 $dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
@@ -32,7 +30,7 @@ $container->bind('Services\TurnstileService', function () {
 
 $container->bind('redis', function () {
     $config = require base_path('config/redis.php');
-    return new RedisClient($config);
+    return new Predis\Client($config);
 });
 
 $container->bind('Services\StreamService', function () {

@@ -13,8 +13,7 @@ class Middleware
     public static function auth()
     {
         if (!Auth::check()) {
-            header("Location: /login");
-            exit;
+            redirect('/login');
         }
     }
 
@@ -26,16 +25,14 @@ class Middleware
     {
         if (!$user) {
             session_destroy();
-            header("Location: /");
-            exit;
+            redirect('/');
         }
     }
 
     public static function redirectAuthUser()
     {
         if (Auth::check()) {
-            header("Location: /u");
-            exit;
+            redirect('/u');
         }
         return;
     }
@@ -44,8 +41,7 @@ class Middleware
     {
         if (Auth::check()) {
             if (empty($user->avatarUrl) || empty($user->bio)) {
-                header('Location: /u/setup-profile');
-                exit;
+                redirect('/u/setup-profile');
             }
         }
     }
@@ -75,9 +71,12 @@ class Middleware
                     ($headerToken && hash_equals($sessionToken, $headerToken))
                 )
             ) {
-                // If invalid, stop request
+                if (is_json_request()) {
+                    json_response(['error' => 'Invalid CSRF token.'], 403);
+                }
+
                 http_response_code(403);
-                die("CSRF token validation failed");
+                exit('CSRF token validation failed');
             }
         }
     }

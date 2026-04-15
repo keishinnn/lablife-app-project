@@ -10,6 +10,7 @@ class LogoutController
     public function logout()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
 
         // Start session if not started
         if (session_status() === PHP_SESSION_NONE) {
@@ -36,7 +37,6 @@ class LogoutController
         session_destroy();
 
         // Redirect back to home
-        header("Location: /");
-        exit;
+        redirect('/');
     }
 }

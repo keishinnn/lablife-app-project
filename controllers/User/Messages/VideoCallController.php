@@ -18,51 +18,55 @@ class VideoCallController
     public function handleGetStreamVideoToken()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
-        $token = Stream::getStreamVideoToken($userId);
-
-        header('Content-Type: application/json');
-        echo json_encode($token);
+        try {
+            $token = Stream::getStreamVideoToken($userId);
+            json_response($token);
+        } catch (\Throwable $e) {
+            app_log_exception($e, 'Get video token failed');
+            json_response(['error' => generic_error_message()], 500);
+        }
     }
 
     public function handleInitiateCall()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
         $receiverId = $_POST['receiverId'] ?? null;
 
         if (!$receiverId) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Receiver ID missing']);
-            return;
+            json_response(['error' => 'Receiver ID missing'], 400);
         }
 
-        $call = \Models\Stream\Stream::createVideoCall($userId, $receiverId);
+        try {
+            $call = \Models\Stream\Stream::createVideoCall($userId, $receiverId);
 
-        // Optional: Push a notification (e.g., WebSocket or Stream chat event)
-        // ...
-
-        echo json_encode([
-            'status' => 'initiated',
-            'callId' => $call['callId'],
-            'callType' => $call['callType']
-        ]);
+            json_response([
+                'status' => 'initiated',
+                'callId' => $call['callId'],
+                'callType' => $call['callType']
+            ]);
+        } catch (\Throwable $e) {
+            app_log_exception($e, 'Initiate call failed');
+            json_response(['error' => generic_error_message()], 500);
+        }
     }
 
     public function handleReceiveVideoCall()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
         $callId = $_POST['callId'] ?? null;
 
         if (!$callId) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Call ID missing']);
-            return;
+            json_response(['error' => 'Call ID missing'], 400);
         }
 
-        echo json_encode([
+        json_response([
             'status' => 'accepted',
             'callId' => $callId
         ]);
@@ -70,18 +74,18 @@ class VideoCallController
 
     public function handleEndVideoCall()
     {
+        \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $callId = $_POST['callId'] ?? null;
 
         if (!$callId) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Call ID missing']);
-            return;
+            json_response(['error' => 'Call ID missing'], 400);
         }
 
         // Optionally notify both users
         // ...
 
-        echo json_encode([
+        json_response([
             'status' => 'ended',
             'callId' => $callId
         ]);

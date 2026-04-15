@@ -79,9 +79,6 @@ $router->post('/u/discover/set-expired-session', 'User\\Discover\\MatchSessionCo
 $router->post('/u/discover/set-rejected-session', 'User\\Discover\\MatchSessionController@handleSetRejectedSession');
 $router->post('/u/discover/set-matched-session', 'User\\Discover\\MatchSessionController@handleSetMatchedSession');
 
-// Get Supabase Access token
-$router->get('/u/get-access-token', 'Services\\SupabaseService@getUser');
-
 // Showing Matches Page
 $router->get('/u/matches', 'User\\Matches\\MatchesController@View');
 

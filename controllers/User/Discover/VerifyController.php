@@ -3,7 +3,6 @@
 namespace Controllers\User\Discover;
 
 use Models\User\User;
-
 use Exception;
 
 class VerifyController
@@ -44,23 +43,22 @@ class VerifyController
     public function handleSetVerified()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
         try {
-
             User::setVerified($userId);
-
-            header('Location: /u/discover');
+            json_response(['success' => true]);
         } catch (Exception $e) {
-
-            http_response_code(500);
-            echo json_encode(['error' => $e->getMessage()]);
+            app_log_exception($e, 'User verification update failed');
+            json_response(['error' => generic_error_message()], 500);
         }
     }
 
     public function handleIncrementFail()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
 
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -75,11 +73,10 @@ class VerifyController
 
         if ($_SESSION['verify_lock_until'] && time() < $_SESSION['verify_lock_until']) {
             $remaining = $_SESSION['verify_lock_until'] - time();
-            echo json_encode([
+            json_response([
                 'status' => 'locked',
                 'remaining_seconds' => $remaining,
             ]);
-            return;
         }
 
         $_SESSION['verify_fail_count']++;
@@ -87,14 +84,13 @@ class VerifyController
         if ($_SESSION['verify_fail_count'] >= 10) {
             $_SESSION['verify_lock_until'] = time() + (5 * 60);
             $_SESSION['verify_fail_count'] = 0;
-            echo json_encode([
+            json_response([
                 'status' => 'locked',
                 'remaining_seconds' => 300,
             ]);
-            return;
         }
 
-        echo json_encode([
+        json_response([
             'status' => 'ok',
             'fail_count' => $_SESSION['verify_fail_count'],
         ]);
@@ -107,7 +103,7 @@ class VerifyController
             session_start();
         }
 
-        echo json_encode([
+        json_response([
             'fail_count' => $_SESSION['verify_fail_count'] ?? 0,
             'lock_until' => $_SESSION['verify_lock_until'] ?? null,
             'remaining_seconds' => isset($_SESSION['verify_lock_until']) && time() < $_SESSION['verify_lock_until']

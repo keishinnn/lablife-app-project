@@ -12,25 +12,23 @@ class ReactionController
     public function handleLikeOtherUser()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = Auth::user();
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = request_json();
 
         $partnerId = $data['partner'] ?? null;
-        $csrfToken = $data['csrf_token'] ?? null;
 
         if (!$partnerId) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'Missing partner ID']);
-            return;
+            json_response(['status' => 'error', 'message' => 'Missing partner ID'], 400);
         }
 
         try {
             MatchCandidate::likeOtherUser($userId, $partnerId);
-            echo json_encode(['status' => 'success']);
+            json_response(['status' => 'success']);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            app_log_exception($e, 'Like action failed');
+            json_response(['status' => 'error', 'message' => generic_error_message()], 500);
         }
     }
 
@@ -40,22 +38,20 @@ class ReactionController
         \Core\Middleware::verifyCSRFToken();
         $userId = Auth::user();
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = request_json();
 
         $partnerId = $data['partner'] ?? null;
 
         if (!$partnerId) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'Missing partner ID']);
-            return;
+            json_response(['status' => 'error', 'message' => 'Missing partner ID'], 400);
         }
 
         try {
             MatchCandidate::dislikeOtherUser($userId, $partnerId);
-            echo json_encode(['status' => 'success']);
+            json_response(['status' => 'success']);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            app_log_exception($e, 'Dislike action failed');
+            json_response(['status' => 'error', 'message' => generic_error_message()], 500);
         }
     }
 }

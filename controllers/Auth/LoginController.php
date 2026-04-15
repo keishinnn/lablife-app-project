@@ -14,17 +14,9 @@ class LoginController
         \Core\Middleware::redirectAuthUser();
 
         $error = '';
-        $email = $_POST['email'] ?? '';
+        $email = $_SESSION['old_email'] ?? '';
         $isLoading = false;
-
-        if (!empty($email)) {
-            $redis = App::resolve('redis');
-            $lockKey = "login:lock:email:" . strtolower($email);
-
-            if ($redis->exists($lockKey)) {
-                $error = "Too many attempts. Please try again later.";
-            }
-        }
+        unset($_SESSION['old_email']);
 
         view('auth/login.view.php', compact('error', 'email', 'isLoading'));
     }
@@ -33,8 +25,8 @@ class LoginController
     {
         $email = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
-        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $isLoading = true;
+        $_SESSION['old_email'] = $email;
 
         $supabase = App::resolve(\Services\SupabaseService::class);
         $redis = App::resolve('redis');
@@ -49,8 +41,6 @@ class LoginController
 
         // Check if account/email is locked ---
         if ($redis->exists($lockKey)) {
-            $ttlLock = $redis->ttl($lockKey);
-            error_log("[LOCK] Email '$email' is currently locked. TTL: $ttlLock seconds.");
             $error = "Too many attempts. Please try again in 5 minutes.";
             $isLoading = false;
             view('auth/login.view.php', compact('error', 'email',  'isLoading'));
@@ -60,9 +50,8 @@ class LoginController
         try {
             // Authenticate via Supabase ---
             $response = $supabase->signIn($email, $password);
-            error_log("[DEBUG] Supabase response: " . print_r($response, true));
 
-            if (isset($response['error']) || isset($response['msg'])) {
+            if (isset($response['error']) || isset($response['msg']) || isset($response['error_description'])) {
                 $attempts = $redis->incr($emailKey);
                 if ($attempts == 1) {
                     $redis->expire($emailKey, $windowSeconds);
@@ -72,7 +61,9 @@ class LoginController
                     $redis->setex($lockKey, $lockSeconds, 1);
                 }
 
-                $error = $response['msg'] ?? "Invalid email or password.";
+                $error = $response['msg']
+                    ?? $response['error_description']
+                    ?? ($response['error']['message'] ?? "Invalid email or password.");
 
                 $isLoading = false;
                 view('auth/login.view.php', compact('error', 'email', 'isLoading'));
@@ -96,36 +87,32 @@ class LoginController
 
                 // IF NEW USER, REDIRECT TO CREATING DETAILS OF THE ACCOUNT
                 if (!isset($user->avatarUrl)) {
-                    // generate csrf token
-                    if (empty($_SESSION['csrf_token'])) {
-                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                    }
+                    session_regenerate_id(true);
+                    csrf_token();
                     $_SESSION['access_token'] = $response['access_token'] ?? null;
                     $_SESSION['user_id'] = $user->id;
+                    unset($_SESSION['old_email']);
                     $isLoading = false;
-                    header("Location: /u/setup-profile");
-                    exit;
+                    redirect('/u/setup-profile');
                 }
 
                 // OTHERWISE REDIRECT TO HOME VIEW
                 User::updateIsOnline($userFetch['id']);
-                // generate csrf token
-                if (empty($_SESSION['csrf_token'])) {
-                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                }
+                session_regenerate_id(true);
+                csrf_token();
                 $_SESSION['access_token'] = $response['access_token'] ?? null;
                 $_SESSION['user_id'] = $user->id;
+                unset($_SESSION['old_email']);
                 $isLoading = false;
-                header("Location: /u");
-                exit;
+                redirect('/u');
             }
 
             $error = "Invalid email or password.";
             $isLoading = false;
             view('auth/login.view.php', compact('error', 'email',));
         } catch (\Exception $e) {
-            $error = $e->getMessage();
-            error_log("[ERROR] Exception during login: " . $error);
+            app_log_exception($e, 'Login failed');
+            $error = generic_error_message();
             $isLoading = false;
             view('auth/login.view.php', compact('error', 'email',  'isLoading'));
         }

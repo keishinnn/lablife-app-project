@@ -152,6 +152,7 @@ use Core\Auth;
     const partnerId = "<?= $partner->id ?>";
 
     const currentUser = '<?= Auth::user(); ?>';
+    const pageCsrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
     // matched modal variables
     const matchedModal = document.getElementById('matchModal');
@@ -319,7 +320,7 @@ use Core\Auth;
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
+                    'X-CSRF-Token': csrfToken || pageCsrfToken
                 },
                 body: JSON.stringify({
                     partner: partnerId
@@ -343,7 +344,7 @@ use Core\Auth;
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
+                    'X-CSRF-Token': csrfToken || pageCsrfToken
                 },
                 body: JSON.stringify({
                     partner: partnerId
@@ -397,6 +398,9 @@ use Core\Auth;
         try {
             await fetch('/u/discover/set-search-expired', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': pageCsrfToken
+                },
                 keepalive: true
             });
 
@@ -404,7 +408,7 @@ use Core\Auth;
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-Token': '<?= $_SESSION["csrf_token"] ?? "" ?>'
+                    'X-CSRF-Token': pageCsrfToken
                 },
                 body: JSON.stringify({
                     targetUserId: userId
@@ -447,6 +451,9 @@ use Core\Auth;
 
             await fetch('/u/discover/set-search-expired', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': pageCsrfToken
+                },
                 keepalive: true
             });
         } catch (err) {
@@ -528,6 +535,9 @@ use Core\Auth;
         try {
             await fetch('/u/discover/set-matched-session', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': pageCsrfToken
+                },
                 keepalive: true
             });
         } catch (err) {
@@ -539,6 +549,9 @@ use Core\Auth;
         try {
             await fetch('/u/discover/set-rejected-session', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': pageCsrfToken
+                },
                 keepalive: true
             });
         } catch (err) {
@@ -550,6 +563,9 @@ use Core\Auth;
         try {
             await fetch('/u/discover/set-expired-session', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': pageCsrfToken
+                },
                 keepalive: true
             });
         } catch (err) {
@@ -570,6 +586,9 @@ use Core\Auth;
 
             await fetch('/u/discover/set-search-active', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': pageCsrfToken
+                },
                 keepalive: true
             });
         } catch (err) {

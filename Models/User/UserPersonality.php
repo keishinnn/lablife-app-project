@@ -18,6 +18,14 @@ class UserPersonality
         $this->name = $data['name'];
     }
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+        ];
+    }
+
     // GET ALL USER PERSONALITIES
     public static function getAllPersonalityTypes()
     {
@@ -66,6 +74,7 @@ class UserPersonality
             );
 
             $pdo->commit();
+            User::refreshProfileBundleCache($userId);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());

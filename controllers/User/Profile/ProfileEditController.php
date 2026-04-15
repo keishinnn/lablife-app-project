@@ -47,29 +47,29 @@ class ProfileEditController
             "id"        => $userId
         ]);
 
-        header('Location: /u/profile');
-        exit;
+        redirect('/u/profile');
     }
 
     public function handleAvatarUpload()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
 
         if (empty($_FILES['avatar_input'])) {
-            echo json_encode(['success' => false, 'message' => 'No file uploaded']);
-            return;
+            json_response(['success' => false, 'message' => 'No file uploaded'], 400);
         }
 
         try {
             $avatarUrl = User::updateProfilePicture($userId, $_FILES['avatar_input']);
             if ($avatarUrl) {
-                echo json_encode(['success' => true, 'avatarUrl' => $avatarUrl]);
+                json_response(['success' => true, 'avatarUrl' => $avatarUrl]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'Upload failed']);
+                json_response(['success' => false, 'message' => 'Upload failed'], 400);
             }
         } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            app_log_exception($e, 'Avatar upload failed');
+            json_response(['success' => false, 'message' => generic_error_message()], 500);
         }
     }
 }

@@ -7,7 +7,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     connectBtn.addEventListener("click", async () => {
         try {
-            const res = await fetch("/u/video/get-video-token", { method: "POST" });
+const res = await fetch("/u/video/get-video-token", {
+    method: "POST",
+    headers: {
+        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content ?? ""
+    }
+});
             const data = await res.json();
 
             console.log("Token received:", data);

@@ -35,26 +35,25 @@ class MatchesController
     public function handleCreateOrGetChannel()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $currentUserId = \Core\Auth::user(); // Current user
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = request_json();
         $otherUserId = $data['targetUserId'] ?? null;
 
         if (!$otherUserId) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Missing target user ID']);
-            exit;
+            json_response(['error' => 'Missing target user ID'], 400);
         }
 
         try {
-            $channel = Stream::createOrgetChannel($currentUserId, $otherUserId);
+            $channel = Stream::createOrGetChannel($currentUserId, $otherUserId);
 
-            echo json_encode([
+            json_response([
                 'success' => true,
                 'channel_id' => $channel['channelId']
             ]);
         } catch (\Throwable $e) {
-            http_response_code(500);
-            echo json_encode(['error' => $e->getMessage()]);
+            app_log_exception($e, 'Create/get channel failed');
+            json_response(['error' => generic_error_message()], 500);
         }
     }
 }

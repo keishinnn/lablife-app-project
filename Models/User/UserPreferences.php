@@ -105,6 +105,7 @@ class UserPreferences
             );
 
             $pdo->commit();
+            User::refreshProfileBundleCache($userId);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());

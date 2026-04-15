@@ -37,23 +37,20 @@ class BlockController
         $userId = \Core\Auth::user();
         \Core\Middleware::verifyCSRFToken();
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = request_json();
         $blockedUserId  = $input['other_user_id'] ?? null;
 
         if (!$blockedUserId) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Missing other_user_id']);
-            return;
+            json_response(['error' => 'Missing other_user_id'], 400);
         }
 
         try {
 
             UserBlock::blockOtherUser($userId, $blockedUserId);
-            echo json_encode(['success' => true]);
+            json_response(['success' => true]);
         } catch (Exception $e) {
-
-            http_response_code(500);
-            echo json_encode(['error' => $e->getMessage()]);
+            app_log_exception($e, 'Block user failed');
+            json_response(['error' => generic_error_message()], 500);
         }
     }
 
@@ -63,21 +60,19 @@ class BlockController
         $userId = \Core\Auth::user();
         \Core\Middleware::verifyCSRFToken();
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = request_json();
         $blockedUserId  = $input['blocked_user_id'] ?? null;
 
         if (!$blockedUserId) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Missing blocked_user_id']);
-            return;
+            json_response(['error' => 'Missing blocked_user_id'], 400);
         }
 
         try {
             UserBlock::unblockOtherUser($userId, $blockedUserId);
-            echo json_encode(['success' => true]);
+            json_response(['success' => true]);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => $e->getMessage()]);
+            app_log_exception($e, 'Unblock user failed');
+            json_response(['error' => generic_error_message()], 500);
         }
     }
 }

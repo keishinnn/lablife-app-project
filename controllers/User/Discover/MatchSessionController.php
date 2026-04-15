@@ -12,63 +12,60 @@ class MatchSessionController
     public function handleSetExpiredSession()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = Auth::user();
-
-        header('Content-Type: application/json');
 
         try {
             $stmt = MatchSession::setMatchSessionExpired($userId);
 
             if ($stmt->rowCount() > 0) {
-                echo json_encode(['status' => 'stopped', 'message' => 'Active search deleted.']);
+                json_response(['status' => 'expired', 'message' => 'Match session expired.']);
             } else {
-                echo json_encode(['status' => 'none', 'message' => 'No active search found.']);
+                json_response(['status' => 'none', 'message' => 'No active session found.']);
             }
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            app_log_exception($e, 'Expire session failed');
+            json_response(['status' => 'error', 'message' => generic_error_message()], 500);
         }
     }
 
     public function handleSetRejectedSession()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = Auth::user();
-
-        header('Content-Type: application/json');
 
         try {
             $stmt = MatchSession::setMatchSessionRejected($userId);
 
             if ($stmt->rowCount() > 0) {
-                echo json_encode(['status' => 'rejected', 'message' => 'Match session rejected']);
+                json_response(['status' => 'rejected', 'message' => 'Match session rejected']);
             } else {
-                echo json_encode(['status' => 'none', 'message' => 'No active search found.']);
+                json_response(['status' => 'none', 'message' => 'No active session found.']);
             }
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            app_log_exception($e, 'Reject session failed');
+            json_response(['status' => 'error', 'message' => generic_error_message()], 500);
         }
     }
 
     public function handleSetMatchedSession()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = Auth::user();
-
-        header('Content-Type: application/json');
 
         try {
             $stmt = MatchSession::setMatchSessionMatched($userId);
 
             if ($stmt->rowCount() > 0) {
-                echo json_encode(['status' => 'matched', 'message' => 'Match session rejected']);
+                json_response(['status' => 'matched', 'message' => 'Match session matched']);
             } else {
-                echo json_encode(['status' => 'none', 'message' => 'No active search found.']);
+                json_response(['status' => 'none', 'message' => 'No active session found.']);
             }
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            app_log_exception($e, 'Match session update failed');
+            json_response(['status' => 'error', 'message' => generic_error_message()], 500);
         }
     }
 }

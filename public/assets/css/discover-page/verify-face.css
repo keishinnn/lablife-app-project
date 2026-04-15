@@ -2,14 +2,13 @@
   position: relative;
   width: 100%;
   height: 100vh;
-  background-color: #ffffff;
+  background: #000;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
 }
-
 #verify-video {
   width: 100%;
   height: 100%;
@@ -58,7 +57,26 @@
 }
 
 #verify-status {
-  color: rgb(90, 90, 90);
+  color: white;
   text-align: center;
+  font-size: 14px;
   margin-top: 4px;
+}
+
+/* 📱 Mobile Responsive (smooth scaling) */
+@media (max-width: 768px) {
+  #verify-video {
+    mask: radial-gradient(ellipse 35% 45% at center, black 60%, transparent 61%);
+    -webkit-mask: radial-gradient(ellipse 35% 45% at center, black 60%, transparent 61%);
+  }
+
+  .oval-border {
+    width: 60vw;
+    height: 45vh;
+  }
+
+  .verify-controls .btn {
+    padding: 10px 24px;
+    font-size: 15px;
+  }
 }

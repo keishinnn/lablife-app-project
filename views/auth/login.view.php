@@ -11,6 +11,7 @@ require(base_path("views/shared/header.php"));
         </div>
 
         <form action="/login" method="POST" id="login-form">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
             <div class="login-email-field">
                 <label for="email">Email</label>
                 <input

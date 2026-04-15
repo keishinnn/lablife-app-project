@@ -13,6 +13,7 @@ class DiscoverController
     public function View()
     {
         \Core\Middleware::auth();
+        \Core\Middleware::verifyCSRFToken();
         $userId = \Core\Auth::user();
         $user = User::getCurrentUserProfile($userId);
         \Core\Middleware::checkIfUserExist($user);
@@ -41,7 +42,7 @@ class DiscoverController
         $session = MatchSession::checkSession($userId, $partnerId);
 
         if (!$session) {
-            header('Location: /u/discover');
+            redirect('/u/discover');
         }
 
         $partner = \Models\User\User::getCurrentUserProfile($partnerId);
@@ -69,18 +70,17 @@ class DiscoverController
                 $session = MatchSession::createSession($userId, $matchedUser['candidate_id'], 60);
 
                 if ($session) {
-                    echo json_encode([
+                    json_response([
                         'status' => 'matched',
                         'match_id' => $session['id'],
                         'partner_id' => $matchedUser['candidate_id']
                     ]);
-                    return;
                 }
             }
         }
 
         // No match found yet — keep searching
-        echo json_encode([
+        json_response([
             'status' => 'search_started',
             'user_id' => $userId,
             'message' => 'Waiting for a match...'

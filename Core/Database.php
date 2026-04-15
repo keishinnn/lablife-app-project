@@ -16,9 +16,11 @@ class Database
         try {
             $this->connection = new PDO($dsn, $config['user'], $config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ]);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Database connection failed: " . $e->getMessage());
+            app_log_exception($e, 'Database connection failed');
+            throw new \RuntimeException('Database connection failed.');
         }
     }
 
