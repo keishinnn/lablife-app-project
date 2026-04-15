@@ -6,6 +6,16 @@ from io import BytesIO
 import math
 import time
 import statistics 
+import os
+import pickle
+
+try:
+    import redis
+except Exception:
+    redis = None
+
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +23,17 @@ CORS(app)
 VERIFY_ATTEMPTS = {}
 MAX_ATTEMPTS = 5
 ATTEMPT_WINDOW = 600 
+
+REDIS_URL = os.environ.get("REDIS_URL")
+CACHE_TTL = 3600  
+
+redis_client = None
+if redis and REDIS_URL:
+    try:
+        redis_client = redis.from_url(REDIS_URL)
+        print("✅ Redis connected")
+    except Exception as e:
+        print(f"⚠️ Could not connect to Redis: {e}")
 
 def load_image_from_file_storage(file_storage):
     data = file_storage.read()
@@ -56,6 +77,65 @@ def load_image_from_url(url):
 
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+def load_image_from_url_with_cache(url):
+    if not redis_client:
+        return load_image_from_url(url)
+
+    cache_key = f"profile_img:{url}"
+
+    try:
+        cached = redis_client.get(cache_key)
+        if cached:
+            print("Loaded profile image from Redis cache")
+            return pickle.loads(cached)
+
+        img_rgb = load_image_from_url(url)
+        if img_rgb is not None:
+            redis_client.set(cache_key, pickle.dumps(img_rgb), ex=CACHE_TTL)
+            print("Profile image cached in Redis")
+        return img_rgb
+
+    except Exception as e:
+        print(f"Redis caching failed: {e}")
+        return load_image_from_url(url)
+    
+def get_profile_encoding(url):
+    """
+    Returns the 128-d face encoding of the profile image, cached in Redis.
+    """
+    if not redis_client:
+        img_rgb = load_image_from_url(url)
+        if img_rgb is None:
+            return None
+        encs = face_recognition.face_encodings(img_rgb, num_jitters=10)
+        return encs[0] if encs else None
+
+    cache_key = f"profile_enc:{url}"
+    try:
+        cached = redis_client.get(cache_key)
+        if cached:
+            print("Loaded profile encoding from Redis cache")
+            return pickle.loads(cached)
+
+        img_rgb = load_image_from_url(url)
+        if img_rgb is None:
+            return None
+        encs = face_recognition.face_encodings(img_rgb, num_jitters=10)
+        if not encs:
+            return None
+
+        profile_enc = encs[0]
+        redis_client.set(cache_key, pickle.dumps(profile_enc), ex=CACHE_TTL)
+        print("Profile encoding cached in Redis")
+        return profile_enc
+
+    except Exception as e:
+        print(f"Redis caching failed: {e}")
+        img_rgb = load_image_from_url(url)
+        if img_rgb is None:
+            return None
+        encs = face_recognition.face_encodings(img_rgb, num_jitters=10)
+        return encs[0] if encs else None
 
 def compute_ear(eye):
     A = np.linalg.norm(np.array(eye[1]) - np.array(eye[5]))
@@ -96,9 +176,8 @@ def verify():
         return jsonify({"is_verified": False, "message":"missing data"}), 400
 
     try:
-        profile_img = load_image_from_url(profile_url)
+        profile_img = load_image_from_url_with_cache(profile_url)
         if profile_img is None:
-             # This means cv2.imdecode failed
              print("Error loading profile image: cv2.imdecode returned None. Image might be corrupt.")
              return jsonify({"is_verified": False, "message":"Profile image is corrupt or invalid."}), 400
              
@@ -118,11 +197,10 @@ def verify():
         print(f"An unexpected error occurred while loading profile image: {e}")
         return jsonify({"is_verified": False, "message":"Cannot load profile image: Unknown server error"}), 400
 
-    profile_encs = face_recognition.face_encodings(profile_img, num_jitters=10)
+    profile_enc = get_profile_encoding(profile_url)
     
-    if not profile_encs:
-        return jsonify({"is_verified": False, "message":"no face in profile image"}), 200
-    profile_enc = profile_encs[0]
+    if profile_enc is None:
+        return jsonify({"is_verified": False, "message":"Profile image or face encoding invalid!"}), 400
 
     ears = []
     face_present_count = 0
@@ -159,7 +237,7 @@ def verify():
             if left_eye and right_eye:
                 ears.append((compute_ear(left_eye) + compute_ear(right_eye)) / 2.0)
 
-    if face_present_count < 3: 
+    if face_present_count < 1: 
         return jsonify({"is_verified": False, "message":"no face detected in live capture"}), 200
 
     blink_detected = False

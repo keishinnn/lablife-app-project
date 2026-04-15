@@ -14,7 +14,7 @@ class UserReports
     public string $categoryId;
     public string $reasonId;
     public string $createdAt;
-    public string $categoryName;
+    public ?string $categoryName;
     public string $reasonText;
     public string $statusId;
     public string $statusName;
@@ -203,6 +203,33 @@ class UserReports
         }
     }
 
+    public static function getAllResolvedReportsCount(): int
+    {
+        $db = App::resolve('Core\Database');
+
+        $resolvedStatusId = 'a51a611a-975e-45e6-b085-8a537d80513e';
+
+        try {
+            $stmt = $db->prepare("
+            SELECT 
+                (SELECT COUNT(*) FROM user_reports WHERE status_id = :resolvedStatusId) AS resolved_user_reports,
+                (SELECT COUNT(*) FROM bug_reports  WHERE status_id = :resolvedStatusId) AS resolved_bug_reports
+        ");
+
+            $stmt->execute(['resolvedStatusId' => $resolvedStatusId]);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            $userReportsCount = (int)($result['resolved_user_reports'] ?? 0);
+            $bugReportsCount  = (int)($result['resolved_bug_reports'] ?? 0);
+
+            return $userReportsCount + $bugReportsCount;
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
     public static function deleteUser(string $userId)
     {
         $db = App::resolve('Core\Database');
@@ -258,29 +285,61 @@ class UserReports
         }
     }
 
-    public static function getAllResolvedReportsCount(): int
+    public static function setInProgressUserReport(string $id)
     {
         $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
 
-        $resolvedStatusId = 'a51a611a-975e-45e6-b085-8a537d80513e';
+        $inProgressStatusId = '9a5a2d9a-8dc0-4a4b-aa62-80a961149357';
+
+        $pdo->beginTransaction();
 
         try {
-            $stmt = $db->prepare("
-            SELECT 
-                (SELECT COUNT(*) FROM user_reports WHERE status_id = :resolvedStatusId) AS resolved_user_reports,
-                (SELECT COUNT(*) FROM bug_reports  WHERE status_id = :resolvedStatusId) AS resolved_bug_reports
+            $stmt = $pdo->prepare("
+            UPDATE user_reports
+            SET status_id = :inProgressStatusId
+            WHERE id = :id
+              AND status_id IN (
+                  'b46a33a6-f4b5-49d0-8307-bf83a1d6e0de'
+              )
         ");
 
-            $stmt->execute(['resolvedStatusId' => $resolvedStatusId]);
-            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $stmt->execute([
+                'id' => $id,
+                'inProgressStatusId' => $inProgressStatusId
+            ]);
 
-            $userReportsCount = (int)($result['resolved_user_reports'] ?? 0);
-            $bugReportsCount  = (int)($result['resolved_bug_reports'] ?? 0);
-
-            return $userReportsCount + $bugReportsCount;
+            $pdo->commit();
         } catch (PDOException $e) {
+            $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());
         } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public static function deleteUserReport(string $id)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare("
+            DELETE FROM user_reports
+            WHERE id = :id
+        ");
+
+            $stmt->execute(['id' => $id]);
+
+            $pdo->commit();
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $pdo->rollBack();
             throw $e;
         }
     }

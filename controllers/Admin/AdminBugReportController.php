@@ -21,7 +21,7 @@ class AdminBugReportController
         view('admin/bugreports.view.php', compact('awaitingBugReports', 'inProgressBugReports', 'resolvedBugReports'));
     }
 
-    public function handleDeleteAwaitingBugReport()
+    public function handleDeleteBugReport()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
         if (empty($_SESSION['admin_id'])) {
@@ -29,9 +29,9 @@ class AdminBugReportController
             exit;
         }
 
-        $awaitingBugReportId = $_POST['awaiting_bug_report_id'];
+        $bugReportId = $_POST['bug_report_id'];
 
-        BugReports::deleteAwaitingBugReport($awaitingBugReportId);
+        BugReports::deleteBugReport($bugReportId);
 
         header('Location: /admin/bug-reports');
         exit;
@@ -45,9 +45,25 @@ class AdminBugReportController
             exit;
         }
 
-        $inProgressBugReportId = $_POST['in_progress_bug_report_id'];
+        $inProgressBugReportId = $_POST['bug_report_id'];
 
         BugReports::setResolvedBugReport($inProgressBugReportId);
+
+        header('Location: /admin/bug-reports');
+        exit;
+    }
+
+    public function handleSetInProgressBugReport()
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['admin_id'])) {
+            header('Location: /admin/login');
+            exit;
+        }
+
+        $awaitingBugReportId = $_POST['bug_report_id'];
+
+        BugReports::setInProgressBugReport($awaitingBugReportId);
 
         header('Location: /admin/bug-reports');
         exit;
