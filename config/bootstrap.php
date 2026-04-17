@@ -38,4 +38,9 @@ $container->bind('Services\StreamService', function () {
     return new \Services\StreamService($config);
 });
 
+$container->bind('Services\IntelligentService', function () {
+    $config = require base_path('config/intelligent_service.php');
+    return new \Services\IntelligentService($config);
+});
+
 App::setContainer($container);

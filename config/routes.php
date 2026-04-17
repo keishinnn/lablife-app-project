@@ -144,3 +144,7 @@ $router->post('/u/account/set-verified', 'User\\Discover\\VerifyController@handl
 
 $router->post('/u/account/increment-fail', 'User\\Discover\\VerifyController@handleIncrementFail');
 $router->get('/u/account/fail-status', 'User\\Discover\\VerifyController@getFailStatus');
+
+$router->get('/u/account/verify-service-health', 'User\\Discover\\VerifyController@healthCheck');
+$router->post('/u/account/verify-face', 'User\\Discover\\VerifyController@handleVerifyFace');
+
