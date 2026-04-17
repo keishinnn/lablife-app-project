@@ -10,7 +10,7 @@ use Core\Auth;
 
 <main class="hero">
     <section id="hero-section">
-        <?php if (!$isVerified): ?>
+<!--         <?php /* if (!$isVerified): */ ?>
             <div style="display: flex; align-items: center; justify-content: center; flex-direction: column;">
                 <h1>Your account is not verified yet</h1>
                 <p style="max-width: 45rem;">
@@ -24,7 +24,7 @@ use Core\Auth;
             </div>
 
 
-        <?php else: ?>
+        <?php /* else: */ ?> -->
             <h1 id="status-msg">
                 Find Your Match
             </h1>
@@ -57,7 +57,7 @@ use Core\Auth;
                     </button>
                 </form>
             </div>
-        <?php endif; ?>
+        <!-- <?php /* endif; */ ?> -->
     </section>
 </main>
 
