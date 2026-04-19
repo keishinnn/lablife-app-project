@@ -179,6 +179,29 @@ class User
         return max(60, (int) ($_ENV['PROFILE_CACHE_TTL'] ?? 300));
     }
 
+    private static function syncCachedOnlineState(string $userId, bool $isOnline): void
+    {
+        try {
+            $redis = App::resolve('redis');
+            $key = self::profileCacheKey($userId);
+            $payload = $redis->get($key);
+
+            if (!is_string($payload) || $payload === '') {
+                return;
+            }
+
+            $decoded = json_decode($payload, true);
+            if (!is_array($decoded) || empty($decoded['user']) || !is_array($decoded['user'])) {
+                return;
+            }
+
+            $decoded['user']['is_online'] = $isOnline;
+            $redis->setex($key, self::profileCacheTtl(), json_encode($decoded));
+        } catch (\Throwable $e) {
+            app_log_exception($e, 'Failed to sync cached online state');
+        }
+    }
+
     public static function getCurrentUserProfile(string $id): ?User
     {
         $db = App::resolve('Core\Database');
@@ -385,7 +408,7 @@ class User
             ]);
 
             $pdo->commit();
-            self::refreshProfileBundleCache($id);
+            self::syncCachedOnlineState($id, true);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());
@@ -407,7 +430,7 @@ class User
             ]);
 
             $pdo->commit();
-            self::refreshProfileBundleCache($id);
+            self::syncCachedOnlineState($id, false);
         } catch (PDOException $e) {
             $pdo->rollBack();
             throw new \Exception("Database error: " . $e->getMessage());

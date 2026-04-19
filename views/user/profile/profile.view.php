@@ -1,7 +1,7 @@
 <?php
 require(base_path("views/shared/header.php"));
 
-$avatarUrl = (isset($user->avatarUrl) && is_valid_image_url($user->avatarUrl))
+$avatarUrl = !empty($user->avatarUrl)
     ? $user->avatarUrl
     : '/assets/images/default-avatar.png';
 
