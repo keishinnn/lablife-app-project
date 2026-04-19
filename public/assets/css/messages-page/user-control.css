@@ -80,12 +80,14 @@
 
 .select-modal-list-item {
     margin-bottom: 1rem;
+    width: 100%;
 }
 
 .select-modal-radio-label {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
     background-color: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
@@ -106,6 +108,7 @@ input[type="radio"]:checked+.select-modal-radio-label {
 
 .select-modal-label-text {
     display: block;
+    flex: 1 1 auto;
 }
 
 .select-modal-label-title {
@@ -124,6 +127,8 @@ input[type="radio"]:checked+.select-modal-radio-label {
     width: 16px;
     height: 16px;
     color: #6b7280;
+    flex-shrink: 0;
+    pointer-events: none;
 }
 
 .select-modal-submit-button {

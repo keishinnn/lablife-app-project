@@ -1,4 +1,6 @@
 <?php
+use Core\Auth;
+
 $isRegisterPage = path_is('/register');
 $isLoginPage = path_is('/login');
 $isProfilePage = path_is('/u/profile');
@@ -10,6 +12,31 @@ $isProfileSetupPage = path_is('/u/setup-profile') || path_is('/u/setup-profile-p
 $isMatchesPage = path_is('/u/matches');
 $isMessagesPage = path_is('/u/messages');
 $isAuthenticatedArea = path_starts_with('/u');
+
+$quickLinks = Auth::check()
+  ? [
+    ['label' => 'Home', 'href' => '/u'],
+    ['label' => 'Discover', 'href' => '/u/discover'],
+    ['label' => 'Matches', 'href' => '/u/matches'],
+    ['label' => 'Messages', 'href' => '/u/messages'],
+    ['label' => 'Profile', 'href' => '/u/profile'],
+  ]
+  : [
+    ['label' => 'Home', 'href' => '/'],
+    ['label' => 'Login', 'href' => '/login'],
+    ['label' => 'Register', 'href' => '/register'],
+    ['label' => 'Privacy Policy', 'href' => '/privacy-policy'],
+  ];
+
+$supportLinks = [
+  ['label' => 'Privacy Policy', 'href' => '/privacy-policy'],
+  ['label' => 'Terms of Service', 'href' => '/terms'],
+  ['label' => 'Report a Bug', 'href' => '/bug-report'],
+];
+
+if (Auth::check()) {
+  $supportLinks[] = ['label' => 'Blocked Users', 'href' => '/u/profile/blocked-users'];
+}
 ?>
 
 </div>
@@ -21,19 +48,77 @@ $isAuthenticatedArea = path_starts_with('/u');
 <?php endif; ?>
 
 <footer class="site-footer">
-  <p>&copy; <?= date('Y') ?> LabLife. All rights reserved.</p>
+  <div class="site-footer-top">
+    <section class="site-footer-brand">
+      <a href="<?= Auth::check() ? '/u' : '/' ?>" class="site-footer-logo-link">
+        <img src="/assets/images/logo.png" alt="LabLife Logo" class="site-footer-logo">
+        <div class="site-footer-brand-copy">
+          <p class="site-footer-brand-name">LabLife</p>
+          <p class="site-footer-brand-tag">MEANINGFUL MATCHES</p>
+        </div>
+      </a>
 
-  <button id="bugReportBtn" class="report-bug-btn">Report a Bug</button>
+      <p class="site-footer-brand-text">
+        Verified matching and messaging designed to help people connect with more intention, safety, and clarity.
+      </p>
+    </section>
 
-  <script>
-    // Redirect to Bug Report page
-    const bugBtn = document.getElementById('bugReportBtn');
-    if (bugBtn) {
-      bugBtn.addEventListener('click', () => {
-        window.location.href = '/bug-report';
-      });
-    }
-  </script>
+    <section class="site-footer-column">
+      <p class="site-footer-heading">Quick Links</p>
+      <ul class="site-footer-links">
+        <?php foreach ($quickLinks as $link): ?>
+          <li>
+            <a href="<?= htmlspecialchars($link['href'], ENT_QUOTES, 'UTF-8') ?>">
+              <?= htmlspecialchars($link['label'], ENT_QUOTES, 'UTF-8') ?>
+            </a>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </section>
+
+    <section class="site-footer-column">
+      <p class="site-footer-heading">Support</p>
+      <ul class="site-footer-links">
+        <?php foreach ($supportLinks as $link): ?>
+          <li>
+            <a href="<?= htmlspecialchars($link['href'], ENT_QUOTES, 'UTF-8') ?>">
+              <?= htmlspecialchars($link['label'], ENT_QUOTES, 'UTF-8') ?>
+            </a>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </section>
+
+    <section class="site-footer-column">
+      <p class="site-footer-heading">Safety & Feedback</p>
+      <div class="site-footer-actions">
+        <a href="<?= Auth::check() ? '/u/discover' : '/login' ?>" class="site-footer-icon-link" aria-label="Open Discover">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 21s-6.716-4.266-8.77-8.056C1.302 9.39 3.25 5 7.51 5c1.932 0 3.313 1.005 4.49 2.49C13.177 6.005 14.558 5 16.49 5c4.26 0 6.208 4.39 4.28 7.944C18.716 16.734 12 21 12 21Z" />
+          </svg>
+        </a>
+        <a href="/bug-report" class="site-footer-icon-link" aria-label="Report a bug">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 3h6l1 2h2a1 1 0 1 1 0 2h-1v2.082A5.002 5.002 0 0 1 19 13v2h1a1 1 0 1 1 0 2h-1v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-2H4a1 1 0 1 1 0-2h1v-2a5.002 5.002 0 0 1 2-3.918V7H6a1 1 0 1 1 0-2h2l1-2Zm0 6a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" />
+          </svg>
+        </a>
+        <a href="/privacy-policy" class="site-footer-icon-link" aria-label="View privacy policy">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 5 6v5c0 5.04 2.948 9.772 7 11 4.052-1.228 7-5.96 7-11V6l-7-3Zm0 5a3 3 0 0 1 3 3c0 1.12-.624 2.095-1.545 2.598V16h-2.91v-2.402A2.996 2.996 0 0 1 9 11a3 3 0 0 1 3-3Z" />
+          </svg>
+        </a>
+      </div>
+
+      <div class="site-footer-meta">
+        <p><?= Auth::check() ? 'Signed in and ready to match.' : 'Create an account to start matching.' ?></p>
+        <p>Need help? Use the bug report form and we’ll review it.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="site-footer-bottom">
+    &copy; <?= date('Y') ?> LabLife. All rights reserved.
+  </div>
 </footer>
 
 <?php if ($isRegisterPage): ?>

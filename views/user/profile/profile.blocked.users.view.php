@@ -6,7 +6,8 @@ require(base_path("views/shared/header.php"));
 
 <div class="matches-container">
     <div class="matches-section">
-        <header>
+        <header class="matches-section-header-left">
+            <a href="/u/profile" class="matches-back-link">← Back to profile</a>
             <h1>Your Blocked Users</h1>
             <p> <?php echo count($blockedUsers) ?> block<?= count($blockedUsers) > 1 ? "s" : "" ?></p>
         </header>

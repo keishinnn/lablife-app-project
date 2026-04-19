@@ -76,6 +76,8 @@ class LoginController
             $userFetch = $response['user'] ?? null;
 
             if ($userFetch) {
+                User::updateIsOnline($userFetch['id']);
+
                 if (empty($userFetch['confirmed_at'])) {
                     $error = "Please confirm your email before logging in.";
                     $isLoading = false;
@@ -97,7 +99,6 @@ class LoginController
                 }
 
                 // OTHERWISE REDIRECT TO HOME VIEW
-                User::updateIsOnline($userFetch['id']);
                 session_regenerate_id(true);
                 csrf_token();
                 $_SESSION['access_token'] = $response['access_token'] ?? null;
