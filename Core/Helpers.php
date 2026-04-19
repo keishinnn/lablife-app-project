@@ -2,7 +2,43 @@
 
 function base_path($path)
 {
-    return BASE_PATH . $path;
+    $trimmedPath = ltrim($path, '/\\');
+    $candidate = BASE_PATH . $trimmedPath;
+
+    if (file_exists($candidate) || is_dir($candidate)) {
+        return $candidate;
+    }
+
+    $parts = preg_split('#[\\/]+#', $trimmedPath);
+    if (!$parts || $parts[0] === '') {
+        return BASE_PATH . $trimmedPath;
+    }
+
+    $rootMap = [
+        'Views' => 'views',
+        'views' => 'views',
+        'Controllers' => 'controllers',
+        'controllers' => 'controllers',
+        'Config' => 'config',
+        'config' => 'config',
+        'Public' => 'public',
+        'public' => 'public',
+        'Core' => 'Core',
+        'Models' => 'Models',
+        'Services' => 'Services',
+    ];
+
+    $first = $parts[0];
+    if (isset($rootMap[$first])) {
+        $parts[0] = $rootMap[$first];
+        $fallback = BASE_PATH . implode(DIRECTORY_SEPARATOR, $parts);
+
+        if (file_exists($fallback) || is_dir($fallback)) {
+            return $fallback;
+        }
+    }
+
+    return BASE_PATH . $trimmedPath;
 }
 
 function current_path(): string
