@@ -8,6 +8,8 @@ $router->get('/', 'HomeController@View');
 // Auth
 $router->get('/login', 'Auth\\LoginController@View');
 $router->post('/login', 'Auth\\LoginController@handleLogin');
+$router->get('/auth/google/callback', 'Auth\\GoogleOAuthController@callbackView');
+$router->post('/auth/google/session', 'Auth\\GoogleOAuthController@establishSession');
 
 $router->get('/register', 'Auth\\RegisterController@View');
 $router->post('/register', 'Auth\\RegisterController@handleRegister');

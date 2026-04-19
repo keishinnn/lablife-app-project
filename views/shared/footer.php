@@ -3,6 +3,7 @@ use Core\Auth;
 
 $isRegisterPage = path_is('/register');
 $isLoginPage = path_is('/login');
+$isGoogleAuthCallbackPage = path_is('/auth/google/callback');
 $isProfilePage = path_is('/u/profile');
 $isProfileEditPage = path_is('/u/profile-edit');
 $isDiscoverPage = path_is('/u/discover');
@@ -127,6 +128,9 @@ if (Auth::check()) {
 <?php if ($isLoginPage): ?>
   <script type="module" src="/assets/js/login-loading.js"></script>
 <?php endif; ?>
+<?php if ($isLoginPage || $isRegisterPage || $isGoogleAuthCallbackPage): ?>
+  <script type="module" src="/assets/js/auth/google-oauth.js"></script>
+<?php endif; ?>
 <?php if ($isProfilePage): ?>
   <script type="module" src="/assets/js/modals/ptype-modal.js"></script>
   <script type="module" src="/assets/js/modals/hobbies-modal.js"></script>
@@ -150,7 +154,7 @@ if (Auth::check()) {
   <script src="/assets/js/messages/user-report.js"></script>
 <?php endif; ?>
 
-<?php if ($isRegisterPage || $isLoginPage): ?>
+<?php if ($isRegisterPage || $isLoginPage || $isGoogleAuthCallbackPage): ?>
   <!-- Cloudflare Turnstile JS -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>
