@@ -141,26 +141,132 @@ $needsFontAwesome = $isMessagesPage || path_is('/test-video');
                         </div>
                     <?php endif; ?>
 
-                    <!-- Show the Sign Out button if a user is authenticated, otherwise show Sign In button -->
-                    <?php if (Auth::check()): ?>
-                        <form action="/logout" method="post">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
-                            <button class="btn btn-signout" type="submit">
-                                <!--                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 
-                            0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 
-                            0 013 3v1" />
-                                </svg> -->
-                                Sign Out
+                    <div class="navbar-actions">
+                        <!-- Show the Sign Out button if a user is authenticated, otherwise show Sign In button -->
+                        <?php if (Auth::check()): ?>
+                            <form action="/logout" method="post" class="navbar-signout-form">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+                                <button class="btn btn-signout" type="submit">
+                                    Sign Out
+                                </button>
+                            </form>
+
+                            <button
+                                type="button"
+                                class="nav-menu-toggle"
+                                id="nav-menu-toggle"
+                                aria-expanded="false"
+                                aria-controls="mobile-nav-panel"
+                                aria-label="Open navigation menu">
+                                <span></span>
+                                <span></span>
+                                <span></span>
                             </button>
-                        </form>
-                    <?php else: ?>
-                        <a href="/login" class="btn btn-signin">Sign In</a>
-                    <?php endif; ?>
+                        <?php else: ?>
+                            <a href="/login" class="btn btn-signin">Sign In</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </nav>
+
+        <?php if (Auth::check()): ?>
+            <div class="mobile-nav-overlay" id="mobile-nav-overlay" hidden></div>
+
+            <aside class="mobile-nav-panel" id="mobile-nav-panel" aria-hidden="true">
+                <div class="mobile-nav-header">
+                    <div>
+                        <p class="mobile-nav-eyebrow">Navigation</p>
+                        <h2>LabLife</h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="mobile-nav-close"
+                        id="mobile-nav-close"
+                        aria-label="Close navigation menu">
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+
+                <nav class="mobile-nav-links" aria-label="Mobile navigation">
+                    <a href="/u/discover" class="mobile-nav-link">Discover</a>
+                    <a href="/u/matches" class="mobile-nav-link">Matches</a>
+                    <a href="/u/messages" class="mobile-nav-link">Messages</a>
+                    <a href="/u/profile" class="mobile-nav-link">Profile</a>
+                </nav>
+
+                <form action="/logout" method="post" class="mobile-nav-signout">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+                    <button class="btn btn-signout mobile-nav-signout-btn" type="submit">
+                        Sign Out
+                    </button>
+                </form>
+            </aside>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const menuToggle = document.getElementById('nav-menu-toggle');
+                    const menuClose = document.getElementById('mobile-nav-close');
+                    const menuOverlay = document.getElementById('mobile-nav-overlay');
+                    const menuPanel = document.getElementById('mobile-nav-panel');
+                    const menuLinks = document.querySelectorAll('.mobile-nav-link');
+
+                    if (!menuToggle || !menuOverlay || !menuPanel) {
+                        return;
+                    }
+
+                    const closeMenu = () => {
+                        menuToggle.setAttribute('aria-expanded', 'false');
+                        menuPanel.classList.remove('is-open');
+                        menuPanel.setAttribute('aria-hidden', 'true');
+                        menuOverlay.classList.remove('is-visible');
+                        menuOverlay.hidden = true;
+                        document.body.classList.remove('mobile-nav-open');
+                    };
+
+                    const openMenu = () => {
+                        menuToggle.setAttribute('aria-expanded', 'true');
+                        menuPanel.classList.add('is-open');
+                        menuPanel.setAttribute('aria-hidden', 'false');
+                        menuOverlay.hidden = false;
+                        requestAnimationFrame(() => {
+                            menuOverlay.classList.add('is-visible');
+                        });
+                        document.body.classList.add('mobile-nav-open');
+                    };
+
+                    menuToggle.addEventListener('click', () => {
+                        if (menuPanel.classList.contains('is-open')) {
+                            closeMenu();
+                            return;
+                        }
+
+                        openMenu();
+                    });
+
+                    menuClose?.addEventListener('click', closeMenu);
+                    menuOverlay.addEventListener('click', closeMenu);
+
+                    menuLinks.forEach((link) => {
+                        link.addEventListener('click', closeMenu);
+                    });
+
+                    window.addEventListener('resize', () => {
+                        if (window.innerWidth > 768) {
+                            closeMenu();
+                        }
+                    });
+
+                    window.addEventListener('keydown', (event) => {
+                        if (event.key === 'Escape') {
+                            closeMenu();
+                        }
+                    });
+                });
+            </script>
+        <?php endif; ?>
     </header>
 
     <div id="page-content">
