@@ -150,7 +150,7 @@ if (Auth::check()) {
   <script src="/assets/js/messages/user-report.js"></script>
 <?php endif; ?>
 
-<?php if ($isRegisterPage): ?>
+<?php if ($isRegisterPage || $isLoginPage): ?>
   <!-- Cloudflare Turnstile JS -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>

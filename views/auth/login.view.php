@@ -31,6 +31,13 @@ require(base_path("views/shared/header.php"));
                     placeholder="Enter your password">
             </div>
 
+            <?php if (!empty($requireCaptcha) && !empty($siteKey)): ?>
+                <div class="login-turnstile-wrap">
+                    <p class="login-turnstile-text">Please complete the security check to continue.</p>
+                    <div class="cf-turnstile" data-sitekey="<?= htmlspecialchars($siteKey, ENT_QUOTES, 'UTF-8') ?>"></div>
+                </div>
+            <?php endif; ?>
+
             <div class="login-error" id="form-error" style="<?= !empty($error) ? '' : 'display:none;' ?>">
                 <?= htmlspecialchars($error ?? '') ?>
             </div>

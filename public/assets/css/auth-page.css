@@ -74,6 +74,18 @@ form>*+* {
     color: #dc2626;
 }
 
+.login-turnstile-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.login-turnstile-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #4b5563;
+}
+
 .login-page-container button {
     width: 100%;
     display: flex;
@@ -140,6 +152,10 @@ form>*+* {
 
     .login-error {
         color: #f87171;
+    }
+
+    .login-turnstile-text {
+        color: #9ca3af;
     }
 
     .login-page-redirect a {
