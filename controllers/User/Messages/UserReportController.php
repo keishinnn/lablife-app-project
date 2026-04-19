@@ -3,9 +3,7 @@
 namespace Controllers\User\Messages;
 
 use Core\Database;
-use Core\Auth;
 use Models\User\UserReportModel;
-use Exception;
 
 class UserReportController
 {
@@ -31,12 +29,19 @@ class UserReportController
 
     public function submit()
     {
+        \Core\Middleware::auth();
+        header('Content-Type: application/json');
+
         $config = require base_path('config/config.php');
         $db = new Database($config['database']);
 
         $reporterId = $_SESSION['user_id'] ?? null;
 
         $input = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($input)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid request payload.']);
+            exit;
+        }
 
         $reportedUserId = trim($input['other_user_id'] ?? '');
         $categoryId = trim($input['category_id'] ?? '');

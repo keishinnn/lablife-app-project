@@ -426,6 +426,13 @@ require base_path('views/shared/header.php');
         const selectedChannel = channels.find(ch => ch.id === channelId);
         if (!selectedChannel) return;
 
+        if (selectedChannel.id === activeChannel?.id) {
+            if (window.matchMedia("(max-width: 48rem)").matches) {
+                messagesContainer.classList.add('show-conversation');
+            }
+            return;
+        }
+
         chatListContainer.querySelectorAll('a').forEach(a => a.classList.remove('active-chat'));
         link.classList.add('active-chat');
 
@@ -1546,29 +1553,41 @@ require base_path('views/shared/header.php');
     const userBlockForm = document.getElementById('user-block-form-submit');
 
     const loadingBlockContainer = document.getElementById('pt-loading');
-    const loadingBlockText = loadingBlockContainer.querySelector('.profile-loading-text');
+    const loadingBlockText = loadingBlockContainer?.querySelector('.profile-loading-text') ?? null;
+
+    function getActiveChatPartner() {
+        if (!activeChannel?.state?.members) {
+            return null;
+        }
+
+        const members = Object.values(activeChannel.state.members).filter(m => m.user.id !== userId);
+        return members[0]?.user ?? null;
+    }
 
     if (userControlBtn) {
         userControlBtn.addEventListener('click', () => {
-            const members = Object.values(activeChannel.state.members).filter(m => m.user.id !== userId);
-            const partner = members[0]?.user;
+            const partner = getActiveChatPartner();
 
-            if (partner && otherUserInput) {
+            if (!partner || !userControlModal) {
+                return;
+            }
+
+            if (otherUserInput) {
                 otherUserInput.value = partner.id;
             }
 
             showUserControlModal();
-        })
+        });
     }
 
     if (closeUserControlBtn) {
         closeUserControlBtn.addEventListener('click', () => {
             hideUserControlModal();
-        })
+        });
     }
 
     if (nextButton) {
-        nextButton.addEventListener('click', () => {
+        nextButton.addEventListener('click', async () => {
             const selectedOption = document.querySelector('input[name="user-control-type"]:checked');
 
             if (!selectedOption) {
@@ -1579,12 +1598,18 @@ require base_path('views/shared/header.php');
             if (selectedOption.value === "block-user") {
                 hideUserControlModal();
                 showUserBlockModal();
+                return;
+            }
+
+            if (selectedOption.value === 'report-user') {
+                hideUserControlModal();
+                await openReportModal();
             }
         });
     }
 
     if (userBlockForm) {
-        userBlockForm.addEventListener('submit', async () => {
+        userBlockForm.addEventListener('submit', async (event) => {
             event.preventDefault();
 
             showBlockLoading();
@@ -1625,20 +1650,24 @@ require base_path('views/shared/header.php');
     }
 
     function showUserControlModal() {
-        userControlModal.style.display = 'flex';
+        if (!userControlModal) return;
+        showModal(userControlModal);
     }
 
     function hideUserControlModal() {
-        userControlModal.style.display = 'none';
+        if (!userControlModal) return;
+        hideModal(userControlModal);
         userControlSelected.forEach(radio => radio.checked = false);
     }
 
     function showUserBlockModal() {
-        userBlockModal.style.display = 'flex';
+        if (!userBlockModal) return;
+        showModal(userBlockModal);
     }
 
     function hideUserBlockModal() {
-        userBlockModal.style.display = 'none';
+        if (!userBlockModal) return;
+        hideModal(userBlockModal);
     }
 
     function showBlockLoading() {
@@ -1691,18 +1720,11 @@ require base_path('views/shared/header.php');
         if (el) el.style.display = '';
     }
 
-    const userControlNextButton = document.querySelector('.select-modal-submit-button');
-    if (userControlNextButton) {
-        userControlNextButton.addEventListener('click', async () => {
-            const selectedOption = document.querySelector('input[name="user-control-type"]:checked');
-            if (selectedOption && selectedOption.value === 'report-user') {
-                hideModal(userControlModal);
-                await openReportModal();
-            }
-        });
-    }
-
     async function openReportModal() {
+        if (!userReportModal || !otherUserInput?.value) {
+            return;
+        }
+
         showModal(userReportModal);
         await initializeReportFlow();
     }
@@ -1730,17 +1752,34 @@ require base_path('views/shared/header.php');
             const id = `report-cat-${cat.id}`;
             const wrapper = document.createElement('div');
             wrapper.className = 'report-option';
+            wrapper.tabIndex = 0;
+            wrapper.setAttribute('role', 'radio');
             wrapper.innerHTML = `
           <input type="radio" id="${id}" name="report-category" value="${cat.id}" data-name="${escapeHtml(cat.name)}">
           <label for="${id}">${escapeHtml(cat.name)}</label>
         `;
             categoriesContainer.appendChild(wrapper);
-            wrapper.querySelector('input').addEventListener('change', ev => {
+            const input = wrapper.querySelector('input');
+            input.addEventListener('change', ev => {
                 selected.categoryId = ev.target.value;
                 selected.categoryName = ev.target.dataset.name || cat.name;
                 selected.reasonId = null;
                 selected.reasonText = null;
+                categoriesContainer.querySelectorAll('.report-option').forEach(option => option.setAttribute('aria-checked', 'false'));
+                wrapper.setAttribute('aria-checked', 'true');
             });
+            wrapper.addEventListener('click', (event) => {
+                if (event.target.tagName !== 'INPUT') {
+                    input.click();
+                }
+            });
+            wrapper.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    input.click();
+                }
+            });
+            wrapper.setAttribute('aria-checked', 'false');
         });
     }
 
@@ -1755,15 +1794,32 @@ require base_path('views/shared/header.php');
             const id = `report-reason-${r.id}`;
             const wrapper = document.createElement('div');
             wrapper.className = 'report-option';
+            wrapper.tabIndex = 0;
+            wrapper.setAttribute('role', 'radio');
             wrapper.innerHTML = `
           <input type="radio" id="${id}" name="report-reason" value="${r.id}" data-text="${escapeHtml(r.reason)}">
           <label for="${id}">${escapeHtml(r.reason)}</label>
         `;
             reasonsContainer.appendChild(wrapper);
-            wrapper.querySelector('input').addEventListener('change', ev => {
+            const input = wrapper.querySelector('input');
+            input.addEventListener('change', ev => {
                 selected.reasonId = ev.target.value;
                 selected.reasonText = ev.target.dataset.text || r.reason;
+                reasonsContainer.querySelectorAll('.report-option').forEach(option => option.setAttribute('aria-checked', 'false'));
+                wrapper.setAttribute('aria-checked', 'true');
             });
+            wrapper.addEventListener('click', (event) => {
+                if (event.target.tagName !== 'INPUT') {
+                    input.click();
+                }
+            });
+            wrapper.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    input.click();
+                }
+            });
+            wrapper.setAttribute('aria-checked', 'false');
         });
     }
 

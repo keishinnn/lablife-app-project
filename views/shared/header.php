@@ -5,6 +5,7 @@ use Core\Auth;
 $isAuthenticatedArea = path_starts_with('/u');
 $isHomePage = path_is('/') || path_is('/u');
 $isAuthPage = path_is('/login') || path_is('/register');
+$isGoogleAuthCallbackPage = path_is('/auth/google/callback');
 $isProfilePage = path_is('/u/profile');
 $isProfileEditPage = path_is('/u/profile-edit');
 $isProfilePreferencesPage = path_is('/u/profile-preferences-edit');
@@ -15,7 +16,7 @@ $isDiscoverPage = path_is('/u/discover') || path_is('/u/discover/matched-user');
 $isVerifyPage = path_is('/u/verify') || path_is('/u/verify-next');
 $isMatchesPage = path_is('/u/matches');
 $isMessagesPage = path_is('/u/messages');
-$needsSupabase = $isDiscoverPage || $isMatchesPage;
+$needsSupabase = $isDiscoverPage || $isMatchesPage || $isAuthPage || $isGoogleAuthCallbackPage;
 $needsStreamChat = $isMessagesPage || $isBlockedUsersPage;
 $needsStreamVideo = $isMessagesPage || path_is('/test-video');
 $needsFaceApi = $isVerifyPage;
@@ -35,7 +36,7 @@ $needsFontAwesome = $isMessagesPage || path_is('/test-video');
     <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/footer.css">
     <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
-    <?php if ($isAuthPage): ?>
+    <?php if ($isAuthPage || $isGoogleAuthCallbackPage): ?>
         <link rel="stylesheet" href="/assets/css/auth-page.css">
     <?php endif; ?>
     <?php if ($isHomePage): ?>

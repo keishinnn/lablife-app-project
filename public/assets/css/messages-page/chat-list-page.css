@@ -1,14 +1,15 @@
 .chat-list-section {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    padding-top: 2rem;
+    padding-top: 1.5rem;
     max-width: 100%;
     box-sizing: border-box;
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding-bottom: 2rem;
+    padding-bottom: 1.25rem;
 }
 
 .active-chat .chat-list-section-five {
@@ -44,7 +45,7 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 18rem;
 }
 
 .chat-list-section-damn-it {
@@ -52,7 +53,8 @@
     flex-direction: column;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    gap: 1rem;
+    gap: 0.9rem;
+    padding-bottom: 0.85rem;
 }
 
 .chat-list-section-damn-it h2 {
@@ -150,11 +152,12 @@
 
 .chat-list-section-three {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding-bottom: 1rem;
+    padding-bottom: 0.75rem;
 
     scrollbar-width: thin;
     scrollbar-color: rgba(78, 78, 78, 0.6) transparent;
@@ -195,7 +198,7 @@
     transition: background-color 0.2s;
     box-sizing: border-box;
     text-decoration: none;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     border-radius: 0.5rem;
 }
 
@@ -206,7 +209,7 @@
 .chat-list-section-five {
     display: flex;
     align-items: center;
-    padding: 1.5rem;
+    padding: 1.15rem 1.1rem;
     border-bottom: 1px solid #E5E7EB;
     box-sizing: border-box;
 }
