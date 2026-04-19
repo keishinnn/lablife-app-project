@@ -8,6 +8,7 @@ $isAuthPage = path_is('/login') || path_is('/register');
 $isProfilePage = path_is('/u/profile');
 $isProfileEditPage = path_is('/u/profile-edit');
 $isProfilePreferencesPage = path_is('/u/profile-preferences-edit');
+$isBlockedUsersPage = path_is('/u/profile/blocked-users');
 $isProfileSetupPage = path_is('/u/setup-profile') || path_is('/u/setup-profile-preferences');
 $isProfileLoadingPage = path_is('/u/profile-loading');
 $isDiscoverPage = path_is('/u/discover') || path_is('/u/discover/matched-user');
@@ -15,7 +16,7 @@ $isVerifyPage = path_is('/u/verify') || path_is('/u/verify-next');
 $isMatchesPage = path_is('/u/matches');
 $isMessagesPage = path_is('/u/messages');
 $needsSupabase = $isDiscoverPage || $isMatchesPage;
-$needsStreamChat = $isMessagesPage;
+$needsStreamChat = $isMessagesPage || $isBlockedUsersPage;
 $needsStreamVideo = $isMessagesPage || path_is('/test-video');
 $needsFaceApi = $isVerifyPage;
 $needsFontAwesome = $isMessagesPage || path_is('/test-video');
@@ -33,6 +34,7 @@ $needsFontAwesome = $isMessagesPage || path_is('/test-video');
     <link rel="stylesheet" href="/assets/css/global.css">
     <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/footer.css">
+    <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
     <?php if ($isAuthPage): ?>
         <link rel="stylesheet" href="/assets/css/auth-page.css">
     <?php endif; ?>
@@ -54,7 +56,12 @@ $needsFontAwesome = $isMessagesPage || path_is('/test-video');
         <link rel="stylesheet" href="/assets/css/profile-page/edit/profile-edit-page.css">
     <?php endif; ?>
     <?php if ($isProfilePreferencesPage): ?>
+        <link rel="stylesheet" href="/assets/css/profile-page/edit/profile-edit-page.css">
         <link rel="stylesheet" href="/assets/css/profile-page/edit/preference-edit-page.css">
+    <?php endif; ?>
+    <?php if ($isBlockedUsersPage): ?>
+        <link rel="stylesheet" href="/assets/css/matches-page/matches-page.css">
+        <link rel="stylesheet" href="/assets/css/messages-page/user-block-confimation.css">
     <?php endif; ?>
     <?php if ($isProfileSetupPage): ?>
         <link rel="stylesheet" href="/assets/css/profile-page/setup-user.css">

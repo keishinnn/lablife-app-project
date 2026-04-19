@@ -112,7 +112,6 @@ use Core\Auth;
 <?php require base_path('views/notifications/matched-notif.php') ?>
 <?php require base_path('views/notifications/rejected-notif.php') ?>
 <?php require base_path('views/notifications/expired-notif.php') ?>
-<?php require base_path('views/user/loading/messages.loading.view.php') ?>
 
 <script type="module">
     import { subscribeToSupabase } from "/assets/js/supabase/client.js";

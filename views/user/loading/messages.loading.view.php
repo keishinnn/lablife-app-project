@@ -1,6 +1,6 @@
-<div class="matches-loading-container" id="messages-loading">
-    <div class="matches-loading-section">
-        <div class="profile-loading-icon "></div>
-        <p>Loading your messages</p>
+<div class="page-loading-container" id="messages-loading">
+    <div class="page-loading-section">
+        <div class="profile-loading-icon"></div>
+        <p class="page-loading-text">Loading your messages...</p>
     </div>
 </div>

@@ -154,6 +154,15 @@
         </div>
     </div>
 
+    <div id="pt-loading" class="profile-loading-container">
+        <div class="profile-loading-section">
+            <div class="profile-loading-icon"></div>
+            <p class="profile-loading-text">Saving...</p>
+        </div>
+    </div>
+
+    <script type="module" src="/assets/js/loading-state/setup-profile-loading.js"></script>
+
 </body>
 
 </html>
