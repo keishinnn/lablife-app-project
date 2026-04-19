@@ -75,6 +75,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const link = event.target.closest("a[href]");
         if (!link) return;
 
+        if (
+            window.location.pathname.startsWith("/u/messages") &&
+            link.classList.contains("chat-item")
+        ) {
+            return;
+        }
+
         const href = link.getAttribute("href");
         if (
             !href ||

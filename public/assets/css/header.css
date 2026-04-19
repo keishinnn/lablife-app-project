@@ -123,8 +123,8 @@
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
 }
 
 .btn-signout:hover {

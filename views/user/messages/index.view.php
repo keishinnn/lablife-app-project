@@ -426,6 +426,13 @@ require base_path('views/shared/header.php');
         const selectedChannel = channels.find(ch => ch.id === channelId);
         if (!selectedChannel) return;
 
+        if (selectedChannel.id === activeChannel?.id) {
+            if (window.matchMedia("(max-width: 48rem)").matches) {
+                messagesContainer.classList.add('show-conversation');
+            }
+            return;
+        }
+
         chatListContainer.querySelectorAll('a').forEach(a => a.classList.remove('active-chat'));
         link.classList.add('active-chat');
 
