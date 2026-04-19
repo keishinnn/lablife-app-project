@@ -25,11 +25,29 @@ class StreamService
 
         $streamToken = $serverClient->createToken($userId);
 
-        $serverClient->upsertUser([
-            'id' => $userId,
-            'name' => $userName,
-            'image' => $userImage
-        ]);
+        $syncState = $_SESSION['stream_user_sync'] ?? [];
+        $signature = sha1(json_encode([
+            'name' => (string) $userName,
+            'image' => $userImage,
+        ]));
+        $lastSync = $syncState[$userId]['synced_at'] ?? 0;
+        $lastSignature = $syncState[$userId]['signature'] ?? null;
+        $shouldSyncUser = !is_int($lastSync)
+            || $lastSignature !== $signature
+            || (time() - $lastSync) >= 900;
+
+        if ($shouldSyncUser) {
+            $serverClient->upsertUser([
+                'id' => $userId,
+                'name' => $userName,
+                'image' => $userImage
+            ]);
+
+            $_SESSION['stream_user_sync'][$userId] = [
+                'signature' => $signature,
+                'synced_at' => time(),
+            ];
+        }
 
         return [
             'token' => $streamToken,

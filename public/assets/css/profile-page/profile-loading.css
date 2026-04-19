@@ -19,6 +19,22 @@
     text-align: center;
 }
 
+.page-loading-container {
+    display: none;
+    flex: 1 0 auto;
+    min-height: 100vh;
+    padding: 4rem 1rem;
+    background: var(--background);
+    align-items: center;
+    justify-content: center;
+}
+
+.page-loading-section {
+    text-align: center;
+    max-width: 20rem;
+    margin: 0 auto;
+}
+
 .profile-loading-icon {
     animation: spin 1s linear infinite;
     border-radius: 9999px;
@@ -34,6 +50,11 @@
     color: #ffffff;
 }
 
+.page-loading-text {
+    margin-top: 1rem;
+    color: #4b5563;
+}
+
 @keyframes spin {
     to {
         transform: rotate(360deg);
@@ -43,6 +64,10 @@
 @media (prefers-color-scheme: dark) {
     .profile-loading-text {
         margin-top: 1rem;
+        color: #abb2bb;
+    }
+
+    .page-loading-text {
         color: #abb2bb;
     }
 }

@@ -4,6 +4,74 @@
     background: var(--background);
 }
 
+.discover-search-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem 3rem;
+}
+
+.discover-search-container {
+    max-width: 56rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.discover-search-copy {
+    text-align: center;
+}
+
+.discover-search-copy h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+    color: #111827;
+}
+
+.discover-search-copy p {
+    margin: 0.75rem auto 0;
+    max-width: 30rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #4b5563;
+}
+
+.discover-search-actions {
+    margin-top: 1.5rem;
+}
+
+.discover-search-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.discover-search-form .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: linear-gradient(to right, #ec4899, #ef4444);
+    color: white;
+    font-size: 1.125rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.discover-search-form .btn:hover {
+    background: linear-gradient(to right, #db2777, #dc2626);
+    transform: translateY(-3px);
+}
+
 .discover-container {
     width: 100%;
     margin-left: auto;
@@ -247,8 +315,24 @@
         background-color: #1f2937;
     }
 
+    .discover-search-panel {
+        background:
+            radial-gradient(circle at top, rgba(236, 72, 153, 0.2), transparent 50%),
+            linear-gradient(180deg, #111827, #0f172a);
+        border-color: rgba(244, 114, 182, 0.18);
+        box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.35);
+    }
+
+    .discover-search-copy h1 {
+        color: #ffffff;
+    }
+
+    .discover-search-copy p {
+        color: #cbd5e1;
+    }
+
     #match-timer-text {
-        color: #111827;
+        fill: #ffffff;
     }
 }
 
@@ -307,4 +391,21 @@
     border: none;
     pointer-events: none;
     animation: floatHeart 1s ease-out forwards;
+}
+
+@media (max-width: 640px) {
+    .discover-search-panel {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+    }
+
+    .discover-match-buttons {
+        gap: 1.25rem;
+    }
+
+    .discover-match-button-dislike,
+    .discover-match-button-like {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
 }

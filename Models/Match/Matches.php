@@ -50,6 +50,38 @@ class Matches
         }
     }
 
+    public static function getMatchedUsers(string $userId): array
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                SELECT DISTINCT u.*
+                FROM matches m
+                INNER JOIN users u
+                    ON u.id = CASE
+                        WHEN m.user1_id = :userId THEN m.user2_id
+                        ELSE m.user1_id
+                    END
+                WHERE m.user1_id = :userId OR m.user2_id = :userId
+            ");
+            $stmt->execute(['userId' => $userId]);
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$rows) {
+                return [];
+            }
+
+            return array_map(fn(array $row) => new User($row), $rows);
+        } catch (PDOException $e) {
+            throw new \Exception("Database error: " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
     public static function checkIfMatched(string $userId, string $otherUserId)
     {
         $db = App::resolve('Core\Database');

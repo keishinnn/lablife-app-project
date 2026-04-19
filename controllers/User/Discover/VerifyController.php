@@ -4,6 +4,7 @@ namespace Controllers\User\Discover;
 
 use Models\User\User;
 use Exception;
+use Core\App;
 
 class VerifyController
 {
@@ -110,5 +111,88 @@ class VerifyController
                 ? $_SESSION['verify_lock_until'] - time()
                 : 0
         ]);
+    }
+
+    public function healthCheck()
+    {
+        \Core\Middleware::auth();
+
+        try {
+            $service = App::resolve('Services\IntelligentService');
+            $result = $service->health();
+
+            json_response($result['body'], $result['status']);
+        } catch (Exception $e) {
+            app_log_exception($e, 'Intelligent service health check failed');
+            json_response([
+                'success' => false,
+                'message' => 'Verification service unavailable.',
+            ], 503);
+        }
+    }
+
+    public function handleVerifyFace()
+    {
+        \Core\Middleware::auth();
+
+        $userId = (string) (\Core\Auth::user() ?? '');
+        $user = User::getCurrentUserProfile($userId);
+        \Core\Middleware::checkIfUserExist($user);
+
+        $profileUrl = trim((string) ($user->avatarUrl ?? ''));
+        $frameFiles = $this->normalizeFrameFiles($_FILES['frames'] ?? null);
+
+        if ($userId === '') {
+            json_response(['success' => false, 'message' => 'Unauthorized request.'], 401);
+        }
+
+        if ($profileUrl === '') {
+            json_response(['success' => false, 'message' => 'Missing profile_url.'], 400);
+        }
+
+        if (empty($frameFiles)) {
+            json_response(['success' => false, 'message' => 'Missing frames.'], 400);
+        }
+
+        try {
+            $service = App::resolve('Services\IntelligentService');
+            $result = $service->verifyUser($userId, $profileUrl, $frameFiles);
+
+            json_response($result['body'], $result['status']);
+        } catch (Exception $e) {
+            app_log_exception($e, 'Verification proxy request failed');
+            json_response([
+                'success' => false,
+                'message' => 'Verification service unavailable.',
+            ], 503);
+        }
+    }
+
+    private function normalizeFrameFiles($frames): array
+    {
+        if (!is_array($frames) || !isset($frames['tmp_name'])) {
+            return [];
+        }
+
+        if (!is_array($frames['tmp_name'])) {
+            return [$frames];
+        }
+
+        $normalized = [];
+        $count = count($frames['tmp_name']);
+
+        for ($index = 0; $index < $count; $index += 1) {
+            $normalized[] = [
+                'name' => $frames['name'][$index] ?? "frame{$index}.jpg",
+                'type' => $frames['type'][$index] ?? 'image/jpeg',
+                'tmp_name' => $frames['tmp_name'][$index] ?? '',
+                'error' => $frames['error'][$index] ?? UPLOAD_ERR_NO_FILE,
+                'size' => $frames['size'][$index] ?? 0,
+            ];
+        }
+
+        return array_values(array_filter($normalized, function ($file) {
+            return ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK;
+        }));
     }
 }

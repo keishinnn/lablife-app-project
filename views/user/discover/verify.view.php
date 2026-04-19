@@ -28,7 +28,8 @@ require base_path('views/shared/header.php');
     const status = document.getElementById('verify-status');
     const oval = document.querySelector('.oval-border');
 
-    const API_VERIFY = 'http://127.0.0.1:5002/verify-user';
+    const API_VERIFY = '/u/account/verify-face';
+    const API_HEALTH = '/u/account/verify-service-health';
     const CURRENT_USER_ID = <?= json_encode($user->id) ?>;
     const PROFILE_PHOTO_URL = <?= json_encode($user->avatarUrl) ?>;
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -69,7 +70,9 @@ require base_path('views/shared/header.php');
 
             if (webcams.length > 0) {
                 return await navigator.mediaDevices.getUserMedia({
-                    video: { deviceId: webcams[0].deviceId },
+                    video: {
+                        deviceId: webcams[0].deviceId
+                    },
                     audio: false,
                 });
             }
@@ -77,7 +80,9 @@ require base_path('views/shared/header.php');
             const obsCamera = devices.find(d => d.label.includes('OBS Virtual Camera'));
             if (obsCamera) {
                 return await navigator.mediaDevices.getUserMedia({
-                    video: { deviceId: obsCamera.deviceId },
+                    video: {
+                        deviceId: obsCamera.deviceId
+                    },
                     audio: false,
                 });
             }
@@ -182,6 +187,9 @@ require base_path('views/shared/header.php');
         try {
             const response = await fetch(API_VERIFY, {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken,
+                },
                 body: form,
                 signal: controller.signal,
             });
@@ -220,7 +228,9 @@ require base_path('views/shared/header.php');
             arr[i] = bytes.charCodeAt(i);
         }
 
-        return new Blob([arr], { type: mime });
+        return new Blob([arr], {
+            type: mime
+        });
     }
 
     async function loadModels() {
@@ -236,7 +246,9 @@ require base_path('views/shared/header.php');
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': csrfToken,
             },
-            body: JSON.stringify({ user_id: CURRENT_USER_ID }),
+            body: JSON.stringify({
+                user_id: CURRENT_USER_ID
+            }),
         });
 
         if (!response.ok) {
@@ -479,7 +491,7 @@ require base_path('views/shared/header.php');
 
     async function checkAPIHealth() {
         try {
-            const res = await fetch('http://127.0.0.1:5002/health');
+            const res = await fetch(API_HEALTH);
             return res.ok;
         } catch {
             return false;

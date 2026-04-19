@@ -5,6 +5,24 @@ function base_path($path)
     return BASE_PATH . $path;
 }
 
+function current_path(): string
+{
+    $uri = $_SERVER['REQUEST_URI'] ?? '/';
+    $path = parse_url($uri, PHP_URL_PATH);
+
+    return is_string($path) && $path !== '' ? $path : '/';
+}
+
+function path_is(string $path): bool
+{
+    return current_path() === $path;
+}
+
+function path_starts_with(string $prefix): bool
+{
+    return str_starts_with(current_path(), $prefix);
+}
+
 function app_env(): string
 {
     return $_ENV['APP_ENV'] ?? 'production';
@@ -124,8 +142,15 @@ function calculateAge(string $birthdate): int
     return $age;
 }
 
-function is_valid_image_url($url) {
-    if (empty($url)) return false;
-    $headers = @get_headers($url, 1);
-    return $headers && strpos($headers[0], '200') !== false;
+function is_valid_image_url($url)
+{
+    if (empty($url)) {
+        return false;
+    }
+
+    if (str_starts_with($url, '/')) {
+        return true;
+    }
+
+    return filter_var($url, FILTER_VALIDATE_URL) !== false;
 }
