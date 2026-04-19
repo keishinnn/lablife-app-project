@@ -1,0 +1,10 @@
+.git
+.github
+.vscode
+vendor
+.env
+node_modules
+npm-debug.log
+docker-compose.yml
+*.md
+*.txt

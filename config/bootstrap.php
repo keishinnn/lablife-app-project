@@ -9,7 +9,7 @@ use Core\Database;
 require base_path('vendor/autoload.php');
 
 $dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
-$dotenv->load();
+$dotenv->safeLoad();
 
 $container = new Container();
 
