@@ -61,14 +61,15 @@ $needsFontAwesome = $isMessagesPage || path_is('/test-video');
         <link rel="stylesheet" href="/assets/css/profile-page/setup-user-pref.css">
     <?php endif; ?>
     <?php if ($isDiscoverPage): ?>
-        <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css">
+        <link rel="stylesheet" href="/assets/css/discover-page/discover-page.css?v=<?php echo time(); ?>">
         <link rel="stylesheet" href="/assets/css/discover-page/discover-loading.css">
         <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification.css">
         <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-rejected.css">
         <link rel="stylesheet" href="/assets/css/discover-page/notifications/notif-recon-loading.css">
         <link rel="stylesheet" href="/assets/css/discover-page/notifications/notification-expired.css">
-        <link rel="stylesheet" href="/assets/css/index-page.css">
+        <link rel="stylesheet" href="/assets/css/profile-page/profile-get-loading.css">
         <link rel="stylesheet" href="/assets/css/profile-page/profile-loading.css">
+        <link rel="stylesheet" href="/assets/css/matches-page/loading/matches-loading.css">
     <?php endif; ?>
     <?php if ($isVerifyPage): ?>
         <link rel="stylesheet" href="/assets/css/discover-page/verify-face.css">

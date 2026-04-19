@@ -1,6 +1,5 @@
 <?php
 
-// file path = root/Views/user/discover/index.view.php
 require base_path('views/shared/header.php');
 
 use Core\Auth;
@@ -53,18 +52,17 @@ use Core\Auth;
         </header>
 
         <div class="discover-match-container">
-
             <div class="discover-match-card">
                 <div class="discover-match-card-swipe">
                     <div class="discover-match-card-section-two">
-                        <img src="<?php echo $partner->avatarUrl ?>" alt="">
+                        <img src="<?php echo htmlspecialchars($partner->avatarUrl ?? '/assets/images/default-avatar.png'); ?>" alt="">
 
                         <div class="discover-match-card-section-three">
                             <div class="discover-match-card-section-four">
                                 <div class="discover-match-card-section-five">
-                                    <h2><?php echo htmlspecialchars($partner->fullName)  ?>, <?php echo (calculateAge($partner->birthdate)) ?></h2>
+                                    <h2><?php echo htmlspecialchars($partner->fullName) ?>, <?php echo calculateAge($partner->birthdate) ?></h2>
                                     <p class="discover-match-card-user-text">@<?php echo htmlspecialchars($partner->username) ?></p>
-                                    <p class="discover-match-card-bio-text"><?php echo htmlspecialchars($partner->bio) ?></p>
+                                    <p class="discover-match-card-bio-text"><?php echo htmlspecialchars($partner->bio ?? '') ?></p>
                                 </div>
                             </div>
                         </div>
@@ -72,13 +70,12 @@ use Core\Auth;
                 </div>
             </div>
 
-            <!-- Buttons -->
             <div style="margin-top: 2rem;">
                 <div class="discover-match-buttons">
                     <form id="submit-dislike-form" method="POST">
                         <button class="discover-match-button-dislike" aria-label="Pass" type="submit">
                             <svg
-                                style="  width: 2rem; height: 2rem; color: #ef4444;"
+                                style="width: 2rem; height: 2rem; color: #ef4444;"
                                 fill="currentColor"
                                 viewBox="0 0 20 20">
                                 <path
@@ -91,7 +88,6 @@ use Core\Auth;
                     </form>
 
                     <form id="submit-like-form" method="POST">
-
                         <button class="discover-match-button-like" aria-label="Like" type="submit">
                             <svg
                                 style="width: 2rem; height: 2rem; color: #22c55e;"
@@ -110,383 +106,100 @@ use Core\Auth;
         </div>
     </div>
 
-    <?php require(base_path('Views/notifications/loading/recon-loading.php')) ?>
+    <?php require base_path('views/notifications/loading/recon-loading.php') ?>
 </div>
 
-<!-- Loading state in Edit Profile -->
-<?php require(base_path('Views/notifications/matched-notif.php')) ?>
-<?php require(base_path('Views/notifications/rejected-notif.php')) ?>
-<?php require(base_path('Views/notifications/expired-notif.php')) ?>
+<?php require base_path('views/notifications/matched-notif.php') ?>
+<?php require base_path('views/notifications/rejected-notif.php') ?>
+<?php require base_path('views/notifications/expired-notif.php') ?>
+<?php require base_path('views/user/loading/messages.loading.view.php') ?>
 
 <script type="module">
-    import {
-        subscribeToSupabase
-    } from "/assets/js/supabase/client.js";
+    import { subscribeToSupabase } from "/assets/js/supabase/client.js";
 
     const supabaseClient = subscribeToSupabase(
         '<?= $_ENV['SUPABASE_URL'] ?>',
         '<?= $_ENV['SUPABASE_ANON_KEY'] ?>'
     );
 
-    const startChatBtn = document.getElementById('start-chat-btn');
-
-    // match timer variables
     const duration = 60;
     let remaining = duration;
     const sqSize = 180;
     const strokeWidth = 8;
     const radius = (sqSize - strokeWidth) / 2;
     const dashArray = radius * Math.PI * 2;
-    const progressBar = document.querySelector('.match-timer-bar');
-    const progressText = document.getElementById('match-timer-text');
-    let timerPaused = false;
-    let timerInterval = null;
-
-    // back button
-    const discoverBackBtn = document.getElementById('discover-back-btn');
-
-    // form variables
-    const submitLikeForm = document.getElementById('submit-like-form');
-    const submitdisLikeForm = document.getElementById('submit-dislike-form');
-    const csrfToken = submitLikeForm.querySelector('input[name="csrf_token"]').value;
-    const partnerId = "<?= $partner->id ?>";
 
     const currentUser = '<?= Auth::user(); ?>';
+    const partnerId = '<?= $partner->id ?>';
     const pageCsrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-    // matched modal variables
+    const progressBar = document.querySelector('.match-timer-bar');
+    const progressText = document.getElementById('match-timer-text');
+    const discoverBackBtn = document.getElementById('discover-back-btn');
+    const submitLikeForm = document.getElementById('submit-like-form');
+    const submitDislikeForm = document.getElementById('submit-dislike-form');
+    const startChatBtn = document.getElementById('start-chat-btn');
+    const keepSearchingBtn = document.getElementById('keep-searching-btn');
     const matchedModal = document.getElementById('matchModal');
     const matchedNotification = document.querySelector('.notification-container');
-    const keepSearchingBtn = document.getElementById('keep-searching-btn');
-    let isIntentionalNavigation = false;
-
+    const rejectedModal = document.getElementById('rejected-modal');
+    const rejectedModalNotif = document.querySelector('.notification-rejected-container');
+    const rejectProgressBar = document.querySelector('.notification-border-path');
+    const expiredModal = document.getElementById('expired-modal');
+    const expiredModalNotif = document.querySelector('.notification-expired-container');
+    const expiredProgressBar = document.querySelector('.notification-expired-border-path');
     const reconLoading = document.getElementById('recon-loading');
     const discoverSectionModify = document.getElementById('discover-section-modify');
     const discoverContainer = document.getElementById('discover-container-id');
+    const messageLoading = document.getElementById('messages-loading');
+    const pageContent = document.getElementById('page-content');
+    const csrfToken = submitLikeForm?.querySelector('input[name="csrf_token"]')?.value ?? pageCsrfToken;
 
-    // Rejected Notification
-    const rejectedModal = document.getElementById('rejected-modal');
-    const rejectedModalNotif = document.querySelector('.notification-rejected-container');
-    const rejectProgressBar = document.querySelector(".notification-border-path");
-    const rejectDuration = 3;
+    let timerPaused = false;
+    let timerInterval = null;
+    let cleanupInProgress = false;
+    let isIntentionalNavigation = false;
+    let terminalState = null;
+    let rejectAnimating = false;
     let rejectStart = null;
     let expiredStart = null;
-    let rejectAnimating = false;
 
-    // showing start chat loading
-    const messageLoading = document.getElementById("messages-loading");
-    const pageContent = document.getElementById("page-content");
-
-    // Expired Session Notification
-    const expiredModal = document.getElementById('expired-modal');
-    const expiredModalNotif = document.querySelector('.notification-expired-container');
-    const expiredProgressBar = document.querySelector(".notification-expired-border-path");
-
-    // for subscription
     let matchSessionSub = null;
     let matchesSub = null;
-    let dislikesSub = null;
-
-    function startTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-
-        timerInterval = setInterval(async () => {
-            if (timerPaused) return;
-
-            remaining--;
-
-            if (remaining < 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                showMatchExpired();
-                return;
-            }
-
-            const percentage = (remaining / duration) * 100;
-            const dashOffset = dashArray - (dashArray * percentage) / 100;
-
-            progressBar.style.strokeDashoffset = dashOffset;
-            progressText.textContent = `${remaining}s`;
-        }, 1000);
-    }
-
-    if (progressBar && progressText) {
-        progressBar.style.strokeDasharray = dashArray;
-        progressBar.style.strokeDashoffset = 0;
-        startTimer();
-    } else {
-        console.error("match-timer-bar or match-timer-text element not found.");
-    }
-
-    matchesSub = supabaseClient
-        .channel('public:matches')
-        .on(
-            'postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'matches',
-            },
-            (payload) => {
-                const match = payload.new;
-                console.log(match);
-
-                if (
-                    (match.user1_id === currentUser || match.user2_id === currentUser) &&
-                    (match.user1_id === partnerId || match.user2_id === partnerId)
-                ) {
-                    timerPaused = true;
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-
-                    setSessionStatusMatched();
-                    showMatchedModal();
-                }
-            }
-        )
-        .subscribe((status) => {
-            console.log("🛰️ Subscription status on matches:", status);
-        });
-
-    matchSessionSub = supabaseClient
-        .channel('match_sessions')
-        .on(
-            'postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'match_sessions',
-            },
-            async (payload) => {
-                const session = payload.new;
-
-                const isUserInSession = session.user_a === currentUser || session.user_b === currentUser;
-
-                const isPartnerInSession = session.user_a === partnerId || session.user_b === partnerId;
-
-                if ((isUserInSession && isPartnerInSession) && session.status === 'expired') {
-
-                }
-
-                if (isUserInSession && session.status === 'rejected') {
-                    const selfRejected = sessionStorage.getItem('selfRejected') === 'true';
-                    if (selfRejected) {
-                        sessionStorage.removeItem('selfRejected');
-                        return;
-                    }
-
-                    showNoMatchThisTime();
-
-                    const notificationDuration = 3000;
-                    await new Promise((resolve) => setTimeout(resolve, notificationDuration));
-                }
-            }
-        )
-        .subscribe((status) => {
-            console.log("🛰️ Subscription status on match_sessions:", status);
-        });
-
     let dislikeSub = null;
 
-    dislikeSub = supabaseClient
-        .channel('public:dislikes_from_current_to_partner')
-        .on(
-            'postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'dislikes',
-                filter: `from_user_id=in.(${currentUser},${partnerId})`
-            },
-            (payload) => {
-                const dislike = payload.new
-
-                if (
-                    (dislike.from_user_id === partnerId && dislike.to_user_id === currentUser) ||
-                    (dislike.from_user_id === currentUser && dislike.to_user_id === partnerId)
-                ) {
-                    showNoMatchThisTime();
-                    setSessionStatusRejected();
-                    dislikeSub.unsubscribe();
-                }
-            }
-        )
-        .subscribe((status) => {
-            console.log("Subscription status for dislike 1:", status);
-        });
-
-    submitLikeForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        createHeartBurst(e.currentTarget);
-        try {
-            const res = await fetch('/u/discover/like', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken || pageCsrfToken
-                },
-                body: JSON.stringify({
-                    partner: partnerId
-                })
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error('Failed to like other user');
-
-        } catch (err) {
-            console.error("Error liking other user:", err);
+    function markTerminalState(nextState) {
+        if (terminalState) {
+            return false;
         }
-    });
 
-    submitdisLikeForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        createHeartBreakBurst(e.currentTarget);
-
-        try {
-            const res = await fetch('/u/discover/dislike', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken || pageCsrfToken
-                },
-                body: JSON.stringify({
-                    partner: partnerId
-                })
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error('Failed to dislike other user');
-
-        } catch (err) {
-            console.error("Error liking other user:", err);
-        }
-    });
-
-    keepSearchingBtn.addEventListener('click', async (e) => {
-        try {
-            isIntentionalNavigation = true;
-            hideMatchedModal();
-            showReconLoading();
-
-            sessionStorage.setItem('searching', 'true');
-            window.location.href = '/u/discover';
-        } catch (err) {
-            console.error('Failed to auto-restart search:', err);
-            window.location.href = '/u/discover';
-        }
-    });
-
-    discoverBackBtn.addEventListener('click', async (e) => {
-        try {
-            isIntentionalNavigation = true;
-            sessionStorage.setItem('selfRejected', 'true');
-            unsubscribeAll();
-            await setSessionStatusRejected();
-            await setSearchExpired();
-
-            window.location.href = '/u/discover';
-        } catch (err) {
-            console.error('Failed to navigate', err);
-            window.location.href = '/u/discover';
-        }
-    });
-
-    startChatBtn.addEventListener('click', async (e) => {
-        const userId = partnerId;
-
-        pageContent.style.pointerEvents = "none";
-        pageContent.style.display = "none";
-        messageLoading.style.display = "flex";
-
-        try {
-            await fetch('/u/discover/set-search-expired', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-Token': pageCsrfToken
-                },
-                keepalive: true
-            });
-
-            const res = await fetch('/u/matches/create-channel', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': pageCsrfToken
-                },
-                body: JSON.stringify({
-                    targetUserId: userId
-                })
-            });
-
-            const data = await res.json();
-
-            if (data.success) {
-                const channelId = data.channel_id;
-                window.location.href = `/u/messages?channelId=${channelId}`;
-            } else {
-                console.error('Error:', data.error);
-            }
-        } catch (err) {
-            console.error('Failed to create channel:', err);
-            messageLoading.style.display = "none";
-            pageContent.style.display = "block";
-        }
-    });
-
-
-
-    async function setSearchExpired(fromStopButton = false) {
-        if (cleanupInProgress) {
-            console.warn("Cleanup already in progress — skipping.");
-            return;
-        }
-        cleanupInProgress = true;
-
-        try {
-            if (matchSessionSub) {
-                await matchSessionSub.unsubscribe();
-                matchSessionSub = null;
-            }
-            if (activeSearchSub) {
-                await activeSearchSub.unsubscribe();
-                activeSearchSub = null;
-            }
-
-            await fetch('/u/discover/set-search-expired', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-Token': pageCsrfToken
-                },
-                keepalive: true
-            });
-        } catch (err) {
-            console.warn("Cleanup failed:", err);
-        } finally {
-            cleanupInProgress = false;
-            if (!fromStopButton) searchLocked = false;
-        }
+        terminalState = nextState;
+        return true;
     }
 
     function showMatchedModal() {
-        if (!matchedNotification) return;
+        if (!matchedModal || !matchedNotification) return;
 
         matchedModal.style.display = 'flex';
         matchedNotification.classList.add('visible');
     }
 
     function hideMatchedModal() {
-        if (!matchedNotification) return;
+        if (!matchedModal || !matchedNotification) return;
 
         matchedModal.style.display = 'none';
         matchedNotification.classList.remove('visible');
     }
 
-    function animateBorder(timestamp) {
+    function animateRejectBorder(timestamp) {
         if (!rejectStart) rejectStart = timestamp;
         const elapsed = (timestamp - rejectStart) / 1000;
 
-        if (elapsed <= rejectDuration) {
-            const progress = elapsed / rejectDuration;
+        if (elapsed <= 3) {
+            const progress = elapsed / 3;
             const offset = rejectProgressBar.getTotalLength() * progress;
             rejectProgressBar.style.strokeDashoffset = -offset;
-            requestAnimationFrame(animateBorder);
+            requestAnimationFrame(animateRejectBorder);
         } else {
             rejectAnimating = false;
         }
@@ -501,15 +214,15 @@ use Core\Auth;
         rejectProgressBar.style.strokeDasharray = length;
         rejectProgressBar.style.strokeDashoffset = 0;
 
-        requestAnimationFrame(animateBorder);
+        requestAnimationFrame(animateRejectBorder);
     }
 
     function animateExpiredBorder(timestamp) {
         if (!expiredStart) expiredStart = timestamp;
         const elapsed = (timestamp - expiredStart) / 1000;
 
-        if (elapsed <= rejectDuration) {
-            const progress = elapsed / rejectDuration;
+        if (elapsed <= 3) {
+            const progress = elapsed / 3;
             const offset = expiredProgressBar.getTotalLength() * progress;
             expiredProgressBar.style.strokeDashoffset = -offset;
             requestAnimationFrame(animateExpiredBorder);
@@ -522,7 +235,7 @@ use Core\Auth;
         if (!expiredProgressBar || rejectAnimating) return;
 
         rejectAnimating = true;
-        rejectStart = null;
+        expiredStart = null;
         const length = expiredProgressBar.getTotalLength();
         expiredProgressBar.style.strokeDasharray = length;
         expiredProgressBar.style.strokeDashoffset = 0;
@@ -530,7 +243,93 @@ use Core\Auth;
         requestAnimationFrame(animateExpiredBorder);
     }
 
-    // Cleanup listener — runs when the user leaves the page
+    function showReconLoading() {
+        if (discoverContainer) {
+            discoverContainer.style.display = 'none';
+        }
+        if (reconLoading) {
+            reconLoading.style.display = 'flex';
+        }
+        if (discoverSectionModify) {
+            discoverSectionModify.style.display = 'flex';
+            discoverSectionModify.style.justifyContent = 'center';
+            discoverSectionModify.style.alignItems = 'center';
+            discoverSectionModify.style.flexDirection = 'column';
+        }
+    }
+
+    function showNoMatchThisTime() {
+        if (!rejectedModal || !rejectedModalNotif) return;
+
+        rejectedModal.style.display = 'flex';
+        rejectedModalNotif.classList.add('visible');
+        startRejectBorderAnimation();
+
+        setTimeout(() => {
+            rejectedModal.style.display = 'none';
+            rejectedModalNotif.classList.remove('visible');
+            restartSearch();
+        }, 3000);
+    }
+
+    function showMatchExpired() {
+        if (!expiredModal || !expiredModalNotif) return;
+
+        expiredModal.style.display = 'flex';
+        expiredModalNotif.classList.add('visible');
+        startExpiredBorderAnimation();
+
+        setTimeout(() => {
+            expiredModal.style.display = 'none';
+            expiredModalNotif.classList.remove('visible');
+            restartSearch();
+        }, 3000);
+    }
+
+    function createHeartBurst(button) {
+        const rect = button.getBoundingClientRect();
+
+        for (let i = 0; i < 5; i += 1) {
+            const heart = document.createElement('span');
+            heart.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#22c55e" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6.42 3.42 5 5.5 5c1.74 0 3.41 1.01 4.13 2.44h1.75C13.09 6.01 14.76 5 16.5 5 18.58 5 20 6.42 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>`;
+            heart.classList.add('heart-feedback');
+
+            const xOffset = Math.random() * 40 - 20;
+            const yOffset = Math.random() * 10 - 5;
+            heart.style.left = `${rect.left + rect.width / 2 + xOffset}px`;
+            heart.style.top = `${rect.top + window.scrollY + yOffset}px`;
+            heart.style.fontSize = `${Math.random() * 12 + 16}px`;
+
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1000);
+        }
+    }
+
+    function createHeartBreakBurst(button) {
+        const rect = button.getBoundingClientRect();
+
+        for (let i = 0; i < 3; i += 1) {
+            const heartBreak = document.createElement('span');
+            heartBreak.innerHTML = `
+                <svg width="20" height="20" fill="#ef4444" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>`;
+            heartBreak.classList.add('heart-feedback');
+
+            const xOffset = Math.random() * 40 - 20;
+            const yOffset = Math.random() * 10 - 5;
+            heartBreak.style.left = `${rect.left + rect.width / 2 + xOffset}px`;
+            heartBreak.style.top = `${rect.top + window.scrollY + yOffset}px`;
+            heartBreak.style.fontSize = `${Math.random() * 12 + 16}px`;
+
+            document.body.appendChild(heartBreak);
+            setTimeout(() => heartBreak.remove(), 1000);
+        }
+    }
+
     async function setSessionStatusMatched() {
         try {
             await fetch('/u/discover/set-matched-session', {
@@ -541,7 +340,7 @@ use Core\Auth;
                 keepalive: true
             });
         } catch (err) {
-            console.warn("Cleanup failed or not needed:", err);
+            console.warn("Match session update failed:", err);
         }
     }
 
@@ -555,7 +354,7 @@ use Core\Auth;
                 keepalive: true
             });
         } catch (err) {
-            console.warn("Cleanup failed or not needed:", err);
+            console.warn("Reject session failed:", err);
         }
     }
 
@@ -569,22 +368,22 @@ use Core\Auth;
                 keepalive: true
             });
         } catch (err) {
-            console.warn("Cleanup failed or not needed:", err);
+            console.warn("Expire session failed:", err);
         }
     }
 
-    async function setSearchActive() {
-        try {
-            if (matchSessionSub) {
-                await matchSessionSub.unsubscribe();
-                matchSessionSub = null;
-            }
-            if (activeSearchSub) {
-                await activeSearchSub.unsubscribe();
-                activeSearchSub = null;
-            }
+    async function setSearchExpired() {
+        if (cleanupInProgress) {
+            console.warn("Cleanup already in progress - skipping.");
+            return;
+        }
 
-            await fetch('/u/discover/set-search-active', {
+        cleanupInProgress = true;
+
+        try {
+            unsubscribeAll();
+
+            await fetch('/u/discover/set-search-expired', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-Token': pageCsrfToken
@@ -592,8 +391,20 @@ use Core\Auth;
                 keepalive: true
             });
         } catch (err) {
-            console.warn("Cleanup failed:", err);
+            console.warn("Search cleanup failed:", err);
+        } finally {
+            cleanupInProgress = false;
         }
+    }
+
+    function unsubscribeAll() {
+        [matchesSub, matchSessionSub, dislikeSub].forEach((sub) => {
+            sub?.unsubscribe();
+        });
+
+        matchesSub = null;
+        matchSessionSub = null;
+        dislikeSub = null;
     }
 
     async function restartSearch() {
@@ -601,136 +412,314 @@ use Core\Auth;
             isIntentionalNavigation = true;
             unsubscribeAll();
             showReconLoading();
-
             sessionStorage.setItem('searching', 'true');
             window.location.href = '/u/discover';
         } catch (err) {
-            console.error("Failed to auto-restart search:", err);
+            console.error("Failed to restart search:", err);
             window.location.href = '/u/discover';
         }
     }
 
-    function showNoMatchThisTime() {
-        if (!rejectedModalNotif) return;
-
-        rejectedModal.style.display = 'flex';
-        rejectedModalNotif.classList.add('visible');
-
-        startRejectBorderAnimation();
-
-        setTimeout(() => {
-            rejectedModal.style.display = 'none';
-            rejectedModalNotif.classList.remove('visible');
-            restartSearch()
-        }, 3000);
-    }
-
-    function showMatchExpired() {
-        if (!expiredModalNotif) return;
-
-        expiredModal.style.display = 'flex';
-        expiredModalNotif.classList.add('visible');
-
-        startExpiredBorderAnimation();
-
-        setTimeout(() => {
-            expiredModal.style.display = 'none';
-            expiredModalNotif.classList.remove('visible');
-            restartSearch()
-        }, 3000);
-    }
-
-    function showReconLoading() {
-        discoverContainer.style.display = "none";
-        reconLoading.style.display = "flex";
-
-        discoverSectionModify.style.display = "flex";
-        discoverSectionModify.style.justifyContent = "center";
-        discoverSectionModify.style.alignItems = "center";
-        discoverSectionModify.style.flexDirection = "column";
-    }
-
-    function hideReconLoading() {
-        reconLoading.style.display = "none";
-    }
-
-    function createHeartBurst(button) {
-        const rect = button.getBoundingClientRect();
-        const container = document.body;
-
-        for (let i = 0; i < 5; i++) {
-            const heart = document.createElement('span');
-            heart.innerHTML = `
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="#22c55e" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
-             2 6.42 3.42 5 5.5 5c1.74 0 3.41 1.01 4.13 2.44h1.75C13.09 6.01 
-             14.76 5 16.5 5 18.58 5 20 6.42 20 8.5c0 3.78-3.4 6.86-8.55 
-             11.54L12 21.35z"/>
-  </svg>`;
-            heart.classList.add('heart-feedback');
-
-            const xOffset = Math.random() * 40 - 20;
-            const yOffset = Math.random() * 10 - 5;
-            heart.style.left = `${rect.left + rect.width / 2 + xOffset}px`;
-            heart.style.top = `${rect.top + window.scrollY + yOffset}px`;
-            heart.style.fontSize = `${Math.random() * 12 + 16}px`;
-
-            container.appendChild(heart);
-
-            setTimeout(() => heart.remove(), 1000);
+    function startTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
         }
+
+        timerInterval = setInterval(async () => {
+            if (timerPaused) return;
+
+            remaining -= 1;
+
+            if (remaining < 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timerPaused = true;
+
+                if (markTerminalState('expired')) {
+                    setSessionStatusExpired();
+                    showMatchExpired();
+                }
+                return;
+            }
+
+            const percentage = (remaining / duration) * 100;
+            const dashOffset = dashArray - (dashArray * percentage) / 100;
+
+            progressBar.style.strokeDasharray = dashArray;
+            progressBar.style.strokeDashoffset = dashOffset;
+            progressText.textContent = `${remaining}s`;
+        }, 1000);
     }
 
-    function createHeartBreakBurst(button) {
-        const rect = button.getBoundingClientRect();
-        const container = document.body;
-
-        for (let i = 0; i < 3; i++) {
-            const heartBreak = document.createElement('span');
-            heartBreak.innerHTML = `
-                                        <svg
-                                width="20" height="20" fill="#ef4444"
-                                viewBox="0 0 20 20">
-                                <path
-                                    fillRule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clipRule="evenodd" />
-                            </svg>
-            `;
-            heartBreak.classList.add('heart-feedback');
-
-            const xOffset = Math.random() * 40 - 20;
-            const yOffset = Math.random() * 10 - 5;
-            heartBreak.style.left = `${rect.left + rect.width / 2 + xOffset}px`;
-            heartBreak.style.top = `${rect.top + window.scrollY + yOffset}px`;
-            heartBreak.style.fontSize = `${Math.random() * 12 + 16}px`;
-
-            container.appendChild(heartBreak);
-
-            setTimeout(() => heartBreak.remove(), 1000);
-        }
+    if (progressBar && progressText) {
+        progressBar.style.strokeDasharray = dashArray;
+        progressBar.style.strokeDashoffset = 0;
+        startTimer();
     }
 
-    function unsubscribeAll() {
-        [matchesSub, matchSessionSub, dislikesSub].forEach(sub => {
-            sub?.unsubscribe();
+    matchesSub = supabaseClient
+        .channel('public:matches')
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: 'matches',
+            },
+            (payload) => {
+                const match = payload.new;
+                if (!match) return;
+
+                if (
+                    (match.user1_id === currentUser || match.user2_id === currentUser) &&
+                    (match.user1_id === partnerId || match.user2_id === partnerId)
+                ) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerPaused = true;
+
+                    if (markTerminalState('matched')) {
+                        setSessionStatusMatched();
+                        showMatchedModal();
+                    }
+                }
+            }
+        )
+        .subscribe((status) => {
+            console.log("Matches subscription status:", status);
         });
-        matchesSub = matchSessionSub = dislikesSub = null;
+
+    matchSessionSub = supabaseClient
+        .channel('public:match_sessions')
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: 'match_sessions',
+            },
+            async (payload) => {
+                const session = payload.new;
+                if (!session) return;
+
+                const isUserInSession = session.user_a === currentUser || session.user_b === currentUser;
+                const isPartnerInSession = session.user_a === partnerId || session.user_b === partnerId;
+
+                if (!isUserInSession || !isPartnerInSession) {
+                    return;
+                }
+
+                if (session.status === 'expired') {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerPaused = true;
+
+                    if (markTerminalState('expired')) {
+                        showMatchExpired();
+                    }
+                }
+
+                if (session.status === 'rejected') {
+                    const selfRejected = sessionStorage.getItem('selfRejected') === 'true';
+                    if (selfRejected) {
+                        sessionStorage.removeItem('selfRejected');
+                        return;
+                    }
+
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerPaused = true;
+
+                    if (markTerminalState('rejected')) {
+                        showNoMatchThisTime();
+                        await new Promise((resolve) => setTimeout(resolve, 3000));
+                    }
+                }
+            }
+        )
+        .subscribe((status) => {
+            console.log("Match session subscription status:", status);
+        });
+
+    dislikeSub = supabaseClient
+        .channel('public:dislikes_from_current_to_partner')
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: 'dislikes',
+                filter: `from_user_id=in.(${currentUser},${partnerId})`
+            },
+            (payload) => {
+                const dislike = payload.new;
+                if (!dislike) return;
+
+                if (
+                    (dislike.from_user_id === partnerId && dislike.to_user_id === currentUser) ||
+                    (dislike.from_user_id === currentUser && dislike.to_user_id === partnerId)
+                ) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerPaused = true;
+
+                    if (markTerminalState('rejected')) {
+                        setSessionStatusRejected();
+                        showNoMatchThisTime();
+                    }
+
+                    dislikeSub?.unsubscribe();
+                    dislikeSub = null;
+                }
+            }
+        )
+        .subscribe((status) => {
+            console.log("Dislike subscription status:", status);
+        });
+
+    if (submitLikeForm) {
+        submitLikeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            createHeartBurst(e.currentTarget);
+
+            try {
+                const res = await fetch('/u/discover/like', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({
+                        partner: partnerId
+                    })
+                });
+
+                await res.json();
+                if (!res.ok) {
+                    throw new Error('Failed to like other user');
+                }
+            } catch (err) {
+                console.error("Error liking other user:", err);
+            }
+        });
     }
 
-    // Listen for page unloads, tab close, navigation, etc.
-    window.addEventListener('beforeunload', (event) => {
+    if (submitDislikeForm) {
+        submitDislikeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            createHeartBreakBurst(e.currentTarget);
+
+            try {
+                const res = await fetch('/u/discover/dislike', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({
+                        partner: partnerId
+                    })
+                });
+
+                await res.json();
+                if (!res.ok) {
+                    throw new Error('Failed to dislike other user');
+                }
+            } catch (err) {
+                console.error("Error disliking other user:", err);
+            }
+        });
+    }
+
+    if (keepSearchingBtn) {
+        keepSearchingBtn.addEventListener('click', () => {
+            isIntentionalNavigation = true;
+            hideMatchedModal();
+            showReconLoading();
+            sessionStorage.setItem('searching', 'true');
+            window.location.href = '/u/discover';
+        });
+    }
+
+    if (discoverBackBtn) {
+        discoverBackBtn.addEventListener('click', async () => {
+            try {
+                isIntentionalNavigation = true;
+                sessionStorage.setItem('selfRejected', 'true');
+                await setSessionStatusRejected();
+                await setSearchExpired();
+                window.location.href = '/u/discover';
+            } catch (err) {
+                console.error("Failed to navigate back:", err);
+                window.location.href = '/u/discover';
+            }
+        });
+    }
+
+    if (startChatBtn) {
+        startChatBtn.addEventListener('click', async () => {
+            isIntentionalNavigation = true;
+
+            if (pageContent && messageLoading) {
+                pageContent.style.pointerEvents = 'none';
+                pageContent.style.display = 'none';
+                messageLoading.style.display = 'flex';
+            }
+
+            try {
+                await fetch('/u/discover/set-search-expired', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': pageCsrfToken
+                    },
+                    keepalive: true
+                });
+
+                const res = await fetch('/u/matches/create-channel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': pageCsrfToken
+                    },
+                    body: JSON.stringify({
+                        targetUserId: partnerId
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    window.location.href = `/u/messages?channelId=${data.channel_id}`;
+                    return;
+                }
+
+                console.error('Error:', data.error);
+            } catch (err) {
+                console.error("Failed to create channel:", err);
+            }
+
+            if (messageLoading && pageContent) {
+                messageLoading.style.display = 'none';
+                pageContent.style.display = 'block';
+                pageContent.style.pointerEvents = 'auto';
+            }
+        });
+    }
+
+    window.addEventListener('beforeunload', () => {
         unsubscribeAll();
-        if (!isIntentionalNavigation) {
-            setSearchExpired(false);
+
+        if (!isIntentionalNavigation && !terminalState) {
+            setSearchExpired();
             setSessionStatusRejected();
         }
     });
 
-    window.addEventListener('pagehide', (event) => {
+    window.addEventListener('pagehide', () => {
         unsubscribeAll();
-        if (!isIntentionalNavigation) {
-            setSearchExpired(false);
+
+        if (!isIntentionalNavigation && !terminalState) {
+            setSearchExpired();
             setSessionStatusRejected();
         }
     });
