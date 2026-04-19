@@ -58,8 +58,15 @@ class Middleware
             $formToken = $_POST['csrf_token'] ?? null;
 
             // Token from AJAX header
-            $headers = getallheaders();
-            $headerToken = $headers['X-CSRF-Token'] ?? null;
+            $headers = function_exists('getallheaders') ? getallheaders() : [];
+            $normalizedHeaders = [];
+
+            foreach ($headers as $name => $value) {
+                $normalizedHeaders[strtolower($name)] = $value;
+            }
+
+            $headerToken = $normalizedHeaders['x-csrf-token']
+                ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null);
 
             // Compare against session
             $sessionToken = $_SESSION['csrf_token'] ?? null;
