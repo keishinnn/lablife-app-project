@@ -5,15 +5,15 @@ require base_path('views/shared/header.php');
 <div class="messages-container" id="message-container-wrapper">
     <div class="messages-chat-list">
         <!-- left side -->
-        <?php require(base_path('Views/user/messages/chat/chat.list.view.php')) ?>
+        <?php require base_path('views/user/messages/chat/chat.list.view.php') ?>
     </div>
 
     <!-- right side -->
     <div class="messages-chat-conversation">
 
-        <?php require(base_path('Views/user/messages/chat/chat.header.view.php')) ?>
+        <?php require base_path('views/user/messages/chat/chat.header.view.php') ?>
         <div style="flex: 1 1 0%; min-height: 0;">
-            <?php require(base_path('Views/user/messages/chat/chat.view.php')) ?>
+            <?php require base_path('views/user/messages/chat/chat.view.php') ?>
         </div>
     </div>
 
@@ -1915,8 +1915,8 @@ require base_path('views/shared/header.php');
     });
 </script>
 
-<?php require base_path('Views\user\messages\modals\user.control.view.php') ?>
-<?php require base_path('Views\user\messages\modals\user.block.confirmation.view.php') ?>
+<?php require base_path('views/user/messages/modals/user.control.view.php') ?>
+<?php require base_path('views/user/messages/modals/user.block.confirmation.view.php') ?>
 <?php require base_path('views/user/messages/modals/user.report.view.php'); ?>
 
 <?php require base_path('views/shared/footer.php') ?>
