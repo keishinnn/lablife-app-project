@@ -9,6 +9,13 @@ use PDOException;
 class User
 {
     private const PROFILE_CACHE_KEY_PREFIX = 'profile:bundle:';
+    private const ALLOWED_IMAGE_TYPES = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/heic' => 'heic',
+        'image/heif' => 'heif',
+    ];
 
     public string $id;
     public string $fullName;
@@ -233,13 +240,13 @@ class User
             }
 
             // validate type
-            $allowed = ['image/jpeg', 'image/png', 'image/webp'];
-            if (!in_array($file['type'], $allowed)) {
-                throw new \Exception("Invalid file type. Only JPG, PNG, WEBP allowed.");
+            $mimeType = self::detectImageMimeType($file);
+            if (!isset(self::ALLOWED_IMAGE_TYPES[$mimeType])) {
+                throw new \Exception("Invalid file type. Only JPG, PNG, WEBP, HEIC, and HEIF allowed.");
             }
 
             // build filename
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $ext = self::ALLOWED_IMAGE_TYPES[$mimeType];
             $filePath = "{$id}_" . time() . ".{$ext}";
 
             // upload to Supabase
@@ -248,7 +255,7 @@ class User
                 "profile-photos",
                 $filePath,
                 file_get_contents($file['tmp_name']),
-                $file['type']
+                $mimeType
             );
 
             $avatarUrl = $result['url'] ?? null;
@@ -336,9 +343,9 @@ class User
             throw new \Exception("Avatar must be less than 5MB.");
         }
 
-        $allowed = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!in_array($file['type'], $allowed)) {
-            throw new \Exception("Invalid file type. Only JPG, PNG, WEBP allowed.");
+        $mimeType = self::detectImageMimeType($file);
+        if (!isset(self::ALLOWED_IMAGE_TYPES[$mimeType])) {
+            throw new \Exception("Invalid file type. Only JPG, PNG, WEBP, HEIC, and HEIF allowed.");
         }
 
         $db = App::resolve('Core\Database');
@@ -349,7 +356,7 @@ class User
         ])->fetchColumn();
 
         // Upload new file
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $ext = self::ALLOWED_IMAGE_TYPES[$mimeType];
         $filePath = "{$id}_" . time() . ".{$ext}";
 
         $supabase = App::resolve(\Services\SupabaseService::class);
@@ -357,7 +364,7 @@ class User
             "profile-photos",
             $filePath,
             file_get_contents($file['tmp_name']),
-            $file['type']
+            $mimeType
         );
 
         $avatarUrl = $result['url'] ?? null;
@@ -514,5 +521,27 @@ class User
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    private static function detectImageMimeType(array $file): string
+    {
+        $tmpPath = $file['tmp_name'] ?? '';
+        $originalName = $file['name'] ?? '';
+        $mimeType = $tmpPath !== '' ? (mime_content_type($tmpPath) ?: '') : '';
+
+        if ($mimeType === 'application/octet-stream' || $mimeType === '') {
+            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+            return match ($extension) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'webp' => 'image/webp',
+                'heic' => 'image/heic',
+                'heif' => 'image/heif',
+                default => $mimeType,
+            };
+        }
+
+        return $mimeType;
     }
 }
