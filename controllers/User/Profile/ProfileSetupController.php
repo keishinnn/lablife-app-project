@@ -6,6 +6,13 @@ use Models\User\User;
 
 class ProfileSetupController
 {
+    private const ALLOWED_IMAGE_TYPES = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/heic' => 'heic',
+        'image/heif' => 'heif',
+    ];
 
     public function SetupProfileView()
     {
@@ -58,19 +65,13 @@ class ProfileSetupController
                 redirect('/u/setup-profile');
             }
 
-            $mimeType = mime_content_type($file['tmp_name']);
-            $allowedMimeTypes = [
-                'image/jpeg' => 'jpg',
-                'image/png' => 'png',
-                'image/webp' => 'webp',
-            ];
-
-            if (!isset($allowedMimeTypes[$mimeType])) {
-                $_SESSION['setup_error'] = 'Invalid file type. Only JPG, PNG, and WEBP are allowed.';
+            $mimeType = $this->detectImageMimeType($file['tmp_name'], $file['name'] ?? '');
+            if (!isset(self::ALLOWED_IMAGE_TYPES[$mimeType])) {
+                $_SESSION['setup_error'] = 'Invalid file type. Only JPG, PNG, WEBP, HEIC, and HEIF are allowed.';
                 redirect('/u/setup-profile');
             }
 
-            $fileName = bin2hex(random_bytes(16)) . '.' . $allowedMimeTypes[$mimeType];
+            $fileName = bin2hex(random_bytes(16)) . '.' . self::ALLOWED_IMAGE_TYPES[$mimeType];
             $targetFile = $uploadDir . $fileName;
 
             if (move_uploaded_file($file['tmp_name'], $targetFile)) {
@@ -157,5 +158,25 @@ class ProfileSetupController
         );
 
         redirect('/u');
+    }
+
+    private function detectImageMimeType(string $tmpPath, string $originalName = ''): string
+    {
+        $mimeType = mime_content_type($tmpPath) ?: '';
+
+        if ($mimeType === 'application/octet-stream' || $mimeType === '') {
+            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+            return match ($extension) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'webp' => 'image/webp',
+                'heic' => 'image/heic',
+                'heif' => 'image/heif',
+                default => $mimeType,
+            };
+        }
+
+        return $mimeType;
     }
 }
