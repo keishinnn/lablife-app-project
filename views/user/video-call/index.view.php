@@ -62,6 +62,7 @@
         let dragActive = false;
         let xOffset = 0;
         let yOffset = 0;
+        let localPreviewUnbind = null;
 
         if (!callId) {
             window.location.href = "/u/messages";
@@ -202,21 +203,35 @@
             }
 
             await call.camera.enable({
+                publish: true,
                 cameraFacingMode: "user"
             });
-            await call.microphone.enable();
-
-            const localStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: "user"
-                },
-                audio: true,
+            await call.microphone.enable({
+                publish: true
             });
 
-            localVideo.srcObject = localStream;
-            await localVideo.play().catch(console.warn);
-            localVideoOverlay.style.display = "none";
-            localVideoModify.style.display = "flex";
+            function bindLocalPreview() {
+                const localParticipant = call.state.participants.find((participant) => participant.userId === data.userId);
+                if (!localParticipant?.sessionId) {
+                    return false;
+                }
+
+                try {
+                    if (typeof localPreviewUnbind === "function") {
+                        localPreviewUnbind();
+                    }
+
+                    localPreviewUnbind = call.bindVideoElement(localVideo, localParticipant.sessionId, "videoTrack");
+                    localVideoOverlay.style.display = "none";
+                    localVideoModify.style.display = "flex";
+                    return true;
+                } catch (error) {
+                    console.warn("Failed to bind local preview:", error);
+                    return false;
+                }
+            }
+
+            bindLocalPreview();
 
             const boundParticipants = new Set();
 
@@ -242,22 +257,48 @@
             });
 
             call.on("participantJoined", (event) => {
+                if (!event.participant) {
+                    return;
+                }
+
+                if (event.participant.userId === data.userId) {
+                    bindLocalPreview();
+                    return;
+                }
+
                 bindParticipant(event.participant);
             });
 
             call.on("trackPublished", (event) => {
-                if (event.participant?.userId !== data.userId && event.type === 2) {
-                    remoteVideoOverlay.style.display = "none";
-                    remoteVideoModify.style.display = "flex";
-                    bindParticipant(event.participant);
+                if (!event.participant || event.type !== 2) {
+                    return;
                 }
+
+                if (event.participant.userId === data.userId) {
+                    bindLocalPreview();
+                    localVideoOverlay.style.display = "none";
+                    localVideoModify.style.display = "flex";
+                    return;
+                }
+
+                remoteVideoOverlay.style.display = "none";
+                remoteVideoModify.style.display = "flex";
+                bindParticipant(event.participant);
             });
 
             call.on("trackUnpublished", (event) => {
-                if (event.participant?.userId !== data.userId && event.type === 2) {
-                    remoteVideoOverlay.style.display = "flex";
-                    remoteVideoModify.style.display = "none";
+                if (!event.participant || event.type !== 2) {
+                    return;
                 }
+
+                if (event.participant.userId === data.userId) {
+                    localVideoOverlay.style.display = "flex";
+                    localVideoModify.style.display = "none";
+                    return;
+                }
+
+                remoteVideoOverlay.style.display = "flex";
+                remoteVideoModify.style.display = "none";
             });
 
             toggleMicBtn.addEventListener("click", async () => {
@@ -285,8 +326,10 @@
                         localVideoModify.style.display = "none";
                     } else {
                         await call.camera.enable({
+                            publish: true,
                             cameraFacingMode: "user"
                         });
+                        bindLocalPreview();
                         localVideoOverlay.style.display = "none";
                         localVideoModify.style.display = "flex";
                     }
@@ -312,13 +355,14 @@
                         })
                     });
 
+                    if (typeof localPreviewUnbind === "function") {
+                        localPreviewUnbind();
+                        localPreviewUnbind = null;
+                    }
+
                     await call.leave();
                 } catch (error) {
                     console.warn("Failed to leave call:", error);
-                }
-
-                if (localStream) {
-                    localStream.getTracks().forEach((track) => track.stop());
                 }
 
                 window.location.href = "/u/messages";
