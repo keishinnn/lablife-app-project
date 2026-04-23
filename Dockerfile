@@ -17,6 +17,7 @@ RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" \
     && sed -ri "s/Listen 80/Listen 10000/" /etc/apache2/ports.conf \
     && sed -ri "s/<VirtualHost \\*:80>/<VirtualHost *:10000>/" /etc/apache2/sites-available/000-default.conf \
     && printf '<Directory /var/www/html/public>\n    AllowOverride All\n    Require all granted\n</Directory>\n' > /etc/apache2/conf-available/lablife.conf \
+    && printf "file_uploads=On\nupload_max_filesize=10M\npost_max_size=10M\nmax_file_uploads=20\n" > /usr/local/etc/php/conf.d/uploads.ini \
     && a2enconf lablife
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

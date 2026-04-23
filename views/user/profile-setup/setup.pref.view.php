@@ -103,7 +103,7 @@
                     <div class="setup-two-distance-gender-row">
 
                         <div class="setup-field">
-                            <label for="distance">Preferred Distance (km)</label>
+                            <label for="distance">Preferred Distance</label>
                             <input
                                 type="number"
                                 id="distance"
@@ -111,7 +111,7 @@
                                 min="1"
                                 max="500"
                                 required
-                                value="<?= htmlspecialchars($distance ?? 50) ?>">
+                                value="<?= htmlspecialchars($distance ?? 50)?>">
                         </div>
 
                         <!-- Gender Preference -->
