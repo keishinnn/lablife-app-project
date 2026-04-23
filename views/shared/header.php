@@ -18,9 +18,10 @@ $isMatchesPage = path_is('/u/matches');
 $isMessagesPage = path_is('/u/messages');
 $needsSupabase = $isDiscoverPage || $isMatchesPage || $isAuthPage || $isGoogleAuthCallbackPage;
 $needsStreamChat = $isMessagesPage || $isBlockedUsersPage;
-$needsStreamVideo = $isMessagesPage || path_is('/test-video');
+$isVideoCallPage = path_is('/u/video-call');
+$needsStreamVideo = $isMessagesPage || $isVideoCallPage;
 $needsFaceApi = $isVerifyPage;
-$needsFontAwesome = $isMessagesPage || path_is('/test-video');
+$needsFontAwesome = $isMessagesPage || $isVideoCallPage;
 ?>
 
 <!DOCTYPE html>
@@ -98,6 +99,9 @@ $needsFontAwesome = $isMessagesPage || path_is('/test-video');
         <link rel="stylesheet" href="/assets/css/messages-page/user-report.css">
         <link rel="stylesheet" href="/assets/css/video-call/initiate-call.css">
         <link rel="stylesheet" href="/assets/css/video-call/receive-call.css">
+        <link rel="stylesheet" href="/assets/css/video-call/video-call.css">
+    <?php endif; ?>
+    <?php if ($isVideoCallPage): ?>
         <link rel="stylesheet" href="/assets/css/video-call/video-call.css">
     <?php endif; ?>
 

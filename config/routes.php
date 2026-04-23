@@ -125,6 +125,7 @@ $router->get('/u/messages', 'User\\Messages\\MessagesController@View');
 $router->post('/u/matches/create-channel', 'User\\Matches\\MatchesController@handleCreateOrGetChannel');
 
 // Video Call
+$router->get('/u/video-call', 'User\\Messages\\VideoCallController@View');
 $router->post('/u/video/initiate-video-call', 'User\\Messages\\VideoCallController@handleInitiateCall');
 $router->post('/u/video/get-video-token', 'User\\Messages\\VideoCallController@handleGetStreamVideoToken');
 $router->post('/u/video/receive-call', 'User\\Messages\\VideoCallController@handleReceiveVideoCall');

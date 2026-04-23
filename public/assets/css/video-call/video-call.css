@@ -119,8 +119,10 @@
 @media (max-width: 600px) {
 
     .local-video-container {
-        width: 120px;
-        height: 80px;
+        width: 104px;
+        height: 168px;
+        bottom: 16px;
+        right: 16px;
     }
 
     .controls-bar {
