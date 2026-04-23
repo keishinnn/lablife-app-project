@@ -44,8 +44,9 @@
 }
 
 .setup-two-distance-gender-row .setup-field {
-    flex: 1 1 14rem;
-    min-width: 0;
+    flex: 1;
+    min-width: 8rem;
+    justify-content: space-between;
 }
 
 .setup-back-btn {
@@ -79,16 +80,5 @@
 @media (prefers-color-scheme: dark) {
     .setup-step-two-container {
         color: #9ca3af;
-    }
-}
-
-@media (max-width: 40rem) {
-    .setup-two-distance-gender-row {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .setup-two-buttons-container {
-        flex-direction: column;
     }
 }
