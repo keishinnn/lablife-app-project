@@ -96,6 +96,30 @@ class MatchSession
         }
     }
 
+    public static function findPendingSessionForUser(string $userId)
+    {
+        $db = App::resolve('Core\Database');
+        $pdo = $db->getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+            SELECT id, user_a, user_b, status, expires_at
+            FROM match_sessions
+            WHERE status = 'pending'
+              AND expires_at > NOW()
+              AND (user_a = :userId OR user_b = :userId)
+            ORDER BY expires_at DESC
+            LIMIT 1
+        ");
+
+            $stmt->execute([':userId' => $userId]);
+
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Database error: " . $e->getMessage());
+        }
+    }
+
     public static function setMatchSessionExpired(string $userId)
     {
         $db = App::resolve('Core\Database');

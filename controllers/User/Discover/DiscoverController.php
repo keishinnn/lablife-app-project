@@ -59,6 +59,20 @@ class DiscoverController
         // Start the search (insert/update active search)
         MatchSearch::startSearch($userId);
 
+        $existingSession = MatchSession::findPendingSessionForUser($userId);
+
+        if ($existingSession) {
+            $partnerId = $existingSession['user_a'] === $userId
+                ? $existingSession['user_b']
+                : $existingSession['user_a'];
+
+            json_response([
+                'status' => 'matched',
+                'match_id' => $existingSession['id'],
+                'partner_id' => $partnerId
+            ]);
+        }
+
         // Try to find another active user to match
         $activeUsers = MatchSearch::getActiveUsersExcept($userId);
 
@@ -76,6 +90,20 @@ class DiscoverController
                         'partner_id' => $matchedUser['candidate_id']
                     ]);
                 }
+
+                $existingSession = MatchSession::findPendingSessionForUser($userId);
+
+                if ($existingSession) {
+                    $partnerId = $existingSession['user_a'] === $userId
+                        ? $existingSession['user_b']
+                        : $existingSession['user_a'];
+
+                    json_response([
+                        'status' => 'matched',
+                        'match_id' => $existingSession['id'],
+                        'partner_id' => $partnerId
+                    ]);
+                }
             }
         }
 
@@ -84,6 +112,30 @@ class DiscoverController
             'status' => 'search_started',
             'user_id' => $userId,
             'message' => 'Waiting for a match...'
+        ]);
+    }
+
+    public function checkMatch()
+    {
+        \Core\Middleware::auth();
+        $userId = \Core\Auth::user();
+
+        $session = MatchSession::findPendingSessionForUser($userId);
+
+        if (!$session) {
+            json_response([
+                'status' => 'none'
+            ]);
+        }
+
+        $partnerId = $session['user_a'] === $userId
+            ? $session['user_b']
+            : $session['user_a'];
+
+        json_response([
+            'status' => 'matched',
+            'match_id' => $session['id'],
+            'partner_id' => $partnerId
         ]);
     }
 }

@@ -73,6 +73,69 @@ use Core\Auth;
     let searchLocked = false;
     let isIntentionalNavigation = false;
 
+    function navigateToMatchedSession(partnerId, matchId = '') {
+        isIntentionalNavigation = true;
+        sessionStorage.setItem('searching', 'false');
+        setSearchInMatch().finally(() => {
+            const matchQuery = matchId ? `&match=${matchId}` : '';
+            window.location.href = `/u/discover/matched-user?partner=${partnerId}${matchQuery}`;
+        });
+    }
+
+    function waitForRealtimeSubscription(channel, label) {
+        return new Promise((resolve, reject) => {
+            let settled = false;
+
+            const timeoutId = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                reject(new Error(`${label} subscription timed out.`));
+            }, 8000);
+
+            channel.subscribe((status) => {
+                console.log(`${label} subscription status:`, status);
+
+                if (status === 'SUBSCRIBED' && !settled) {
+                    settled = true;
+                    clearTimeout(timeoutId);
+                    resolve(channel);
+                    return;
+                }
+
+                if (
+                    (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') &&
+                    !settled
+                ) {
+                    settled = true;
+                    clearTimeout(timeoutId);
+                    reject(new Error(`${label} subscription failed with status ${status}.`));
+                }
+            });
+        });
+    }
+
+    async function reconcilePendingMatch() {
+        const res = await fetch('/u/discover/check-match', {
+            method: 'GET',
+            headers: {
+                'X-CSRF-Token': csrfToken
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error('Failed to reconcile pending match.');
+        }
+
+        const data = await res.json();
+
+        if (data.status === 'matched' && data.partner_id) {
+            navigateToMatchedSession(data.partner_id, data.match_id);
+            return true;
+        }
+
+        return false;
+    }
+
     function showStopSearchContainer() {
         stopSearchContainer.style.display = 'flex';
         stopSearchContainer.style.pointerEvents = 'auto';
@@ -186,19 +249,11 @@ use Core\Auth;
                                 (session.user_a === currentUser || session.user_b === currentUser) &&
                                 session.status === 'pending'
                             ) {
-                                isIntentionalNavigation = true;
                                 const partnerId = session.user_a === currentUser ? session.user_b : session.user_a;
-
-                                sessionStorage.setItem('searching', 'false');
-                                setSearchInMatch().finally(() => {
-                                    window.location.href = `/u/discover/matched-user?partner=${partnerId}&match=${session.id}`;
-                                });
+                                navigateToMatchedSession(partnerId, session.id);
                             }
                         }
-                    )
-                    .subscribe((status) => {
-                        console.log("Subscription status:", status);
-                    });
+                    );
 
                 activeSearchSub = supabaseClient
                     .channel('public:active_match_searches')
@@ -235,10 +290,12 @@ use Core\Auth;
                                 searchLocked = false;
                             }
                         }
-                    )
-                    .subscribe((status) => {
-                        console.log("Search status subscription:", status);
-                    });
+                    );
+
+                await Promise.all([
+                    waitForRealtimeSubscription(matchSessionSub, 'Match session'),
+                    waitForRealtimeSubscription(activeSearchSub, 'Active search')
+                ]);
 
                 const res = await fetch('/u/discover/start-search', {
                     method: 'POST',
@@ -250,6 +307,15 @@ use Core\Auth;
                 if (!res.ok) {
                     throw new Error('Failed to start search');
                 }
+
+                const data = await res.json();
+
+                if (data.status === 'matched' && data.partner_id) {
+                    navigateToMatchedSession(data.partner_id, data.match_id);
+                    return;
+                }
+
+                await reconcilePendingMatch();
             } catch (err) {
                 console.error("Error starting match search:", err);
                 statusMsg.textContent = "Failed to start search.";
