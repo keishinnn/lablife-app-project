@@ -1,6 +1,8 @@
 <?php
 require base_path('views/shared/header.php');
 
+use Core\Auth;
+
 ?>
 
 <div class="matches-container">
@@ -64,7 +66,8 @@ require base_path('views/shared/header.php');
 
     const supabaseClient = subscribeToSupabase(
         '<?= $_ENV['SUPABASE_URL'] ?>',
-        '<?= $_ENV['SUPABASE_ANON_KEY'] ?>'
+        '<?= $_ENV['SUPABASE_ANON_KEY'] ?>',
+        <?= json_encode(Auth::getValidAccessToken() ?? '') ?>
     );
 
     const matchedUserIds = <?= json_encode(array_map(fn($u) => $u->id, $matchedUsers)); ?>;

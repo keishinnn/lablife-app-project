@@ -51,7 +51,8 @@ use Core\Auth;
 
     const supabaseClient = subscribeToSupabase(
         '<?= $_ENV['SUPABASE_URL'] ?>',
-        '<?= $_ENV['SUPABASE_ANON_KEY'] ?>'
+        '<?= $_ENV['SUPABASE_ANON_KEY'] ?>',
+        <?= json_encode(Auth::getValidAccessToken() ?? '') ?>
     );
 
     const startSearchContainer = document.getElementById('find-match-container');
@@ -177,6 +178,7 @@ use Core\Auth;
                             table: 'match_sessions',
                         },
                         (payload) => {
+                            console.log('Match session payload:', payload);
                             const session = payload.new;
                             if (!session) return;
 
@@ -208,6 +210,7 @@ use Core\Auth;
                             filter: `user_id=eq.${currentUser}`,
                         },
                         (payload) => {
+                            console.log('Active search payload:', payload);
                             const session = payload.new;
                             if (!session) return;
 

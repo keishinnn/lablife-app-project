@@ -28,6 +28,7 @@ class GoogleOAuthController
         }
 
         $accessToken = trim($payload['access_token'] ?? '');
+        $refreshToken = trim($payload['refresh_token'] ?? '');
         if ($accessToken === '') {
             json_response(['success' => false, 'message' => 'Missing access token.'], 422);
         }
@@ -54,6 +55,7 @@ class GoogleOAuthController
             session_regenerate_id(true);
             csrf_token();
             $_SESSION['access_token'] = $accessToken;
+            $_SESSION['refresh_token'] = $refreshToken !== '' ? $refreshToken : null;
             $_SESSION['user_id'] = $userId;
             unset($_SESSION['old_email']);
 

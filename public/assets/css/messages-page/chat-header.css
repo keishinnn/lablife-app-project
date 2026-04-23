@@ -2,6 +2,7 @@
     background-color: #ffffff;
     border-bottom: 1px solid #e5e7eb;
     padding: 1rem 1.5rem;
+    border-radius: 1rem 1rem 0 0;
 }
 
 .chat-header-section-one {
