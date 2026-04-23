@@ -118,7 +118,8 @@ use Core\Auth;
 
     const supabaseClient = subscribeToSupabase(
         '<?= $_ENV['SUPABASE_URL'] ?>',
-        '<?= $_ENV['SUPABASE_ANON_KEY'] ?>'
+        '<?= $_ENV['SUPABASE_ANON_KEY'] ?>',
+        <?= json_encode(Auth::getValidAccessToken() ?? '') ?>
     );
 
     const duration = 60;
@@ -466,6 +467,7 @@ use Core\Auth;
                 table: 'matches',
             },
             (payload) => {
+                console.log("Matches payload:", payload);
                 const match = payload.new;
                 if (!match) return;
 
@@ -498,6 +500,7 @@ use Core\Auth;
                 table: 'match_sessions',
             },
             async (payload) => {
+                console.log("Matched page session payload:", payload);
                 const session = payload.new;
                 if (!session) return;
 
@@ -551,6 +554,7 @@ use Core\Auth;
                 filter: `from_user_id=in.(${currentUser},${partnerId})`
             },
             (payload) => {
+                console.log("Dislike payload:", payload);
                 const dislike = payload.new;
                 if (!dislike) return;
 

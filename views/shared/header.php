@@ -102,7 +102,7 @@ $needsFontAwesome = $isMessagesPage || path_is('/test-video');
     <?php endif; ?>
 
     <?php if ($needsSupabase): ?>
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.81.0"></script>
     <?php endif; ?>
     <?php if ($needsStreamChat): ?>
         <script src="https://cdn.jsdelivr.net/npm/stream-chat@8/dist/browser.full-bundle.min.js"></script>

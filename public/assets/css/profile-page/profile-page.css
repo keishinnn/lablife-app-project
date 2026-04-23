@@ -292,51 +292,52 @@
 }
 
 .profile-pt-btn {
-    color: #ffffff;
-    background-color: #1f2937;
+    color: #111827;
+    background-color: #f3f4f6;
     font-weight: 500;
     border-radius: 9999px;
     font-size: 0.875rem;
     padding: 0.4rem 1rem;
     margin-right: 0.5rem;
     margin-bottom: 0.5rem;
-    border: 1px solid #1f2937;
+    border: 1px solid #d1d5db;
     outline: none;
-    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .p-pf-hb-text {
-    color: #ffffff;
-    background-color: #1f2937;
+    color: #111827;
+    background-color: #f3f4f6;
     font-weight: 500;
     border-radius: 9999px;
     font-size: 0.875rem;
     padding: 0.4rem 1rem;
-    border: 1px solid #1f2937;
+    border: 1px solid #d1d5db;
     outline: none;
-    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .p-page-pt-type-text {
-    color: #ffffff;
-    background-color: #1f2937;
+    color: #111827;
+    background-color: #f3f4f6;
     font-weight: 500;
     border-radius: 9999px;
     font-size: 0.875rem;
     padding: 0.4rem 1rem;
     margin-right: 0.5rem;
     margin-bottom: 0.5rem;
-    border: 1px solid #1f2937;
+    border: 1px solid #d1d5db;
     outline: none;
-    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .profile-pt-btn:hover {
-    background-color: #111827;
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
 }
 
 .profile-pt-btn:focus {
-    box-shadow: 0 0 0 4px rgba(156, 163, 175, 0.5);
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -393,13 +394,16 @@
     }
 
     .profile-pt-btn,
-    .p-pf-hb-text {
+    .p-pf-hb-text,
+    .p-page-pt-type-text {
         background-color: #1f2937;
         border-color: #1f2937;
+        color: #ffffff;
     }
 
     .profile-pt-btn:hover {
         background-color: #374151;
+        border-color: #4b5563;
     }
 
     .profile-pt-btn:focus {

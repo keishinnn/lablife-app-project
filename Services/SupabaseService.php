@@ -152,6 +152,13 @@ class SupabaseService
         ]);
     }
 
+    public function refreshSession(string $refreshToken)
+    {
+        return $this->request("token?grant_type=refresh_token", "POST", [
+            "refresh_token" => $refreshToken
+        ]);
+    }
+
     public function getUser($accessToken)
     {
         $ch = curl_init("{$this->url}/auth/v1/user");

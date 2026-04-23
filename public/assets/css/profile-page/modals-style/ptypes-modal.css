@@ -28,18 +28,19 @@
 
 .ptypes-modal-content h2 {
     margin-bottom: 3rem;
+    color: #111827;
 }
 
 .ptypes-modal-content button {
     margin-top: 5rem;
 }
 
-.ptypes-modal-content button:nth-child(1) {
+#p-pt-cancel-btn {
     display: inline-flex;
     align-items: center;
     padding: 0.7rem 1rem;
-    background-color: #374151;
-    color: white;
+    background-color: #f3f4f6;
+    color: #374151;
     font-size: 0.875rem;
     font-weight: 500;
     border-radius: 0.5rem;
@@ -47,15 +48,16 @@
         0 2px 4px -1px rgba(0, 0, 0, 0.06);
     transition: all 0.2s ease;
     text-decoration: none;
-    border: none;
+    border: 1px solid #d1d5db;
     cursor: pointer;
 }
 
-.ptypes-modal-content button:nth-child(1):hover {
-    background-color: #475368;
+#p-pt-cancel-btn:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
 }
 
-.ptypes-modal-content button:nth-child(2) {
+#pt-save-btn {
     display: inline-flex;
     align-items: center;
     padding: 0.7rem 1rem;
@@ -72,7 +74,7 @@
     cursor: pointer;
 }
 
-.ptypes-modal-content button:nth-child(2):hover {
+#pt-save-btn:hover {
     background: linear-gradient(to right, #db2777, #dc2626);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
         0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -121,13 +123,25 @@
         background: #0f172a;
     }
 
+    .ptypes-modal-content h2,
+    .pt-close-btn {
+        color: #ffffff;
+    }
+
     #personalitySelect {
         border-color: #4b5563;
         background-color: #1f2937;
         color: #ffffff;
     }
 
-    .ptypes-modal-content {
-        background: #0f172a;
+    #p-pt-cancel-btn {
+        background-color: #1f2937;
+        color: #e5e7eb;
+        border-color: #374151;
+    }
+
+    #p-pt-cancel-btn:hover {
+        background-color: #374151;
+        border-color: #4b5563;
     }
 }

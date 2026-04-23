@@ -120,7 +120,7 @@
 
 .chat-interface-section-ten {
     border-top: 1px solid #e5e7eb;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
 }
 
 .chat-interface-section-ten form {
@@ -148,19 +148,13 @@
 }
 
 .chat-interface-form button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    min-width: 2.75rem;
-    height: 2.5rem;
-    padding: 0 0.85rem;
+    padding: 0.5rem 1rem;
     background: transparent;
     border: none;
     border-radius: 9999px;
     outline: none;
     transition: all 0.2s ease;
-    margin: 0;
+    margin-bottom: 1.5rem;
 }
 
 .chat-interface-form button svg {

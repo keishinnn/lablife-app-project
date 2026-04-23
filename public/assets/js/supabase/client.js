@@ -4,8 +4,9 @@
  * Subscribe to Supabase using anon key only
  * @param {string} url - Supabase URL
  * @param {string} key - Supabase anon key
+ * @param {string|null} accessToken - Supabase access token for authenticated Realtime
  */
-export function subscribeToSupabase(url, key) {
+export function subscribeToSupabase(url, key, accessToken = null) {
     const supabaseUrl = url;
     const supabaseKey = key;
 
@@ -19,6 +20,10 @@ export function subscribeToSupabase(url, key) {
             }
         }
     );
+
+    if (accessToken) {
+        supabaseClient.realtime.setAuth(accessToken);
+    }
 
     return supabaseClient;
 }

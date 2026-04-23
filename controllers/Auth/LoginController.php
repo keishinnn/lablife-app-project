@@ -121,6 +121,7 @@ class LoginController
                     session_regenerate_id(true);
                     csrf_token();
                     $_SESSION['access_token'] = $response['access_token'] ?? null;
+                    $_SESSION['refresh_token'] = $response['refresh_token'] ?? null;
                     $_SESSION['user_id'] = $user->id;
                     unset($_SESSION['old_email']);
                     $isLoading = false;
@@ -130,6 +131,7 @@ class LoginController
                 session_regenerate_id(true);
                 csrf_token();
                 $_SESSION['access_token'] = $response['access_token'] ?? null;
+                $_SESSION['refresh_token'] = $response['refresh_token'] ?? null;
                 $_SESSION['user_id'] = $user->id;
                 unset($_SESSION['old_email']);
                 $isLoading = false;
