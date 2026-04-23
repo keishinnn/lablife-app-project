@@ -11,6 +11,7 @@ require(base_path("views/shared/header.php"));
             <h1>Your Blocked Users</h1>
             <p> <?php echo count($blockedUsers) ?> block<?= count($blockedUsers) > 1 ? "s" : "" ?></p>
         </header>
+        <div id="blocked-users-feedback" class="profile-flash error" style="display:none; margin-bottom: 1rem;"></div>
 
         <?php if (empty($blockedUsers)): ?>
 
@@ -65,6 +66,7 @@ require(base_path("views/shared/header.php"));
 
     const unblockUserForms = document.querySelectorAll('.unblock-user-form');
     const userBlockedIdInput = document.getElementById('blocked_user_id');
+    const blockedUsersFeedback = document.getElementById('blocked-users-feedback');
 
     const loadingUnblockContainer = document.getElementById('pt-loading');
     const loadingUnblockText = loadingUnblockContainer.querySelector('.profile-loading-text');
@@ -77,10 +79,23 @@ require(base_path("views/shared/header.php"));
         presence: true
     });
 
+    function showBlockedUsersFeedback(message) {
+        if (!blockedUsersFeedback) return;
+        blockedUsersFeedback.textContent = message;
+        blockedUsersFeedback.style.display = 'block';
+    }
+
+    function clearBlockedUsersFeedback() {
+        if (!blockedUsersFeedback) return;
+        blockedUsersFeedback.textContent = '';
+        blockedUsersFeedback.style.display = 'none';
+    }
+
     if (unblockUserForms.length > 0) {
         unblockUserForms.forEach((form) => {
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
+                clearBlockedUsersFeedback();
 
                 showUnblockLoading();
 
@@ -111,14 +126,19 @@ require(base_path("views/shared/header.php"));
                 })
             });
 
-            if (!res.ok) throw new Error("Failed to unblock user in database");
-            const result = await res.json();
+            const result = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showBlockedUsersFeedback(result.message || result.error || "Failed to unblock user. Please try again.");
+                hideUnblockLoading();
+                return;
+            }
 
             await chatClient.unBlockUser(userBlockedId);
             location.reload();
         } catch (err) {
             console.error("Error blocking user:", err);
-            alert("Failed to block user. Please try again.");
+            showBlockedUsersFeedback("Failed to unblock user. Please try again.");
+            hideUnblockLoading();
         }
     }
 
@@ -127,6 +147,12 @@ require(base_path("views/shared/header.php"));
 
         loadingUnblockContainer.style.display = 'flex';
         loadingUnblockText.textContent = 'Unblocking user...';
+    }
+
+    function hideUnblockLoading() {
+        if (!loadingUnblockContainer) return;
+
+        loadingUnblockContainer.style.display = 'none';
     }
 
     window.addEventListener("beforeunload", async (event) => {

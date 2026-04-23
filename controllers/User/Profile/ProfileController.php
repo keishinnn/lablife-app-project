@@ -43,11 +43,24 @@ class ProfileController
         $personalityType = $bundle['personalityType'] ?? null;
         $userHobbies = $bundle['userHobbies'] ?? null;
         $userInterests = $bundle['userInterests'] ?? null;
+        $profileModalFeedback = session_flash_pull('profile_modal_feedback', null);
+        $legacyProfileModalError = session_flash_pull('profile_modal_error', '');
+        $profileModalError = '';
+        $profileModalToOpen = '';
+
+        if (is_array($profileModalFeedback)) {
+            $profileModalError = (string) ($profileModalFeedback['message'] ?? '');
+            $profileModalToOpen = (string) ($profileModalFeedback['modal'] ?? '');
+        } elseif (is_string($profileModalFeedback)) {
+            $profileModalError = $profileModalFeedback;
+        } elseif (is_string($legacyProfileModalError)) {
+            $profileModalError = $legacyProfileModalError;
+        }
 
         $_SESSION['user_id'] = $user->id;
         $isLoading = false;
 
-        view('user/profile/profile.view.php', compact('user', 'isLoading', 'error', 'userPreferences', 'personalityType', 'ptypes', 'hobbies', 'userHobbies', 'interests', 'userInterests'));
+        view('user/profile/profile.view.php', compact('user', 'isLoading', 'error', 'userPreferences', 'personalityType', 'ptypes', 'hobbies', 'userHobbies', 'interests', 'userInterests', 'profileModalError', 'profileModalToOpen'));
     }
 
     public function handleGetPTypes()

@@ -34,7 +34,8 @@ class ProfileSetupController
         $user = User::getCurrentUserProfile($userId);
         \Core\Middleware::checkIfUserExist($user);
 
-        view('user/profile-setup/setup.pref.view.php');
+        $error = session_flash_pull('setup_preferences_error', '');
+        view('user/profile-setup/setup.pref.view.php', compact('error'));
     }
 
     public function handleStepOneSetup()

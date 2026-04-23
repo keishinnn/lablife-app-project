@@ -16,7 +16,7 @@ class ProfileEditController
         \Core\Middleware::checkNotSetProfile($user);
 
         $isLoading = false;
-        $error = '';
+        $error = session_flash_pull('profile_edit_error', '');
         $message = '';
 
         $user = User::getCurrentUserProfile($userId);

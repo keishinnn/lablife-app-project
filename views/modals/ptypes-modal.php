@@ -1,10 +1,13 @@
     <!-- Modal for upserting Personality Type -->
-    <div id="personalityModal" class="p-ptypes-modal">
+    <div id="personalityModal" class="p-ptypes-modal" data-open-on-load="<?= ($profileModalToOpen ?? '') === 'personality' ? 'true' : 'false' ?>">
         <div class="ptypes-modal-content">
             <span class="pt-close-btn" id="p-pt-close-btn">&times;</span>
             <h2>Select Personality Type</h2>
             <form id="pt-form" method="POST" action="/u/save-personality">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <?php if (($profileModalToOpen ?? '') === 'personality' && !empty($profileModalError ?? '')): ?>
+                    <div class="profile-flash error" style="margin-bottom: 1rem;"><?= htmlspecialchars($profileModalError) ?></div>
+                <?php endif; ?>
 
                 <div id="personalitySelect-container">
                     <select name="personality_id" id="personalitySelect" required>

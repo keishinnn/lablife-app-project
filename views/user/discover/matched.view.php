@@ -71,6 +71,7 @@ use Core\Auth;
             </div>
 
             <div style="margin-top: 2rem;">
+                <p id="match-action-feedback" class="profile-flash error" style="display:none; margin-bottom: 1rem;"></p>
                 <div class="discover-match-buttons">
                     <form id="submit-dislike-form" method="POST">
                         <button class="discover-match-button-dislike" aria-label="Pass" type="submit">
@@ -151,6 +152,7 @@ use Core\Auth;
     const reconLoading = document.getElementById('recon-loading');
     const discoverSectionModify = document.getElementById('discover-section-modify');
     const discoverContainer = document.getElementById('discover-container-id');
+    const matchActionFeedback = document.getElementById('match-action-feedback');
     const messageLoading = document.getElementById('messages-loading');
     const pageContent = document.getElementById('page-content');
     const csrfToken = submitLikeForm?.querySelector('input[name="csrf_token"]')?.value ?? pageCsrfToken;
@@ -580,9 +582,22 @@ use Core\Auth;
             console.log("Dislike subscription status:", status);
         });
 
+    function showMatchActionFeedback(message) {
+        if (!matchActionFeedback) return;
+        matchActionFeedback.textContent = message;
+        matchActionFeedback.style.display = 'block';
+    }
+
+    function clearMatchActionFeedback() {
+        if (!matchActionFeedback) return;
+        matchActionFeedback.textContent = '';
+        matchActionFeedback.style.display = 'none';
+    }
+
     if (submitLikeForm) {
         submitLikeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            clearMatchActionFeedback();
             createHeartBurst(e.currentTarget);
 
             try {
@@ -597,12 +612,13 @@ use Core\Auth;
                     })
                 });
 
-                await res.json();
+                const data = await res.json();
                 if (!res.ok) {
-                    throw new Error('Failed to like other user');
+                    throw new Error(data.message || data.error || 'Failed to like other user');
                 }
             } catch (err) {
                 console.error("Error liking other user:", err);
+                showMatchActionFeedback(err.message || 'Failed to like other user.');
             }
         });
     }
@@ -610,6 +626,7 @@ use Core\Auth;
     if (submitDislikeForm) {
         submitDislikeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            clearMatchActionFeedback();
             createHeartBreakBurst(e.currentTarget);
 
             try {
@@ -624,12 +641,13 @@ use Core\Auth;
                     })
                 });
 
-                await res.json();
+                const data = await res.json();
                 if (!res.ok) {
-                    throw new Error('Failed to dislike other user');
+                    throw new Error(data.message || data.error || 'Failed to dislike other user');
                 }
             } catch (err) {
                 console.error("Error disliking other user:", err);
+                showMatchActionFeedback(err.message || 'Failed to dislike other user.');
             }
         });
     }

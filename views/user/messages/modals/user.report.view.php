@@ -25,6 +25,7 @@
           <!-- Step 1: Choose Category -->
           <div class="report-step" data-step="1">
             <p class="report-step-title">What are you reporting?</p>
+            <p id="report-feedback" class="profile-flash error" style="display:none; margin-bottom: 1rem;"></p>
             <div id="report-categories-container" class="report-options-list">
               <!-- populated by JS -->
               <p class="loading-text">Loading options...</p>

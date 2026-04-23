@@ -20,6 +20,7 @@
                 <h3 class="user-block-confirmation-modal-title">
                     Are you sure you want to block this user?
                 </h3>
+                <p id="user-block-feedback" class="profile-flash error" style="display:none; margin-bottom: 1rem;"></p>
 
                 <form method="post" id="user-block-form-submit">
                     <div class="user-block-confirmation-modal-buttons">

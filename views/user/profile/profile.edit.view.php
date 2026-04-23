@@ -55,6 +55,9 @@ $avatarUrl = (isset($user->avatarUrl) && is_valid_image_url($user->avatarUrl))
 
                 <form action="/u/submit-edit-profile" enctype="multipart/form-data" method="POST" id="edit-profile-form">
                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <div id="profile-edit-feedback" class="profile-flash error" style="display:<?= !empty($error) ? 'block' : 'none' ?>; margin-bottom: 1rem;">
+                        <?= !empty($error) ? htmlspecialchars($error) : '' ?>
+                    </div>
                     <div class="profile-edit-page-section-seven">
                         <div class="profile-edit-page-section-eight">
                             <label for="full-name">Full Name *</label>
@@ -114,18 +117,6 @@ $avatarUrl = (isset($user->avatarUrl) && is_valid_image_url($user->avatarUrl))
                             placeholder="Tell others about yourself..."><?= htmlspecialchars($user->bio ?? '') ?></textarea>
                         <p>/500 characters</p>
                     </div>
-
-                    <?php if (!isset($error)): ?>
-                        <div class="profile-edit-page-error">
-                            <?php echo $error ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (!isset($message)): ?>
-                        <div class="profile-edit-page-error">
-                            <?php echo $error ?>
-                        </div>
-                    <?php endif; ?>
 
                     <div class="profile-edit-page-section-fourteen">
                         <a href="/u/profile" class="profile-edit-cancel-btn">Cancel</a>

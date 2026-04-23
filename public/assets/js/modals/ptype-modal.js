@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
      if (!ptModal) return;
 
+    if (ptModal.dataset.openOnLoad === "true") {
+        ptModal.style.display = "flex";
+    }
+
     // Open modal
     if (ptBtn) {
         ptBtn.addEventListener("click", function () {
