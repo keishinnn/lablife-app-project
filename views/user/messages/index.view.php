@@ -30,7 +30,7 @@ require base_path('views/shared/header.php');
 
 <script type="module">
     delete window.currentCall;
-    delete window.currentStream;
+    delete window.currentLocalVideoUnbind;
 
     let activeChannel = null;
     let renderedMessageIds = new Set();
@@ -858,17 +858,41 @@ require base_path('views/shared/header.php');
             }
 
             await call.camera.enable({
-                publish: true
+                publish: true,
+                cameraFacingMode: "user"
             });
             await call.microphone.enable({
                 publish: true
             });
 
-            const localStream = await getMediaStream();
-            if (localStream) {
-                localVideo.srcObject = localStream;
-                await localVideo.play().catch(e => console.warn("Local preview error:", e));
+            function bindLocalPreview() {
+                const localParticipant = call.state.participants.find((participant) => participant.userId === userId);
+                if (!localParticipant?.sessionId) {
+                    return false;
+                }
+
+                try {
+                    if (typeof window.currentLocalVideoUnbind === "function") {
+                        window.currentLocalVideoUnbind();
+                    }
+
+                    const unbindLocal = call.bindVideoElement(localVideo, localParticipant.sessionId, "videoTrack");
+                    if (typeof unbindLocal === "function") {
+                        window.currentLocalVideoUnbind = unbindLocal;
+                    } else {
+                        delete window.currentLocalVideoUnbind;
+                    }
+
+                    localVideoOverlay.style.display = 'none';
+                    localVideoModify.style.display = 'flex';
+                    return true;
+                } catch (error) {
+                    console.warn("Failed to bind local preview:", error);
+                    return false;
+                }
             }
+
+            bindLocalPreview();
 
             const boundElements = new Set();
 
@@ -950,27 +974,47 @@ require base_path('views/shared/header.php');
 
             call.on('participantJoined', (event) => {
                 const participant = event.participant;
-                if (participant.userId === userId) return;
+                if (!participant) return;
+                if (participant.userId === userId) {
+                    bindLocalPreview();
+                    return;
+                }
 
                 bindParticipant(participant);
             });
 
             call.on('trackPublished', (event) => {
                 const participant = event.participant;
-                if (participant && participant.userId !== userId && event.type === 2) {
-                    remoteVideoOverlay.style.display = 'none';
-                    remoteVideoModify.style.display = 'flex';
-
-                    bindParticipant(participant);
+                if (!participant || event.type !== 2) {
+                    return;
                 }
+
+                if (participant.userId === userId) {
+                    bindLocalPreview();
+                    localVideoOverlay.style.display = 'none';
+                    localVideoModify.style.display = 'flex';
+                    return;
+                }
+
+                remoteVideoOverlay.style.display = 'none';
+                remoteVideoModify.style.display = 'flex';
+                bindParticipant(participant);
             });
 
             call.on('trackUnpublished', (event) => {
                 const participant = event.participant;
-                if (participant && participant.userId !== userId && event.type === 2) {
-                    remoteVideoOverlay.style.display = 'flex';
-                    remoteVideoModify.style.display = 'none';
+                if (!participant || event.type !== 2) {
+                    return;
                 }
+
+                if (participant.userId === userId) {
+                    localVideoOverlay.style.display = 'flex';
+                    localVideoModify.style.display = 'none';
+                    return;
+                }
+
+                remoteVideoOverlay.style.display = 'flex';
+                remoteVideoModify.style.display = 'none';
             });
 
             call.on("call.session_participant_left", (event) => {
@@ -1033,7 +1077,11 @@ require base_path('views/shared/header.php');
                         localVideoOverlay.style.display = 'flex';
                         localVideoModify.style.display = 'none';
                     } else {
-                        await call.camera.enable();
+                        await call.camera.enable({
+                            publish: true,
+                            cameraFacingMode: "user"
+                        });
+                        bindLocalPreview();
                         localVideoOverlay.style.display = 'none';
                         localVideoModify.style.display = 'flex';
                     }
@@ -1062,10 +1110,13 @@ require base_path('views/shared/header.php');
                         delete window.currentCallUnbinders;
                     }
 
-                    if (localStream) {
-                        localStream.getTracks().forEach(t => {
-                            t.stop();
-                        });
+                    if (typeof window.currentLocalVideoUnbind === "function") {
+                        try {
+                            window.currentLocalVideoUnbind();
+                        } catch (e) {
+                            console.warn("Local preview unbind error:", e);
+                        }
+                        delete window.currentLocalVideoUnbind;
                     }
 
                     await call.leave();
@@ -1085,12 +1136,11 @@ require base_path('views/shared/header.php');
                 }
 
                 delete window.currentCall;
-                delete window.currentStream;
+                delete window.currentLocalVideoUnbind;
 
             });
 
             window.currentCall = call;
-            window.currentStream = localStream;
 
         } catch (err) {
             console.error("❌ Video call error:", err);
@@ -1101,36 +1151,6 @@ require base_path('views/shared/header.php');
             messagesContainer.style.display = 'flex';
             footer.style.display = 'flex';
             navbar.style.display = 'flex';
-        }
-    }
-
-    async function getMediaStream() {
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const webcams = devices.filter(d => d.kind === "videoinput");
-
-            if (webcams.length > 0)
-                return await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        deviceId: webcams[0].deviceId
-                    },
-                    audio: true
-                });
-
-            const obsCamera = devices.find(d => d.label.includes("OBS Virtual Camera"));
-            if (obsCamera)
-                return await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        deviceId: obsCamera.deviceId
-                    },
-                    audio: true
-                });
-
-            alert("No camera found. Please connect one or enable OBS Virtual Camera.");
-            return null;
-        } catch (err) {
-            console.error("Camera error:", err);
-            return null;
         }
     }
 
@@ -1152,8 +1172,13 @@ require base_path('views/shared/header.php');
                     delete window.currentCallUnbinders;
                 }
 
-                if (window.currentStream) {
-                    window.currentStream.getTracks().forEach(t => t.stop());
+                if (typeof window.currentLocalVideoUnbind === "function") {
+                    try {
+                        window.currentLocalVideoUnbind();
+                    } catch (e) {
+                        console.warn("Local preview unbind error:", e);
+                    }
+                    delete window.currentLocalVideoUnbind;
                 }
 
                 await window.currentCall.leave().catch(e => console.warn("Leave error:", e));
@@ -1178,7 +1203,7 @@ require base_path('views/shared/header.php');
         if (navbar) navbar.style.display = 'flex';
 
         delete window.currentCall;
-        delete window.currentStream;
+        delete window.currentLocalVideoUnbind;
         delete window.currentCallId;
     }
 
@@ -1979,10 +2004,6 @@ require base_path('views/shared/header.php');
                 cleanupCall();
 
                 await window.currentCall.leave();
-
-                if (window.currentStream) {
-                    window.currentStream.getTracks().forEach(track => track.stop());
-                }
 
                 if (window.currentMessageId && chatClient) {
                     await chatClient.partialUpdateMessage(window.currentMessageId, {
