@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!hobbiesModal) return;
 
+    if (hobbiesModal.dataset.openOnLoad === "true") {
+        hobbiesModal.style.display = "flex";
+    }
+
     // Open modal
     if (hobbiesBtn) {
         hobbiesBtn.addEventListener("click", function () {

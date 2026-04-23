@@ -11,6 +11,7 @@ use Core\Auth;
         <div class="discover-search-copy">
             <h1 id="status-msg">Find Your Match</h1>
             <p id="match-search-text">Click start to find a match.</p>
+            <p id="discover-feedback" class="profile-flash error" style="display:none; margin-top: 1rem;"></p>
         </div>
 
         <div class="discover-loading" id="discover-loading-indicator">
@@ -65,6 +66,7 @@ use Core\Auth;
     const statusMsg = document.getElementById('status-msg');
     const discoverLoading = document.getElementById('discover-loading-indicator');
     const matchSearchText = document.getElementById('match-search-text');
+    const discoverFeedback = document.getElementById('discover-feedback');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
     let matchSessionSub = null;
@@ -72,6 +74,18 @@ use Core\Auth;
     let cleanupInProgress = false;
     let searchLocked = false;
     let isIntentionalNavigation = false;
+
+    function showDiscoverFeedback(message) {
+        if (!discoverFeedback) return;
+        discoverFeedback.textContent = message;
+        discoverFeedback.style.display = 'block';
+    }
+
+    function clearDiscoverFeedback() {
+        if (!discoverFeedback) return;
+        discoverFeedback.textContent = '';
+        discoverFeedback.style.display = 'none';
+    }
 
     function navigateToMatchedSession(partnerId, matchId = '') {
         isIntentionalNavigation = true;
@@ -173,15 +187,23 @@ use Core\Auth;
                 activeSearchSub = null;
             }
 
-            await fetch('/u/discover/set-search-expired', {
+            const response = await fetch('/u/discover/set-search-expired', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-Token': csrfToken
                 },
                 keepalive: true
             });
+
+            if (!response.ok && fromStopButton) {
+                const data = await response.json().catch(() => ({}));
+                showDiscoverFeedback(data.message || data.error || 'Failed to stop searching.');
+            }
         } catch (err) {
             console.warn("Cleanup failed:", err);
+            if (fromStopButton) {
+                showDiscoverFeedback('Failed to stop searching.');
+            }
         } finally {
             cleanupInProgress = false;
             if (!fromStopButton) {
@@ -223,6 +245,7 @@ use Core\Auth;
             }
 
             searchLocked = true;
+            clearDiscoverFeedback();
             findBtn.disabled = true;
             statusMsg.textContent = "Searching for matches...";
             matchSearchText.textContent = "Waiting for another user to respond.";
@@ -304,11 +327,10 @@ use Core\Auth;
                     }
                 });
 
-                if (!res.ok) {
-                    throw new Error('Failed to start search');
-                }
-
                 const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || data.error || 'Failed to start search');
+                }
 
                 if (data.status === 'matched' && data.partner_id) {
                     navigateToMatchedSession(data.partner_id, data.match_id);
@@ -320,6 +342,7 @@ use Core\Auth;
                 console.error("Error starting match search:", err);
                 statusMsg.textContent = "Failed to start search.";
                 matchSearchText.textContent = "Please try again.";
+                showDiscoverFeedback(err.message || "Please try again.");
                 findBtn.disabled = false;
                 discoverLoading.style.display = 'none';
                 showStartSearchContainer();
@@ -332,6 +355,7 @@ use Core\Auth;
     if (stopSearchForm) {
         stopSearchForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            clearDiscoverFeedback();
             await setSearchExpired(true);
 
             showStartSearchContainer();

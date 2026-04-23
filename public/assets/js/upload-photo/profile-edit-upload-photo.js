@@ -2,12 +2,26 @@
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('avatar-upload');
     const previewImg = document.getElementById('pp-img');
+    const feedback = document.getElementById('profile-edit-feedback');
 
     if (!fileInput || !previewImg) return;
+
+    const showFeedback = (message) => {
+        if (!feedback) return;
+        feedback.textContent = message;
+        feedback.style.display = 'block';
+    };
+
+    const clearFeedback = () => {
+        if (!feedback) return;
+        feedback.textContent = '';
+        feedback.style.display = 'none';
+    };
 
     fileInput.addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
+        clearFeedback();
 
         previewImg.classList.add('avatar-loading');
 
@@ -26,12 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success && data.avatarUrl) {
                     previewImg.src = data.avatarUrl + "?t=" + Date.now();
                 } else {
-                    alert(data.message || 'Failed to upload avatar.');
+                    showFeedback(data.message || data.error || 'Failed to upload avatar.');
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert('Something went wrong while uploading.');
+                showFeedback('Something went wrong while uploading.');
             })
             .finally(() => {
                 previewImg.classList.remove('avatar-loading');

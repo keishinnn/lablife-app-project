@@ -41,6 +41,10 @@ require(base_path("views/shared/header.php"));
                     <div class="profile-flash error"><?= htmlspecialchars($_SESSION['flash_error']) ?></div>
                 <?php unset($_SESSION['flash_error']);
                 endif;
+
+                if (!empty($rateLimitError)): ?>
+                    <div class="profile-flash error"><?= htmlspecialchars($rateLimitError) ?></div>
+                <?php endif;
                 ?>
 
                 <form action="/u/submit-edit-preferences" method="POST" class="preferences-form" id="edit-preferences-form">

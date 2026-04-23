@@ -1,10 +1,13 @@
-    <div id="hobbiesModal" class="p-hb-modal">
+    <div id="hobbiesModal" class="p-hb-modal" data-open-on-load="<?= ($profileModalToOpen ?? '') === 'hobbies' ? 'true' : 'false' ?>">
         <div class="hb-modal-content">
             <span class="hb-close-btn" id="p-hb-close-btn">&times;</span>
             <h2>Select Hobbies</h2>
 
             <form id="hb-form" method="POST" action="/u/save-hobbies">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <?php if (($profileModalToOpen ?? '') === 'hobbies' && !empty($profileModalError ?? '')): ?>
+                    <div class="profile-flash error" style="margin-bottom: 1rem;"><?= htmlspecialchars($profileModalError) ?></div>
+                <?php endif; ?>
 
                 <div id="hobbies-container" style="display:flex; flex-wrap:wrap; gap:10px;">
                     <?php foreach ($hobbies ?? [] as $hobby):

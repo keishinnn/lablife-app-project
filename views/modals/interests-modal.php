@@ -1,10 +1,13 @@
-    <div id="interestsModal" class="p-interests-modal">
+    <div id="interestsModal" class="p-interests-modal" data-open-on-load="<?= ($profileModalToOpen ?? '') === 'interests' ? 'true' : 'false' ?>">
         <div class="interests-modal-content">
             <span class="interests-close-btn" id="p-interests-close-btn">&times;</span>
             <h2>Select Interests</h2>
 
             <form id="interests-form" method="POST" action="/u/save-interests">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <?php if (($profileModalToOpen ?? '') === 'interests' && !empty($profileModalError ?? '')): ?>
+                    <div class="profile-flash error" style="margin-bottom: 1rem;"><?= htmlspecialchars($profileModalError) ?></div>
+                <?php endif; ?>
 
                 <div id="hobbies-container" style="display:flex; flex-wrap:wrap; gap:10px;">
                     <?php foreach ($interests ?? [] as $interest):

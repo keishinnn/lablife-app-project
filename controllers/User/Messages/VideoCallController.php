@@ -7,12 +7,46 @@ use Models\Stream\Stream;
 
 class VideoCallController
 {
+    private function registerActiveCall(string $callId, string $role): void
+    {
+        if (!isset($_SESSION['active_video_calls']) || !is_array($_SESSION['active_video_calls'])) {
+            $_SESSION['active_video_calls'] = [];
+        }
+
+        $_SESSION['active_video_calls'][$callId] = [
+            'role' => $role,
+            'started_at' => time(),
+        ];
+    }
+
+    private function clearActiveCall(string $callId): void
+    {
+        if (!isset($_SESSION['active_video_calls']) || !is_array($_SESSION['active_video_calls'])) {
+            return;
+        }
+
+        unset($_SESSION['active_video_calls'][$callId]);
+    }
+
     public function View()
     {
         \Core\Middleware::auth();
-        $userId = \Core\Auth::user();
+        $callId = $_GET['callId'] ?? null;
+        $activeCalls = $_SESSION['active_video_calls'] ?? [];
+        $callState = $callId ? ($activeCalls[$callId] ?? null) : null;
 
-        view('test/test-video.php');
+        if (
+            !$callId ||
+            !$callState ||
+            !is_array($callState) ||
+            (($callState['started_at'] ?? 0) < (time() - 7200))
+        ) {
+            redirect('/u/messages');
+        }
+
+        $isCaller = ($callState['role'] ?? '') === 'caller';
+
+        view('user/video-call/index.view.php', compact('callId', 'isCaller'));
     }
 
     public function handleGetStreamVideoToken()
@@ -43,6 +77,7 @@ class VideoCallController
 
         try {
             $call = \Models\Stream\Stream::createVideoCall($userId, $receiverId);
+            $this->registerActiveCall($call['callId'], 'caller');
 
             json_response([
                 'status' => 'initiated',
@@ -66,6 +101,8 @@ class VideoCallController
             json_response(['error' => 'Call ID missing'], 400);
         }
 
+        $this->registerActiveCall($callId, 'callee');
+
         json_response([
             'status' => 'accepted',
             'callId' => $callId
@@ -82,8 +119,7 @@ class VideoCallController
             json_response(['error' => 'Call ID missing'], 400);
         }
 
-        // Optionally notify both users
-        // ...
+        $this->clearActiveCall($callId);
 
         json_response([
             'status' => 'ended',

@@ -18,8 +18,9 @@ class ProfilePreferencesController
         $error = '';
         $message = '';
         $isLoading = false;
+        $rateLimitError = session_flash_pull('profile_preferences_error', '');
 
-        view('user/profile/profile.edit.pref.view.php', compact('user', 'preferences', 'error', 'message', 'isLoading'));
+        view('user/profile/profile.edit.pref.view.php', compact('user', 'preferences', 'error', 'message', 'isLoading', 'rateLimitError'));
     }
 
     public function Update()

@@ -1551,9 +1551,22 @@ require base_path('views/shared/header.php');
     const userBlockCloseBtn = document.querySelector('.user-block-confirmation-modal-close');
     const confirmBlockBtn = document.getElementById('confirm-block-btn');
     const userBlockForm = document.getElementById('user-block-form-submit');
+    const userBlockFeedback = document.getElementById('user-block-feedback');
 
     const loadingBlockContainer = document.getElementById('pt-loading');
     const loadingBlockText = loadingBlockContainer?.querySelector('.profile-loading-text') ?? null;
+
+    function showInlineFeedback(element, message) {
+        if (!element) return;
+        element.textContent = message;
+        element.style.display = 'block';
+    }
+
+    function clearInlineFeedback(element) {
+        if (!element) return;
+        element.textContent = '';
+        element.style.display = 'none';
+    }
 
     function getActiveChatPartner() {
         if (!activeChannel?.state?.members) {
@@ -1611,6 +1624,7 @@ require base_path('views/shared/header.php');
     if (userBlockForm) {
         userBlockForm.addEventListener('submit', async (event) => {
             event.preventDefault();
+            clearInlineFeedback(userBlockFeedback);
 
             showBlockLoading();
 
@@ -1637,15 +1651,22 @@ require base_path('views/shared/header.php');
                 })
             });
 
-            if (!res.ok) throw new Error("Failed to block user in database");
-            const result = await res.json();
+            const result = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                showInlineFeedback(userBlockFeedback, result.message || result.error || "Failed to block user. Please try again.");
+                return;
+            }
 
             await chatClient.blockUser(blockedUserId);
         } catch (err) {
             console.error("Error blocking user:", err);
-            alert("Failed to block user. Please try again.");
+            showInlineFeedback(userBlockFeedback, "Failed to block user. Please try again.");
         } finally {
-            window.location.href = '/u/messages';
+            if (!userBlockFeedback || userBlockFeedback.style.display === 'none') {
+                window.location.href = '/u/messages';
+            } else if (loadingBlockContainer) {
+                loadingBlockContainer.style.display = 'none';
+            }
         }
     }
 
@@ -1668,6 +1689,7 @@ require base_path('views/shared/header.php');
     function hideUserBlockModal() {
         if (!userBlockModal) return;
         hideModal(userBlockModal);
+        clearInlineFeedback(userBlockFeedback);
     }
 
     function showBlockLoading() {
@@ -1695,6 +1717,7 @@ require base_path('views/shared/header.php');
     const reasonsContainer = document.getElementById('report-reasons-container');
     const summaryContainer = document.getElementById('report-summary');
     const csrfInput = document.getElementById('csrf_token_input');
+    const reportFeedback = document.getElementById('report-feedback');
 
     let optionsCache = null;
     let selected = {
@@ -1831,6 +1854,7 @@ require base_path('views/shared/header.php');
             reasonId: null,
             reasonText: null
         };
+        clearInlineFeedback(reportFeedback);
         categoriesContainer.innerHTML = '<p class="loading-text">Loading options...</p>';
         reasonsContainer.innerHTML = '';
         const opts = await fetchOptions();
@@ -1887,6 +1911,7 @@ require base_path('views/shared/header.php');
         reportSubmitBtn.addEventListener('click', async () => {
             reportSubmitBtn.disabled = true;
             reportSubmitBtn.textContent = 'Submitting...';
+            clearInlineFeedback(reportFeedback);
 
             let lastMessages = [];
             if (activeChannel?.id) {
@@ -1920,10 +1945,12 @@ require base_path('views/shared/header.php');
                     hideModal(userReportModal);
                     alert('Report submitted. Thank you.');
                     window.location.href = '/u/messages';
-                } else throw new Error(json.message || 'Failed to submit report.');
+                } else {
+                    throw new Error(json.message || json.error || 'Failed to submit report.');
+                }
             } catch (err) {
                 console.error('Submit error:', err);
-                alert('Failed to submit report. Try again later.');
+                showInlineFeedback(reportFeedback, err.message || 'Failed to submit report. Try again later.');
             } finally {
                 reportSubmitBtn.disabled = false;
                 reportSubmitBtn.textContent = 'Submit Report';

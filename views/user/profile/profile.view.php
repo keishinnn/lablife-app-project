@@ -13,6 +13,9 @@ $avatarUrl = !empty($user->avatarUrl)
             <h1>My Profile</h1>
             <p>Manage your profile and preferences</p>
         </header>
+        <?php if (!empty($profileModalError) && empty($profileModalToOpen)): ?>
+            <div class="profile-flash error" style="margin-bottom: 1rem;"><?= htmlspecialchars($profileModalError) ?></div>
+        <?php endif; ?>
 
         <div class="profile-section-one">
             <div class="profile-section-two">

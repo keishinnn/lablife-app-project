@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!interestModal) return;
 
+    if (interestModal.dataset.openOnLoad === "true") {
+        interestModal.style.display = "flex";
+    }
+
     // Open modal
     if (interestsEditBtn) {
         interestsEditBtn.addEventListener("click", function () {

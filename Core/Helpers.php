@@ -125,6 +125,30 @@ function redirect(string $path): void
     exit;
 }
 
+function session_flash_set(string $key, $value): void
+{
+    if (!isset($_SESSION['_flash']) || !is_array($_SESSION['_flash'])) {
+        $_SESSION['_flash'] = [];
+    }
+
+    $_SESSION['_flash'][$key] = $value;
+}
+
+function session_flash_pull(string $key, $default = null)
+{
+    $value = $_SESSION['_flash'][$key] ?? $default;
+
+    if (isset($_SESSION['_flash'][$key])) {
+        unset($_SESSION['_flash'][$key]);
+    }
+
+    if (empty($_SESSION['_flash'])) {
+        unset($_SESSION['_flash']);
+    }
+
+    return $value;
+}
+
 function app_log(string $message, string $level = 'ERROR'): void
 {
     error_log(sprintf('[%s] %s', strtoupper($level), $message));
