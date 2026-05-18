@@ -1,4 +1,4 @@
-# LabLife — Geek-Centric Real-Time Matchmaking Platform
+# LabLife: A Geek-Centric Real-Time Matchmaking Platform
 
 LabLife is a full-stack real-time matchmaking web application built with a **custom PHP MVC framework**, **Supabase**, **Redis**, **GetStream**, and a **Python face verification microservice**.
 
